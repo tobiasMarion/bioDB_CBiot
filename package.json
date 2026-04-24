@@ -1,0 +1,17 @@
+{
+  "name": "bio-database",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "@tanstack/router-plugin": "^1.167.23"
+  },
+  "scripts": {
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "check": "biome check --write ."
+  },
+  "dependencies": {
+    "@tanstack/react-router": "^1.168.23"
+  }
+}
