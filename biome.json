@@ -18,6 +18,9 @@
     "lineWidth": 100
   },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "semicolons": "asNeeded",
       "trailingCommas": "none",
