@@ -33,7 +33,27 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "style": {
+        "useImportType": "error"
+      }
     }
-  }
+  },
+  "overrides": [
+    {
+      "include": [
+        "**/*.controller.ts",
+        "**/*.service.ts",
+        "**/*.module.ts",
+        "**/*.gateway.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "useImportType": "off"
+          }
+        }
+      }
+    }
+  ]
 }

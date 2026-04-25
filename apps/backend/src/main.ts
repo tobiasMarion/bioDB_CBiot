@@ -17,7 +17,7 @@ async function bootstrap() {
   )
 
   const config = new DocumentBuilder()
-    .setTitle('Biobanco API')
+    .setTitle('Bio Database API')
     .setVersion('1.0')
     .addBearerAuth()
     .build()
