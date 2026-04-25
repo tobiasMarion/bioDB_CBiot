@@ -2,7 +2,7 @@
 
 Este repositório segue o padrão de **monorepo**, ou seja, temos múltiplos projetos dentro do mesmo repositório, organizados dentro da pasta `apps/`.
 
-A ideia dessa estrutura é manter tudo centralizado (frontend, backend, etc.), mas ainda separado o suficiente para cada parte evoluir de forma independente.
+A ideia dessa estrutura é manter tudo centralizado (frontend, backend, autenticação), mas ainda separado o suficiente para cada parte evoluir de forma independente.
 
 ---
 
@@ -11,8 +11,10 @@ A ideia dessa estrutura é manter tudo centralizado (frontend, backend, etc.), m
 ```bash
 .
 ├── apps/
-│   └── frontend/
-├── biome.json
+│   ├── frontend/     # A interface do usuário
+│   ├── backend/      # O servidor principal (API e Banco de Dados)
+│   └── auth-mock/    # O servidor de autenticação simulado (Login)
+├── biome.json        # Configuração de padronização de código
 ├── package.json
 ├── docs/
 ```
@@ -23,271 +25,100 @@ A ideia dessa estrutura é manter tudo centralizado (frontend, backend, etc.), m
 
 ### 🧹 Biome
 
-O Biome é uma ferramenta global do projeto — ou seja, vale para **todos os apps dentro de `apps/`**.
+O Biome é uma ferramenta global do projeto — ou seja, vale para **todos os apps dentro de `apps/`**. Ele é responsável por padronizar o código automaticamente (formatando e aplicando regras de estilo para evitar que cada um escreva de um jeito diferente).
 
-Ele é responsável por padronizar o código automaticamente.
-
----
-
-### 💭 Problema
-
-Sem uma ferramenta assim, cada pessoa pode escrever código de um jeito:
-
-```js
-const nome = "Tobias"
-```
-
-```js
-const nome = 'Tobias'
-```
-
-Ou até:
-
-```js
-if (x){console.log(x)}
-```
-
-Isso não quebra o sistema, mas deixa o projeto inconsistente e difícil de manter.
+**Onde está configurado?**
+Fica no arquivo `biome.json` na raiz. Na prática, você não precisa se preocupar com estilo — a ferramenta cuida disso!
 
 ---
 
-### ⚙️ Solução
+## 🎯 Nossos Apps
 
-O Biome resolve isso:
-
-* formata o código automaticamente
-* aplica regras de estilo
-* evita discussões desnecessárias
+Todos os projetos do nosso sistema ficam dentro da pasta `apps/`. Eles trabalham juntos, mas cada um tem um papel específico no sistema.
 
 ---
 
-### 📍 Onde está configurado?
+# 🎨 1. Frontend (`apps/frontend`)
 
+Foi criado com **Vite** usando **React** e **TypeScript**.
+O Vite é responsável por rodar o projeto durante o desenvolvimento, atualizando o navegador automaticamente sempre que você salva um arquivo.
+
+### 🧩 Como é feito por dentro?
+- **Rotas:** Usamos o `TanStack Router` (cada arquivo na pasta `src/routes/` vira uma página automaticamente, como `index.tsx` para `/` e `profile.tsx` para `/profile`).
+- **Visual:** O estilo visual é feito com **Tailwind CSS** (estilização direto nas classes, ex: `<button className="bg-blue-500">`) e com componentes prontos do **shadcn/ui**.
+
+### ▶️ Como rodar o frontend sozinho:
 ```bash
-biome.json
+cd apps/frontend
+npm install
+npm run dev
 ```
-
-Esse arquivo fica na raiz justamente para afetar todo o repositório.
-
-Na prática, você não precisa se preocupar com estilo — a ferramenta cuida disso.
+Acesse `http://localhost:5173`.
 
 ---
 
-## 🎯 Apps
+# 🛠️ 2. Backend (`apps/backend`)
 
-Todos os projetos ficam dentro da pasta:
+O backend é o "cérebro" e a "memória" do sistema. É ele que processa as regras de negócio e salva as informações no banco de dados.
 
+Foi criado com **NestJS** e usa **Prisma ORM** para se conectar a um banco de dados **PostgreSQL**.
+
+### 🧩 Como é feito por dentro?
+- **NestJS:** Organiza o código em "módulos" e "controladores". Quando o frontend pede uma informação (ex: "me dê a lista de usuários"), o controlador do NestJS atende o pedido.
+- **Prisma & PostgreSQL:** O banco de dados Postgres é onde os dados ficam salvos de verdade (tabelas, colunas). O Prisma é a ferramenta que facilita a conversa entre o NestJS e o banco de dados sem precisarmos escrever SQL na mão.
+
+### ▶️ Como rodar o backend sozinho:
 ```bash
-apps/
+cd apps/backend
+npm install
+npm run start:dev
 ```
-
-Atualmente temos:
-
-```bash
-apps/frontend
-```
-
-E em breve teremos também um backend.
 
 ---
 
-# 🎨 Frontend (`apps/frontend`)
+# 🔐 3. Auth Mock (`apps/auth-mock`)
 
-O frontend foi criado com Vite usando React e TypeScript.
+Este é um servidor auxiliar simples que criamos para **simular** um serviço externo de autenticação (que será desenvolvido pelo outro grupo).
 
-O Vite é responsável por rodar o projeto durante o desenvolvimento, criando um servidor local e atualizando o navegador automaticamente sempre que você salva um arquivo. Isso elimina a necessidade de configurações complexas e deixa o desenvolvimento muito mais rápido.
+Foi feito com **Fastify** (bem leve e rápido). O objetivo dele é apenas validar se um usuário está logado e gerar um "Crachá Virtual" (chamado **Token JWT**) para que o Frontend possa se comunicar com segurança com o Backend.
 
----
-
-## ▶️ Como rodar o frontend
-
-Entre na pasta:
-
+### ▶️ Como rodar o Auth Mock sozinho:
 ```bash
-apps/frontend
-```
-
-E rode:
-
-```bash
+cd apps/auth-mock
 npm install
 npm run dev
 ```
 
-Depois disso, abra a URL que aparecer no terminal (geralmente `http://localhost:5173`).
+---
 
-Qualquer alteração feita em `src/` será refletida automaticamente no navegador.
+# 🌊 Fluxos de Dados (Implementações Futuras)
+
+Para quem nunca mexeu com a stack, pode parecer confuso como essas 3 partes conversam entre si. Aqui está a explicação de como os fluxos de dados vão funcionar no futuro:
+
+### 1️⃣ Fluxo de Login (Entrando no sistema)
+Quando o usuário digita e-mail e senha no **Frontend**:
+1. O **Frontend** manda as credenciais para o **Auth Mock**.
+2. O **Auth Mock** verifica se a senha está correta.
+3. Se estiver tudo certo, o Auth Mock cria um **Token JWT** (o "Crachá") e devolve para o Frontend.
+4. O **Frontend** guarda esse Token no navegador.
+
+### 2️⃣ Fluxo de Requisição Autenticada (Acessando dados protegidos)
+Quando o usuário logado tenta acessar uma lista de dados importantes (ex: lista de amostras):
+1. O **Frontend** faz um pedido para o **Backend**, e manda junto o Token JWT ("Crachá") no cabeçalho (Header) da requisição.
+2. O **Backend (NestJS)** recebe o pedido. Antes de buscar a informação, ele olha o Token e verifica: "Esse crachá é válido? Quem emitiu?".
+3. Após confirmar que o Token é válido (usando as mesmas chaves do Auth Mock), o Backend libera o acesso.
+4. O **Backend** pede os dados ao banco de dados via **Prisma**.
+5. O **Prisma** busca as informações no **PostgreSQL** e as entrega ao Backend.
+6. O **Backend** envia os dados formatados de volta ao **Frontend**.
+7. O **Frontend** exibe a lista bonita na tela para o usuário!
 
 ---
 
-## 🧠 Estrutura do frontend
+## 🚀 Como rodar o projeto inteiro (Resumo)
 
-A maior parte do código está em:
+Como temos 3 projetos rodando simultaneamente na arquitetura, durante o desenvolvimento você precisará abrir diferentes abas do terminal (ou utilizar um gerenciador no futuro) e rodar:
 
-```bash
-apps/frontend/src/
-```
-
----
-
-### 🚪 Entrada da aplicação
-
-```bash
-src/main.tsx
-```
-
-Esse arquivo é o ponto de entrada do app. Ele conecta o React com o HTML (`index.html`) e inicializa a aplicação.
-
----
-
-### 🧭 Rotas (páginas)
-
-As páginas ficam em:
-
-```bash
-src/routes/
-```
-
-O projeto usa o TanStack Router, que funciona baseado em arquivos.
-
-Isso significa que cada arquivo nessa pasta vira uma rota automaticamente.
-
-Exemplo atual:
-
-```bash
-src/routes/
-  index.tsx      → "/"
-  profile.tsx    → "/profile"
-```
-
-O arquivo:
-
-```bash
-src/routes/__root.tsx
-```
-
-define o layout base da aplicação (estrutura comum entre páginas).
-
----
-
-### ⚠️ Arquivo gerado automaticamente
-
-```bash
-src/routeTree.gen.ts
-```
-
-Esse arquivo é gerado pelo router. Não deve ser editado manualmente.
-
----
-
-### 🧩 Componentes
-
-Componentes reutilizáveis ficam em:
-
-```bash
-src/components/
-```
-
-Exemplo:
-
-```bash
-src/components/ui/button.tsx
-```
-
-Esse componente vem do shadcn/ui.
-
-Diferente de bibliotecas tradicionais, esse código é nosso — então pode ser editado sem problema.
-
----
-
-### 🎨 Estilização
-
-A estilização é feita com Tailwind CSS.
-
-Na prática, você vai ver código assim:
-
-```tsx
-<button className="bg-blue-500 p-2 rounded">
-  Clique
-</button>
-```
-
-Ou seja, o estilo é aplicado direto nas `className`.
-
-O arquivo global de CSS é:
-
-```bash
-src/index.css
-```
-
----
-
-### 🧰 Código auxiliar
-
-```bash
-src/lib/utils.ts
-```
-
-Aqui ficam funções reutilizáveis (helpers).
-
----
-
-### 🖼️ Assets
-
-```bash
-src/assets/
-```
-
-Imagens e arquivos usados no app.
-
----
-
-### 🌍 Pasta pública
-
-```bash
-public/
-```
-
-Arquivos servidos diretamente (ex: favicon).
-
----
-
-## 🔁 Como tudo funciona junto
-
-1. Você roda `npm run dev`
-2. O Vite sobe o servidor
-3. O `main.tsx` inicia o React
-4. O TanStack Router define qual página renderizar
-5. O layout vem do `__root.tsx`
-6. Os estilos vêm do Tailwind CSS
-7. Componentes vêm do shadcn/ui
-
----
-
-# 🛠️ Backend (`apps/backend`) — WIP 🚧
-
-O backend ainda será configurado.
-
-A ideia é utilizar:
-
-* NestJS (provavelmente)
-* integração com o frontend via API
-
----
-
-## 📌 O que esperar aqui
-
-Quando o backend estiver pronto, essa seção deve incluir:
-
-* Como rodar o backend
-* Estrutura de pastas (modules, controllers, services)
-* Integração com banco de dados
-* Comunicação com o frontend
-
----
-
-## 🚧 Status
-
-Em desenvolvimento.
-
----
+- **Terminal 1:** Frontend (`cd apps/frontend` ➔ `npm run dev`)
+- **Terminal 2:** Backend (`cd apps/backend` ➔ `npm run start:dev`)
+- **Terminal 3:** Auth Mock (`cd apps/auth-mock` ➔ `npm run dev`)
+- **Docker:** Rodar o contêiner do banco de dados (disponível no `docker-compose.dev.yml` do backend).
