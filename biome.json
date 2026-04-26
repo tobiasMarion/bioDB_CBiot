@@ -46,6 +46,7 @@
         "**/*.controller.ts",
         "**/*.service.ts",
         "**/*.module.ts",
+        "**/*.guard.ts",
         "**/*.gateway.ts"
       ],
       "linter": {
