@@ -114,11 +114,25 @@ Quando o usuário logado tenta acessar uma lista de dados importantes (ex: lista
 
 ---
 
-## 🚀 Como rodar o projeto inteiro (Resumo)
+## 🚀 Como rodar o projeto inteiro (Melhor DX)
 
-Como temos 3 projetos rodando simultaneamente na arquitetura, durante o desenvolvimento você precisará abrir diferentes abas do terminal (ou utilizar um gerenciador no futuro) e rodar:
+Para facilitar a vida de todos e não precisar abrir 4 terminais diferentes, configuramos scripts na raiz do projeto que usam as *Workspaces* do NPM.
 
-- **Terminal 1:** Frontend (`cd apps/frontend` ➔ `npm run dev`)
-- **Terminal 2:** Backend (`cd apps/backend` ➔ `npm run start:dev`)
-- **Terminal 3:** Auth Mock (`cd apps/auth-mock` ➔ `npm run dev`)
-- **Docker:** Rodar o contêiner do banco de dados (disponível no `docker-compose.dev.yml` do backend).
+Tudo o que você precisa fazer, a partir da pasta **raiz do projeto**, é instalar as dependências e rodar o comando global:
+
+```bash
+npm install
+npm run dev
+```
+
+### O que o `npm run dev` faz por baixo dos panos?
+1. **`docker:up`**: Sobe o contêiner do banco de dados (PostgreSQL) usando Docker em background.
+2. **`wait-on tcp:5432`**: Aguarda o banco de dados estar 100% pronto antes de tentar ligar o Backend (evitando erros chatos de conexão).
+3. **`concurrently`**: Inicia o Frontend, o Backend e o Auth Mock em paralelo, cada um com uma cor diferente no mesmo terminal!
+
+Para desligar os servidores, basta dar `Ctrl + C` no terminal. 
+
+Para parar e remover o contêiner do banco de dados (opcional), você pode rodar:
+```bash
+npm run docker:down
+```

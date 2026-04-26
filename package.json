@@ -5,11 +5,19 @@
     "apps/*"
   ],
   "devDependencies": {
-    "@biomejs/biome": "^1.9.0"
+    "@biomejs/biome": "^1.9.0",
+    "concurrently": "^9.2.1",
+    "wait-on": "^9.0.5"
   },
   "scripts": {
     "lint": "biome check .",
     "format": "biome format --write .",
-    "check": "biome check --write ."
+    "check": "biome check --write .",
+    "docker:up": "docker compose -f apps/backend/docker-compose.dev.yml up -d",
+    "docker:down": "docker compose -f apps/backend/docker-compose.dev.yml down",
+    "dev:backend": "wait-on tcp:5432 && npm run start:dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "dev:auth": "npm run dev -w auth-mock",
+    "dev": "npm run docker:up && concurrently -n BACK,FRONT,AUTH -c blue,green,yellow \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:auth\""
   }
 }
