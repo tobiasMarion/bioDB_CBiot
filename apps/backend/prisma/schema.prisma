@@ -17,3 +17,293 @@ model Example {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+//
+// ENUMS
+//
+
+enum GroupRole {
+  LEADER
+  MANAGER
+  RESEARCHER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum SamplePermission {
+  VIEW
+  EDIT
+}
+
+enum AuditEntityType {
+  SAMPLE
+  TUBE
+  GROUP
+  SHARE
+  USER
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  ARCHIVE
+  MOVE
+  HANDLE
+  SHARE
+}
+
+//
+// MODELS
+//
+
+model User {
+  id             String  @id @default(uuid())
+  externalAuthId String  @unique
+  email          String  @unique
+  name           String
+  isAdmin        Boolean @default(false)
+
+  createdAt  DateTime  @default(now())
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  memberships   GroupMembership[]
+  groupsCreated Group[]
+
+  invitesSent     GroupInvite[] @relation("InviteSender")
+  invitesReceived GroupInvite[] @relation("InviteReceiver")
+
+  samplesCreated Sample[]
+  tubesCreated   Tube[]
+
+  freezersCreated Freezer[]
+  boxesCreated    Box[]
+
+  tubeEvents     TubeEvent[]
+  tubeAttributes TubeAttribute[]
+  auditLogs      AuditLog[]
+  sampleShares   SampleShare[]
+}
+
+model Group {
+  id        String @id @default(uuid())
+  name      String
+  createdBy String
+
+  createdAt  DateTime  @default(now())
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  creator     User              @relation(fields: [createdBy], references: [id])
+  memberships GroupMembership[]
+  invites     GroupInvite[]
+  samples     Sample[]
+  shares      SampleShare[]
+
+  @@index([createdBy])
+}
+
+model GroupMembership {
+  id       String    @id @default(uuid())
+  userId   String
+  groupId  String
+  role     GroupRole
+  joinedAt DateTime  @default(now())
+
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  user  User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@unique([userId, groupId])
+}
+
+model GroupInvite {
+  id            String       @id @default(uuid())
+  groupId       String
+  invitedUserId String
+  invitedBy     String
+  status        InviteStatus @default(PENDING)
+
+  createdAt  DateTime  @default(now())
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  group       Group @relation(fields: [groupId], references: [id])
+  invitedUser User  @relation("InviteReceiver", fields: [invitedUserId], references: [id])
+  sender      User  @relation("InviteSender", fields: [invitedBy], references: [id])
+}
+
+model Sample {
+  id             String @id @default(uuid())
+  name           String
+  type           String
+  originOrganism String
+  sourceLab      String
+  groupId        String
+  createdBy      String
+
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group   Group @relation(fields: [groupId], references: [id])
+  creator User  @relation(fields: [createdBy], references: [id])
+
+  tubes  Tube[]
+  shares SampleShare[]
+
+  @@index([groupId])
+}
+
+model Tube {
+  id             String   @id @default(uuid())
+  sampleId       String
+  createdBy      String
+  expirationDate DateTime
+
+  boxId  String?
+  row    Int?
+  column Int?
+
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sample  Sample @relation(fields: [sampleId], references: [id])
+  creator User   @relation(fields: [createdBy], references: [id])
+  box     Box?   @relation(fields: [boxId], references: [id])
+
+  events     TubeEvent[]
+  attributes TubeAttribute[]
+
+  @@unique([boxId, row, column])
+}
+
+model Freezer {
+  id                  String @id @default(uuid())
+  name                String
+  locationDescription String
+  createdBy           String
+
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  creator User  @relation(fields: [createdBy], references: [id])
+  boxes   Box[]
+}
+
+model Box {
+  id        String @id @default(uuid())
+  freezerId String
+  label     String
+  createdBy String
+
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  freezer Freezer @relation(fields: [freezerId], references: [id])
+  creator User    @relation(fields: [createdBy], references: [id])
+
+  tubes Tube[]
+
+  fromEvents TubeEvent[] @relation("EventFromBox")
+  toEvents   TubeEvent[] @relation("EventToBox")
+
+  @@unique([freezerId, label])
+}
+
+model TubeEvent {
+  id          String @id @default(uuid())
+  tubeId      String
+  performedBy String
+
+  fromBoxId  String?
+  fromRow    Int?
+  fromColumn Int?
+
+  toBoxId  String?
+  toRow    Int?
+  toColumn Int?
+
+  lab   String?
+  notes String?
+
+  performedAt DateTime @default(now())
+
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  tube    Tube @relation(fields: [tubeId], references: [id])
+  user    User @relation(fields: [performedBy], references: [id])
+  fromBox Box? @relation("EventFromBox", fields: [fromBoxId], references: [id])
+  toBox   Box? @relation("EventToBox", fields: [toBoxId], references: [id])
+
+  @@index([tubeId])
+  @@index([performedAt])
+}
+
+model SampleShare {
+  id            String           @id @default(uuid())
+  sampleId      String
+  targetGroupId String
+  permission    SamplePermission
+  sharedBy      String
+
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  sample Sample @relation(fields: [sampleId], references: [id])
+  group  Group  @relation(fields: [targetGroupId], references: [id])
+  user   User   @relation(fields: [sharedBy], references: [id])
+
+  @@unique([sampleId, targetGroupId])
+}
+
+model TubeAttribute {
+  id        String @id @default(uuid())
+  tubeId    String
+  key       String
+  value     String
+  createdBy String
+
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  tube Tube @relation(fields: [tubeId], references: [id])
+  user User @relation(fields: [createdBy], references: [id])
+
+  @@unique([tubeId, key])
+}
+
+model AuditLog {
+  id          String          @id @default(uuid())
+  entityType  AuditEntityType
+  entityId    String
+  performedBy String
+  action      AuditAction
+  changes     Json
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [performedBy], references: [id])
+
+  @@index([entityType, entityId])
+}
