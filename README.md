@@ -10,13 +10,13 @@ A ideia dessa estrutura é manter tudo centralizado (frontend, backend, autentic
 
 ```bash
 .
-├── apps/
-│   ├── frontend/     # A interface do usuário
-│   ├── backend/      # O servidor principal (API e Banco de Dados)
-│   └── auth-mock/    # O servidor de autenticação simulado (Login)
-├── biome.json        # Configuração de padronização de código
-├── package.json
-├── docs/
+13: ├── apps/
+14: │   ├── frontend/     # A interface do usuário
+15: │   ├── backend/      # O servidor principal (API e Banco de Dados)
+16: │   └── auth-mock/    # O servidor de autenticação simulado (Login)
+17: ├── biome.json        # Configuração de padronização de código
+18: ├── package.json
+19: ├── docs/
 ```
 
 ---
@@ -32,7 +32,41 @@ Fica no arquivo `biome.json` na raiz. Na prática, você não precisa se preocup
 
 ---
 
+## 💎 Prisma (Banco de Dados)
+
+O Prisma é o nosso ORM (Object-Relational Mapping). Ele gerencia a estrutura do banco de dados e a comunicação do backend com o PostgreSQL.
+
+### 🚀 Comandos Essenciais
+
+Sempre que você for trabalhar com o banco de dados, deve estar na pasta `apps/backend`.
+
+#### 1. Primeira vez rodando o projeto
+Ao clonar o projeto, após subir o Docker, você precisa sincronizar seu banco de dados local com o esquema do Prisma:
+```bash
+cd apps/backend
+npx prisma migrate dev
+```
+*Isso criará as tabelas e aplicará todas as migrações existentes.*
+
+#### 2. Alterou o `schema.prisma`?
+Se você adicionou um campo, criou uma nova tabela ou alterou um relacionamento no arquivo `apps/backend/prisma/schema.prisma`:
+```bash
+cd apps/backend
+npx prisma migrate dev --name nome_da_sua_alteracao
+```
+*Este comando gera um novo arquivo SQL na pasta `prisma/migrations` e atualiza o seu banco local.*
+
+#### 3. Visualizando os dados (Prisma Studio)
+Para abrir uma interface gráfica no navegador e ver/editar os dados do banco:
+```bash
+cd apps/backend
+npx prisma studio
+```
+
+---
+
 ## 🎯 Nossos Apps
+
 
 Todos os projetos do nosso sistema ficam dentro da pasta `apps/`. Eles trabalham juntos, mas cada um tem um papel específico no sistema.
 
