@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger'
 import { CreateExampleDTO } from './dto/CreateExample'
 import { ExampleService } from './example.service'
+import { Auth } from '../auth/auth.guard'
 
 @ApiTags('example')
 @Controller('example')
@@ -38,5 +39,16 @@ export class ExampleController {
   })
   async getExample() {
     return this.exampleService.findAll()
+  }
+
+  @Get('protected')
+  @Auth()
+  @ApiOperation({ summary: 'Get protected example data' })
+  @ApiResponse({ status: 200, description: 'Authorized access' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getProtectedExample() {
+    return {
+      message: 'You are authenticated!'
+    }
   }
 }
