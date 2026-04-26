@@ -1,5 +1,6 @@
 import {
   type CanActivate,
+  createParamDecorator,
   type ExecutionContext,
   Injectable,
   UnauthorizedException,
@@ -49,3 +50,8 @@ class AuthGuard implements CanActivate {
 }
 
 export const Auth = () => UseGuards(AuthGuard)
+
+export const CurrentUser = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<AuthenticatedRequest>()
+  return request.user
+})
