@@ -1,5 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
+import { Prisma } from '../common/prisma/generated/client'
 import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateExampleDTO } from './dto/CreateExample'
 
