@@ -1,7 +1,9 @@
 import ky, { type Options } from 'ky'
 
-export function createClient(baseUrl: string, options?: Options) {
-  return ky.create({
+export function createClient(baseUrl: string, options?: Options & { disableRedirectOn401?: boolean }) {
+  const disableRedirect = options?.disableRedirectOn401
+
+  const baseClient = ky.create({
     baseUrl: baseUrl,
 
     hooks: {
@@ -15,7 +17,7 @@ export function createClient(baseUrl: string, options?: Options) {
         }
       ],
 
-      afterResponse: [
+      afterResponse: disableRedirect ? [] : [
         async state => {
           const { response } = state
 
@@ -30,8 +32,8 @@ export function createClient(baseUrl: string, options?: Options) {
           return response
         }
       ]
-    },
-
-    ...options
+    }
   })
+
+  return options ? baseClient.extend(options) : baseClient
 }

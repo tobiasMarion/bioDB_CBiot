@@ -5,7 +5,7 @@ export type User = {
   id: string
   email: string
   name: string
-  isAdming: boolean
+  isAdmin: boolean
 }
 
 export const authService = {
