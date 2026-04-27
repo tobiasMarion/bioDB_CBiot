@@ -34,7 +34,7 @@ app.post<{ Body: LoginBody }>('/login', async (request, reply) => {
     id: userId,
     name: 'John Doe',
     email,
-    isAdmin: false
+    isAdmin: true
   }
 
   const token = jwt.sign(user, SECRET, { expiresIn: '12h' })

@@ -12,9 +12,22 @@ export class GroupsService {
             throw new ForbiddenException('User is not an admin')
         }
         try {
-          return await this.prisma.group.create({
+
+          const newGroup = await this.prisma.group.create({
             data: {...data, createdBy: user.id}
           })
+
+          await this.prisma.auditLog.create({
+            data: {
+              entityType: 'GROUP',
+              entityId: newGroup.id,
+              performedBy: user.id,
+              action: 'CREATE',
+              changes: newGroup
+            }
+          })
+
+          return newGroup
         } catch (error) {
           if (error instanceof Prisma.PrismaClientKnownRequestError) {
             throw new ConflictException('User didnt follow orders')
