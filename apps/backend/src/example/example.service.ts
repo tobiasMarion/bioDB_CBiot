@@ -1,7 +1,7 @@
-import { Injectable, ConflictException } from '@nestjs/common'
+import { ConflictException, Injectable } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateExampleDTO } from './dto/CreateExample'
-import { Prisma } from '@prisma/client'
 
 @Injectable()
 export class ExampleService {

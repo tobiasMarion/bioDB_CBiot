@@ -1,8 +1,14 @@
+import crypto from 'node:crypto'
+import cors from '@fastify/cors'
 import Fastify from 'fastify'
 import jwt from 'jsonwebtoken'
-import crypto from 'node:crypto'
 
 const app = Fastify()
+
+app.register(cors, {
+  origin: true,
+  credentials: true
+})
 
 const SECRET = process.env.JWT_SECRET || 'dev-secret'
 
@@ -24,18 +30,16 @@ app.post<{ Body: LoginBody }>('/login', async (request, reply) => {
 
   const userId = generateUserId(email, password)
 
-  const token = jwt.sign(
-    {
-      sub: userId,
-      name: 'John Doe',
-      email,
-      isAdmin: false
-    },
-    SECRET,
-    { expiresIn: '12h' }
-  )
+  const user = {
+    id: userId,
+    name: 'John Doe',
+    email,
+    isAdmin: false
+  }
 
-  return { access_token: token }
+  const token = jwt.sign(user, SECRET, { expiresIn: '12h' })
+
+  return { token, user }
 })
 
 app.get('/health', async () => ({ ok: true }))

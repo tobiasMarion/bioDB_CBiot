@@ -1,5 +1,5 @@
-import { IsEmail, IsInt, IsString, MinLength, Min, Max, IsOptional } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { IsEmail, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator'
 
 export class CreateExampleDTO {
   @ApiProperty({ example: 'user@email.com' })
