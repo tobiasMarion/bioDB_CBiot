@@ -3,6 +3,7 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { Auth, CurrentUser } from '../auth/auth.guard'
 import { CreateExampleDTO } from './dto/CreateExample'
 import { ExampleService } from './example.service'
+import type { User } from '../auth/types/user.type'
 
 @ApiTags('example')
 @Controller('example')
@@ -46,7 +47,7 @@ export class ExampleController {
   @ApiOperation({ summary: 'Get protected example data' })
   @ApiResponse({ status: 200, description: 'Authorized access' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getProtectedExample(@CurrentUser() user: { id: string }) {
+  async getProtectedExample(@CurrentUser() user: User) {
     return {
       message: 'You are authenticated!',
       user

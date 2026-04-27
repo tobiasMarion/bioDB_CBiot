@@ -9,6 +9,7 @@ import {
 import type { Request } from 'express'
 import * as jwt from 'jsonwebtoken'
 import { PrismaService } from '../common/prisma/prisma.service'
+import type { User } from './types/user.type'
 
 const SECRET = process.env.JWT_SECRET || 'dev-secret'
 
@@ -19,13 +20,8 @@ type JwtPayload = {
   isAdmin: boolean
 }
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string
-    name: string
-    email: string
-    isAdmin: boolean
-  }
+export interface AuthenticatedRequest extends Request {
+  user?: User
 }
 
 @Injectable()
@@ -63,12 +59,7 @@ export class AuthGuard implements CanActivate {
       }
     })
 
-    request.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      isAdmin: payload.isAdmin
-    }
+    request.user = user
 
     return true
   }
@@ -77,7 +68,7 @@ export class AuthGuard implements CanActivate {
 export const Auth = () => UseGuards(AuthGuard)
 
 export const CurrentUser = createParamDecorator(
-  (data: keyof AuthenticatedRequest['user'] | undefined, ctx: ExecutionContext) => {
+  (data: keyof User | undefined, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest<AuthenticatedRequest>()
     if (!request.user) return null
     return data ? request.user[data] : request.user
