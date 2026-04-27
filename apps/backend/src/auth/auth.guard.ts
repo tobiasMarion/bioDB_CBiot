@@ -1,19 +1,20 @@
 import {
   type CanActivate,
-  createParamDecorator,
   type ExecutionContext,
   Injectable,
   UnauthorizedException,
-  UseGuards
+  UseGuards,
+  createParamDecorator
 } from '@nestjs/common'
 import type { Request } from 'express'
-import { PrismaService } from '../common/prisma/prisma.service'
 import * as jwt from 'jsonwebtoken'
+import { PrismaService } from '../common/prisma/prisma.service'
 
 const SECRET = process.env.JWT_SECRET || 'dev-secret'
 
 type JwtPayload = {
-  sub: string
+  id: string
+  name: string
   email: string
   isAdmin: boolean
 }
@@ -52,10 +53,10 @@ export class AuthGuard implements CanActivate {
     }
 
     const user = await this.prisma.user.upsert({
-      where: { externalAuthId: payload.sub },
+      where: { externalAuthId: payload.id },
       update: { email: payload.email },
       create: {
-        externalAuthId: payload.sub,
+        externalAuthId: payload.id,
         email: payload.email,
         name: payload.email,
         isAdmin: payload.isAdmin ?? false
