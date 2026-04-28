@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AuthLogoutRouteImport } from './routes/_auth/logout'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppGroupIdSamplesRouteImport } from './routes/app/$groupId/samples'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
@@ -40,6 +41,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppGroupIdSamplesRoute = AppGroupIdSamplesRouteImport.update({
+  id: '/$groupId/samples',
+  path: '/$groupId/samples',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,12 +53,14 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/logout': typeof AuthLogoutRoute
   '/app/': typeof AppIndexRoute
+  '/app/$groupId/samples': typeof AppGroupIdSamplesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
   '/logout': typeof AuthLogoutRoute
   '/app': typeof AppIndexRoute
+  '/app/$groupId/samples': typeof AppGroupIdSamplesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,13 +69,27 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/logout': typeof AuthLogoutRoute
   '/app/': typeof AppIndexRoute
+  '/app/$groupId/samples': typeof AppGroupIdSamplesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/login' | '/logout' | '/app/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/logout'
+    | '/app/'
+    | '/app/$groupId/samples'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/logout' | '/app'
-  id: '__root__' | '/' | '/app' | '/_auth/login' | '/_auth/logout' | '/app/'
+  to: '/' | '/login' | '/logout' | '/app' | '/app/$groupId/samples'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/_auth/login'
+    | '/_auth/logout'
+    | '/app/'
+    | '/app/$groupId/samples'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -114,15 +136,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/$groupId/samples': {
+      id: '/app/$groupId/samples'
+      path: '/$groupId/samples'
+      fullPath: '/app/$groupId/samples'
+      preLoaderRoute: typeof AppGroupIdSamplesRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
   }
 }
 
 interface AppRouteRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
+  AppGroupIdSamplesRoute: typeof AppGroupIdSamplesRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppIndexRoute: AppIndexRoute,
+  AppGroupIdSamplesRoute: AppGroupIdSamplesRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(

@@ -9,6 +9,10 @@ export type User = {
 }
 
 export const authService = {
+  getUser() {
+    return authStore.getUser()
+  },
+
   async login(email: string, password: string) {
     const data = await authClient
       .post('login', {
@@ -22,7 +26,14 @@ export const authService = {
   },
 
   async me() {
-    return authClient.get('me').json<User>()
+    const existingUser = authStore.getUser()
+    if (existingUser) {
+      return existingUser
+    }
+
+    const user = await authClient.get('me').json<User>()
+    authStore.setUser(user)
+    return user
   },
 
   async logout() {
