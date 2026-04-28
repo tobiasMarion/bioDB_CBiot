@@ -28,7 +28,7 @@ export class FreezersController {
     }
   })
 @ApiResponse({ status: 400, description: 'Validation error' })
-  async sendExample(@Body() body: CreateFreezerDTO, @CurrentUser() user: User) {
+  async sendFreezer(@Body() body: CreateFreezerDTO, @CurrentUser() user: User) {
     return this.freezersService.create(body, user)
   }
 }
