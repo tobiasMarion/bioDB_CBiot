@@ -4,6 +4,7 @@ import { Auth, CurrentUser } from '../auth/auth.guard'
 import type { User } from '../auth/types/user.type'
 import { FreezersService } from './freezers.service'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
+import { identity } from 'rxjs'
 
 @Controller('freezers')
 export class FreezersController {
@@ -32,7 +33,7 @@ export class FreezersController {
     return this.freezersService.create(body, user)
   }
 
-  @Get('findAll')
+  @Get()
   @Auth()
   @ApiOperation({ summary: 'Find all active freezers' })
   @ApiResponse({
@@ -51,4 +52,5 @@ export class FreezersController {
   async getMemberships(){
     return this.freezersService.findAllFreezers()
   }
+  
 }

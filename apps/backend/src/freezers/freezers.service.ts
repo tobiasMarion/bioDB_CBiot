@@ -1,7 +1,7 @@
 import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateFreezerDTO } from './dto/CreateFreezer';
-import { Prisma, User } from '../common/prisma/generated/client';
+import { AuditEntityType, Prisma, User } from '../common/prisma/generated/client';
 
 @Injectable()
 export class FreezersService {
@@ -16,9 +16,9 @@ export class FreezersService {
         data: {...data, createdBy: user.id}
       })
 
-      this.prisma.auditLog.create({
+      await this.prisma.auditLog.create({
         data: {
-          entityType: 'GROUP',
+          entityType: 'FREEZER',
           entityId: newFreezer.id,
           performedBy: user.id,
           action: 'CREATE',
