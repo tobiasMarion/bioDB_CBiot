@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateFreezerDTO } from './dto/CreateFreezer';
 import { Prisma, User } from '../common/prisma/generated/client';
@@ -32,6 +32,24 @@ export class FreezersService {
         throw new ConflictException('User didnt follow orders')
         }
       throw error
+    }
+  }
+
+  async findAllFreezers(){
+    try {
+      return await this.prisma.freezer.findMany({
+        where:{
+          archived: false
+        },
+        select: {
+          id: true,
+          name: true,
+          locationDescription: true,
+          createdBy: true
+        }
+      })
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to fetch user memberships')
     }
   }
 }

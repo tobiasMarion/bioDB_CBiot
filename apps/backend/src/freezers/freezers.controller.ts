@@ -27,8 +27,28 @@ export class FreezersController {
       }
     }
   })
-@ApiResponse({ status: 400, description: 'Validation error' })
+  @ApiResponse({ status: 400, description: 'Validation error' })
   async sendFreezer(@Body() body: CreateFreezerDTO, @CurrentUser() user: User) {
     return this.freezersService.create(body, user)
+  }
+
+  @Get('findAll')
+  @Auth()
+  @ApiOperation({ summary: 'Find all active freezers' })
+  @ApiResponse({
+    status: 200,
+    description: 'Authorized access',
+    schema: {
+      example: {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        name: 'Haier Biomedical DW-86L',
+        locationDescription: 'Prédio A, 3º andar, sala 304',
+        createdBy: '123e4567-e89b-12d3-a456-426614174000',
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getMemberships(){
+    return this.freezersService.findAllFreezers()
   }
 }
