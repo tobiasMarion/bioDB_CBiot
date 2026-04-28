@@ -2,6 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, InternalServerErrorE
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateFreezerDTO } from './dto/CreateFreezer';
 import { Prisma, User } from '../common/prisma/generated/client';
+import { UpdateFreezerDTO } from './dto/UpdateFreezer';
 
 @Injectable()
 export class FreezersService {
@@ -63,5 +64,33 @@ export class FreezersService {
     }
 
     return freezerById;
+  }
+
+  async update(id: string, data: UpdateFreezerDTO, user: User){
+    try {
+      if(!user.isAdmin){
+        throw new ForbiddenException('User is not an admin')
+      }
+      const updatedFreezer = await this.prisma.freezer.update({
+        where: { id },
+        data: data
+      })
+
+      await this.prisma.auditLog.create({
+        data: {
+          entityType: 'FREEZER',
+          entityId: updatedFreezer.id,
+          performedBy: user.id,
+          action: 'UPDATE',
+          changes: updatedFreezer
+        }
+      })
+      
+      return updatedFreezer
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to update freezer'
+      )
+    }
   }
 }

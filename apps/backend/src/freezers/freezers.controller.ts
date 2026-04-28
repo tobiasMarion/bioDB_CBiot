@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiParam, ApiResponse} from '@nestjs/swagger'
 import { Auth, CurrentUser } from '../auth/auth.guard'
 import type { User } from '../auth/types/user.type'
 import { FreezersService } from './freezers.service'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
+import { UpdateFreezerDTO } from './dto/UpdateFreezer'
 
 @Controller('freezers')
 export class FreezersController {
@@ -56,9 +57,9 @@ export class FreezersController {
   @Auth()
   @ApiOperation({ summary: 'Find freezer by id' })
   @ApiParam({
-  name: 'id',
-  type: 'string',
-  format: 'uuid'
+    name: 'id',
+    type: 'string',
+    format: 'uuid'
   })
   @ApiResponse({
     status: 200,
@@ -78,5 +79,34 @@ export class FreezersController {
     @Param('id', ParseUUIDPipe) id: string
   ){
     return this.freezersService.findFreezerById(id)
+  }
+
+  @Patch(':id')
+  @Auth()
+  @ApiOperation({ summary: 'Update freezer '})
+  @ApiResponse({
+    status: 200,
+    description: 'Freezer updated successfully',
+    schema: {
+      example: {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        name: 'Haier Biomedical DW-86L',
+        locationDescription: 'Prédio A, 3º andar, sala 304',
+        createdBy: '123e4567-e89b-12d3-a456-426614174000',
+        archived: false,
+        archivedAt: null
+      }
+    }
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request body',
+  })
+  async updateFreezer(
+    @Param('id') id: string,
+    @Body() data: UpdateFreezerDTO,
+    @CurrentUser() user: User
+  ) {
+    return this.freezersService.update(id, data, user)
   }
 }
