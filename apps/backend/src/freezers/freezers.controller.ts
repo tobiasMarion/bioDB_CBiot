@@ -1,10 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common'
+import { ApiBody, ApiOperation, ApiParam, ApiResponse} from '@nestjs/swagger'
 import { Auth, CurrentUser } from '../auth/auth.guard'
 import type { User } from '../auth/types/user.type'
 import { FreezersService } from './freezers.service'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
-import { identity } from 'rxjs'
 
 @Controller('freezers')
 export class FreezersController {
@@ -52,5 +51,32 @@ export class FreezersController {
   async getMemberships(){
     return this.freezersService.findAllFreezers()
   }
-  
+
+  @Get(':id')
+  @Auth()
+  @ApiOperation({ summary: 'Find freezer by id' })
+  @ApiParam({
+  name: 'id',
+  type: 'string',
+  format: 'uuid'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Freezer found',
+    schema: {
+      example: {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        name: 'Haier Biomedical DW-86L',
+        locationDescription: 'Prédio A, 3º andar, sala 304',
+        createdBy: '123e4567-e89b-12d3-a456-426614174000',
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'Freezer not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getFreezerById(
+    @Param('id', ParseUUIDPipe) id: string
+  ){
+    return this.freezersService.findFreezerById(id)
+  }
 }
