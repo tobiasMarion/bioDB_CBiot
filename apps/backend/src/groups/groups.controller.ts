@@ -18,4 +18,13 @@ export class GroupsController {
   async sendExample(@Body() body: CreateGroupDTO, @CurrentUser() user: User) {
     return this.groupsService.create(body, user)
   }
+
+  @Get('memberships')
+  @Auth()
+  @ApiOperation({ summary: 'Find all user\'s memberships and roles' })
+  @ApiResponse({ status: 200, description: 'Authorized access' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getMemberships(@CurrentUser() user: User ){
+    return this.groupsService.findUserMemberships(user)
+  }
 }

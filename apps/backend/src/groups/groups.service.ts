@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable } from '@nestjs/common'
+import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateGroupDTO } from './dto/CreateGroup'
 import { Prisma } from '../common/prisma/generated/client'
@@ -33,6 +33,30 @@ export class GroupsService {
         throw new ConflictException('User didnt follow orders')
       }
       throw error
+    }
+  }
+
+  async findUserMemberships(user: User){
+    try {
+      return await this.prisma.groupMembership.findMany({
+        where: {
+          userId:user.id,
+          archived: false
+        },
+        select: {
+          id: true,
+          groupId: true,
+          role: true,
+          joinedAt: true,
+          group: {
+            select: {
+              name:true
+            }
+          }
+        }
+      })
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to fetch user memberships')
     }
   }
 }
