@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { Auth, CurrentUser } from '../auth/auth.guard'
+import { Auth, CurrentUser } from '../auth/authentication.guard'
 import { CreateExampleDTO } from './dto/CreateExample'
 import { ExampleService } from './example.service'
 import type { User } from '../auth/types/user.type'

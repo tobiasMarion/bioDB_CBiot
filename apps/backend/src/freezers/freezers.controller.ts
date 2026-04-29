@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger'
-import { Auth, CurrentUser } from '../auth/auth.guard'
+import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
 import { FreezersService } from './freezers.service'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
