@@ -5,6 +5,7 @@ import type { User } from '../auth/types/user.type'
 import { FreezersService } from './freezers.service'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
 import { UpdateFreezerDTO } from './dto/UpdateFreezer'
+import { FreezerStatusDTO } from './dto/ArchiveFreezer'
 
 @Controller('freezers')
 export class FreezersController {
@@ -108,5 +109,24 @@ export class FreezersController {
     @CurrentUser() user: User
   ) {
     return this.freezersService.update(id, data, user)
+  }
+
+  @Patch(':id/archived')
+  @Auth()
+  @ApiOperation({ summary: 'Update freezer status'})
+  @ApiResponse({
+    status: 200,
+    description: 'Freezer archived option updated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request body',
+  })
+  async updateArchivedFreezer(
+    @Param('id') id: string,
+    @Body() data: FreezerStatusDTO,
+    @CurrentUser() user: User
+  ) {
+    return this.freezersService.updateFreezerStatus(id, data, user)
   }
 }

@@ -3,6 +3,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateFreezerDTO } from './dto/CreateFreezer';
 import { Prisma, User } from '../common/prisma/generated/client';
 import { UpdateFreezerDTO } from './dto/UpdateFreezer';
+import { FreezerStatusDTO } from './dto/ArchiveFreezer';
 
 @Injectable()
 export class FreezersService {
@@ -67,10 +68,10 @@ export class FreezersService {
   }
 
   async update(id: string, data: UpdateFreezerDTO, user: User){
-    try {
-      if(!user.isAdmin){
+    if(!user.isAdmin){
         throw new ForbiddenException('User is not an admin')
-      }
+    }
+    try {
       const updatedFreezer = await this.prisma.freezer.update({
         where: { id },
         data: data
@@ -87,6 +88,39 @@ export class FreezersService {
       })
       
       return updatedFreezer
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to update freezer'
+      )
+    }
+  }
+
+  async updateFreezerStatus(id: string, data: FreezerStatusDTO, user: User){
+    if (!user.isAdmin) {
+      throw new ForbiddenException('User is not an admin');
+    }
+    const freezerData = {
+      archived: data.archived,
+      archivedAt: data.archived ? new Date() : null, 
+    };
+
+    try {
+      const updatedFreezerStatus = await this.prisma.freezer.update({
+        where: { id },
+        data: freezerData
+      });
+
+      await this.prisma.auditLog.create({
+        data: {
+          entityType: 'FREEZER',
+          entityId: updatedFreezerStatus.id,
+          performedBy: user.id,
+          action: 'UPDATE',
+          changes: updatedFreezerStatus
+        }
+      })
+
+      return updatedFreezerStatus
     } catch (error) {
       throw new InternalServerErrorException(
         'Failed to update freezer'
