@@ -45,6 +45,7 @@ enum AuditEntityType {
   GROUP
   SHARE
   USER
+  FREEZER
 }
 
 enum AuditAction {

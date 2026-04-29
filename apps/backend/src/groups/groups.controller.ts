@@ -28,7 +28,7 @@ export class GroupsController {
     }
   })
   @ApiResponse({ status: 400, description: 'Validation error' })
-  async sendExample(@Body() body: CreateGroupDTO, @CurrentUser() user: User) {
+  async sendGroup(@Body() body: CreateGroupDTO, @CurrentUser() user: User) {
     return this.groupsService.create(body, user)
   }
 
