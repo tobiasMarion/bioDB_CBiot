@@ -1,21 +1,28 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../common/prisma/prisma.service';
-import { CreateFreezerDTO } from './dto/CreateFreezer';
-import { Prisma, User } from '../common/prisma/generated/client';
-import { UpdateFreezerDTO } from './dto/UpdateFreezer';
-import { FreezerStatusDTO } from './dto/ArchiveFreezer';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException
+} from '@nestjs/common'
+import { PrismaService } from '../common/prisma/prisma.service'
+import { CreateFreezerDTO } from './dto/CreateFreezer'
+import { Prisma, User } from '../common/prisma/generated/client'
+import { UpdateFreezerDTO } from './dto/UpdateFreezer'
+import { FreezerStatusDTO } from './dto/ArchiveFreezer'
 
 @Injectable()
 export class FreezersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateFreezerDTO, user: User){
+  async create(data: CreateFreezerDTO, user: User) {
     if (!user.isAdmin) {
       throw new ForbiddenException('User is not an admin')
     }
-    try{
+    try {
       const newFreezer = await this.prisma.freezer.create({
-        data: {...data, createdBy: user.id}
+        data: { ...data, createdBy: user.id }
       })
 
       await this.prisma.auditLog.create({
@@ -32,16 +39,16 @@ export class FreezersService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new ConflictException('User didnt follow orders')
-        }
+      }
       throw error
     }
   }
 
-  async findAllFreezers(){
+  async findAllFreezers() {
     try {
       return await this.prisma.freezer.findMany({
-        where:{
-          archived: false
+        where: {
+          isArchived: false
         },
         select: {
           id: true,
@@ -55,23 +62,23 @@ export class FreezersService {
     }
   }
 
-  async findFreezerById(id: string){
+  async findFreezerById(id: string) {
     const freezerById = await this.prisma.freezer.findUnique({
       where: { id }
-    });
+    })
 
     if (!freezerById) {
-      throw new NotFoundException('Freezer not found');
+      throw new NotFoundException('Freezer not found')
     }
 
-    return freezerById;
+    return freezerById
   }
 
-  async findTubesFreezer(id: string){
-    try{
+  async findTubesFreezer(id: string) {
+    try {
       return this.prisma.tube.findMany({
         where: {
-          archived: false,
+          isArchived: false,
           box: { freezerId: id }
         },
         select: {
@@ -81,7 +88,7 @@ export class FreezersService {
           expirationDate: true,
           boxId: true,
           row: true,
-          column: true,
+          column: true
         }
       })
     } catch (error) {
@@ -89,9 +96,9 @@ export class FreezersService {
     }
   }
 
-  async update(id: string, data: UpdateFreezerDTO, user: User){
-    if(!user.isAdmin){
-        throw new ForbiddenException('User is not an admin')
+  async update(id: string, data: UpdateFreezerDTO, user: User) {
+    if (!user.isAdmin) {
+      throw new ForbiddenException('User is not an admin')
     }
     try {
       const updatedFreezer = await this.prisma.freezer.update({
@@ -108,44 +115,42 @@ export class FreezersService {
           changes: updatedFreezer
         }
       })
-      
+
       return updatedFreezer
     } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to update freezer'
-      )
+      throw new InternalServerErrorException('Failed to update freezer')
     }
   }
 
-  async updateFreezerStatus(id: string, data: FreezerStatusDTO, user: User){
+  async updateFreezerStatus(id: string, data: FreezerStatusDTO, user: User) {
     if (!user.isAdmin) {
-      throw new ForbiddenException('User is not an admin');
+      throw new ForbiddenException('User is not an admin')
     }
     const freezerData = {
-      archived: data.archived,
-      archivedAt: data.archived ? new Date() : null, 
-    };
+      isArchived: data.isArchived,
+      archivedAt: data.isArchived ? new Date() : null
+    }
 
     try {
-      if (data.archived === true) {
-      // Verifica se existe pelo menos UM tubo ativo neste freezer
-      const hasActiveTubes = await this.prisma.tube.findFirst({
-        where: {
-          archived: false,
-          box: {
-            freezerId: id,
-          },
-        },
-      });
-      if (hasActiveTubes) {
-        throw new BadRequestException('Cannot archive freezer because it contains active tubes');
+      if (data.isArchived === true) {
+        // Verifica se existe pelo menos UM tubo ativo neste freezer
+        const hasActiveTubes = await this.prisma.tube.findFirst({
+          where: {
+            isArchived: false,
+            box: {
+              freezerId: id
+            }
+          }
+        })
+        if (hasActiveTubes) {
+          throw new BadRequestException('Cannot archive freezer because it contains active tubes')
+        }
       }
-    }
 
       const updatedFreezerStatus = await this.prisma.freezer.update({
         where: { id },
         data: freezerData
-      });
+      })
 
       await this.prisma.auditLog.create({
         data: {
@@ -159,9 +164,7 @@ export class FreezersService {
 
       return updatedFreezerStatus
     } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to update freezer'
-      )
+      throw new InternalServerErrorException('Failed to update freezer')
     }
   }
 }

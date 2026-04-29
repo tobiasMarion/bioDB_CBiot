@@ -1,4 +1,10 @@
-import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException
+} from '@nestjs/common'
 import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateGroupDTO } from './dto/CreateGroup'
 import { Prisma } from '../common/prisma/generated/client'
@@ -36,12 +42,12 @@ export class GroupsService {
     }
   }
 
-  async findUserMemberships(user: User){
+  async findUserMemberships(user: User) {
     try {
       return await this.prisma.groupMembership.findMany({
         where: {
-          userId:user.id,
-          archived: false
+          userId: user.id,
+          isArchived: false
         },
         select: {
           id: true,
@@ -50,7 +56,7 @@ export class GroupsService {
           joinedAt: true,
           group: {
             select: {
-              name:true
+              name: true
             }
           }
         }
