@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateFreezerDTO } from './dto/CreateFreezer';
 import { Prisma, User } from '../common/prisma/generated/client';
@@ -51,7 +51,7 @@ export class FreezersService {
         }
       })
     } catch (error) {
-      throw new InternalServerErrorException('Failed to fetch user memberships')
+      throw new InternalServerErrorException('Failed to fetch all freezers')
     }
   }
 
@@ -65,6 +65,28 @@ export class FreezersService {
     }
 
     return freezerById;
+  }
+
+  async findTubesFreezer(id: string){
+    try{
+      return this.prisma.tube.findMany({
+        where: {
+          archived: false,
+          box: { freezerId: id }
+        },
+        select: {
+          id: true,
+          sampleId: true,
+          createdBy: true,
+          expirationDate: true,
+          boxId: true,
+          row: true,
+          column: true,
+        }
+      })
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to fetch tubes from freezer')
+    }
   }
 
   async update(id: string, data: UpdateFreezerDTO, user: User){
@@ -105,6 +127,21 @@ export class FreezersService {
     };
 
     try {
+      if (data.archived === true) {
+      // Verifica se existe pelo menos UM tubo ativo neste freezer
+      const hasActiveTubes = await this.prisma.tube.findFirst({
+        where: {
+          archived: false,
+          box: {
+            freezerId: id,
+          },
+        },
+      });
+      if (hasActiveTubes) {
+        throw new BadRequestException('Cannot archive freezer because it contains active tubes');
+      }
+    }
+
       const updatedFreezerStatus = await this.prisma.freezer.update({
         where: { id },
         data: freezerData

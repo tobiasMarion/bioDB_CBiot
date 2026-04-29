@@ -50,7 +50,7 @@ export class FreezersController {
     }
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getMemberships(){
+  async getAllFreezers(){
     return this.freezersService.findAllFreezers()
   }
 
@@ -82,9 +82,29 @@ export class FreezersController {
     return this.freezersService.findFreezerById(id)
   }
 
+  @Get(':id/samples')
+  @Auth()
+  @ApiOperation({ summary: 'Find all samples from a freezer' })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    format: 'uuid'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Freezer samples found',
+  })
+  @ApiResponse({ status: 404, description: 'Freezer samples not found' })
+  async getTubesFreezer(
+    @Param('id', ParseUUIDPipe) id: string
+  ){
+    return this.freezersService.findTubesFreezer(id)
+  }
+
+
   @Patch(':id')
   @Auth()
-  @ApiOperation({ summary: 'Update freezer '})
+  @ApiOperation({ summary: 'Update freezer'})
   @ApiResponse({
     status: 200,
     description: 'Freezer updated successfully',
