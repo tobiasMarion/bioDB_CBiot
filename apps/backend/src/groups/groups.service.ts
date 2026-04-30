@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
   NotFoundException
 } from '@nestjs/common'
+import { auditCreate } from '../auth/audit.utils'
 import { AuthorizationService } from '../auth/authorization.service'
 import type { User } from '../auth/types/user.type'
 import { Prisma } from '../common/prisma/generated/client'
@@ -26,19 +27,18 @@ export class GroupsService {
       })
 
       await this.prisma.auditLog.create({
-        data: {
+        data: auditCreate({
           entityType: 'GROUP',
           entityId: newGroup.id,
           performedBy: user.id,
-          action: 'CREATE',
-          changes: newGroup
-        }
+          current: newGroup
+        })
       })
 
       return newGroup
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new ConflictException('User didnt follow orders')
+        throw new ConflictException('Failed to create group')
       }
       throw error
     }

@@ -5,11 +5,11 @@ import {
   InternalServerErrorException,
   NotFoundException
 } from '@nestjs/common'
+import { auditCreate, auditDelete, auditUpdate } from '../auth/audit.utils'
 import { AuthorizationService } from '../auth/authorization.service'
 import type { User } from '../auth/types/user.type'
 import { Prisma } from '../common/prisma/generated/client'
 import { PrismaService } from '../common/prisma/prisma.service'
-import { FreezerStatusDTO } from './dto/ArchiveFreezer'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
 import { UpdateFreezerDTO } from './dto/UpdateFreezer'
 
@@ -29,19 +29,18 @@ export class FreezersService {
       })
 
       await this.prisma.auditLog.create({
-        data: {
+        data: auditCreate({
           entityType: 'FREEZER',
           entityId: newFreezer.id,
           performedBy: user.id,
-          action: 'CREATE',
-          changes: newFreezer
-        }
+          current: newFreezer
+        })
       })
 
       return newFreezer
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new ConflictException('User didnt follow orders')
+        throw new ConflictException('Failed to create freezer')
       }
       throw error
     }
@@ -104,6 +103,9 @@ export class FreezersService {
   async update(id: string, data: UpdateFreezerDTO, user: User) {
     await this.auth.assert({ user, permission: 'UPDATE_FREEZER' })
 
+    const previous = await this.prisma.freezer.findUnique({ where: { id } })
+    if (!previous) throw new NotFoundException('Freezer not found')
+
     try {
       const updatedFreezer = await this.prisma.freezer.update({
         where: { id },
@@ -111,13 +113,13 @@ export class FreezersService {
       })
 
       await this.prisma.auditLog.create({
-        data: {
+        data: auditUpdate({
           entityType: 'FREEZER',
-          entityId: updatedFreezer.id,
+          entityId: id,
           performedBy: user.id,
-          action: 'UPDATE',
-          changes: updatedFreezer
-        }
+          previous,
+          current: updatedFreezer
+        })
       })
 
       return updatedFreezer
@@ -126,50 +128,50 @@ export class FreezersService {
     }
   }
 
-  async updateFreezerStatus(id: string, data: FreezerStatusDTO, user: User) {
+  async archive(id: string, user: User) {
     await this.auth.assert({ user, permission: 'UPDATE_FREEZER' })
 
-    const freezerData = {
-      isArchived: data.isArchived,
-      archivedAt: data.isArchived ? new Date() : null
-    }
+    const previous = await this.prisma.freezer.findUnique({ where: { id } })
+    if (!previous) throw new NotFoundException('Freezer not found')
 
     try {
-      if (data.isArchived === true) {
-        const hasActiveTubes = await this.prisma.tube.findFirst({
-          where: {
-            isArchived: false,
-            box: {
-              freezerId: id
-            }
+      const hasActiveTubes = await this.prisma.tube.findFirst({
+        where: {
+          isArchived: false,
+          box: {
+            freezerId: id
           }
-        })
-        if (hasActiveTubes) {
-          throw new BadRequestException('Cannot archive freezer because it contains active tubes')
         }
+      })
+      if (hasActiveTubes) {
+        throw new BadRequestException('Cannot archive freezer because it contains active tubes')
       }
 
-      const updatedFreezerStatus = await this.prisma.freezer.update({
+      const archivedFreezer = await this.prisma.freezer.update({
         where: { id },
-        data: freezerData
-      })
-
-      await this.prisma.auditLog.create({
         data: {
-          entityType: 'FREEZER',
-          entityId: updatedFreezerStatus.id,
-          performedBy: user.id,
-          action: 'UPDATE',
-          changes: updatedFreezerStatus
+          isArchived: true,
+          archivedAt: new Date()
         }
       })
 
-      return updatedFreezerStatus
+      if (!previous.isArchived) {
+        await this.prisma.auditLog.create({
+          data: auditDelete({
+            entityType: 'FREEZER',
+            entityId: id,
+            performedBy: user.id,
+            previous
+          })
+        })
+      }
+
+      return archivedFreezer
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error
       }
-      throw new InternalServerErrorException('Failed to update freezer')
+      throw new InternalServerErrorException('Failed to archive freezer')
     }
   }
 }
