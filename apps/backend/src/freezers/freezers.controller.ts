@@ -2,10 +2,10 @@ import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestj
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger'
 import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
-import { FreezersService } from './freezers.service'
+import { FreezerStatusDTO } from './dto/ArchiveFreezer'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
 import { UpdateFreezerDTO } from './dto/UpdateFreezer'
-import { FreezerStatusDTO } from './dto/ArchiveFreezer'
+import { FreezersService } from './freezers.service'
 
 @Controller('freezers')
 export class FreezersController {
@@ -50,8 +50,8 @@ export class FreezersController {
     }
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getAllFreezers() {
-    return this.freezersService.findAllFreezers()
+  async getAllFreezers(@CurrentUser() user: User) {
+    return this.freezersService.findAllFreezers(user)
   }
 
   @Get(':id')
@@ -76,8 +76,8 @@ export class FreezersController {
   })
   @ApiResponse({ status: 404, description: 'Freezer not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getFreezerById(@Param('id', ParseUUIDPipe) id: string) {
-    return this.freezersService.findFreezerById(id)
+  async getFreezerById(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
+    return this.freezersService.findFreezerById(id, user)
   }
 
   @Get(':id/samples')
@@ -93,8 +93,8 @@ export class FreezersController {
     description: 'Freezer samples found'
   })
   @ApiResponse({ status: 404, description: 'Freezer samples not found' })
-  async getTubesFreezer(@Param('id', ParseUUIDPipe) id: string) {
-    return this.freezersService.findTubesFreezer(id)
+  async getTubesFreezer(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
+    return this.freezersService.findTubesFreezer(id, user)
   }
 
   @Patch(':id')
