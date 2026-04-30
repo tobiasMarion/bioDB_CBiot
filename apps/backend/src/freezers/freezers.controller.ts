@@ -29,6 +29,9 @@ export class FreezersController {
     }
   })
   @ApiResponse({ status: 400, description: 'Validation error' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({ status: 409, description: 'Conflict - Freezer creation failed' })
   async sendFreezer(@Body() body: CreateFreezerDTO, @CurrentUser() user: User) {
     return this.freezersService.create(body, user)
   }
@@ -49,6 +52,7 @@ export class FreezersController {
     }
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error' })
   async getAllFreezers(@CurrentUser() user: User) {
     return this.freezersService.findAllFreezers(user)
   }
@@ -73,8 +77,8 @@ export class FreezersController {
       }
     }
   })
-  @ApiResponse({ status: 404, description: 'Freezer not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Freezer not found' })
   async getFreezerById(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
     return this.freezersService.findFreezerById(id, user)
   }
@@ -91,7 +95,10 @@ export class FreezersController {
     status: 200,
     description: 'Freezer samples found'
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'Freezer samples not found' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error' })
   async getTubesFreezer(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
     return this.freezersService.findTubesFreezer(id, user)
   }
@@ -113,10 +120,11 @@ export class FreezersController {
       }
     }
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid request body'
-  })
+  @ApiResponse({ status: 400, description: 'Invalid request body' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({ status: 404, description: 'Freezer not found' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error' })
   async updateFreezer(
     @Param('id') id: string,
     @Body() data: UpdateFreezerDTO,
@@ -132,10 +140,11 @@ export class FreezersController {
     status: 200,
     description: 'Freezer archived successfully'
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Cannot archive freezer containing active tubes'
-  })
+  @ApiResponse({ status: 400, description: 'Cannot archive freezer containing active tubes' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({ status: 404, description: 'Freezer not found' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error' })
   async archiveFreezer(@Param('id') id: string, @CurrentUser() user: User) {
     return this.freezersService.archive(id, user)
   }
