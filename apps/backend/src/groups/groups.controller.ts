@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Post } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { Auth, CurrentUser } from '../auth/auth.guard'
-import { GroupsService } from './groups.service'
-import { CreateGroupDTO } from './dto/CreateGroup'
+import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
+import { CreateGroupDTO } from './dto/CreateGroup'
+import { GroupsService } from './groups.service'
 
 @Controller('groups')
 export class GroupsController {
@@ -22,7 +22,7 @@ export class GroupsController {
         name: 'Administradores',
         createdBy: '123e4567-e89b-12d3-a456-426614174000',
         createdAt: '2026-04-27T10:00:00.000Z',
-        archived: false,
+        isArchived: false,
         archivedAt: null
       }
     }
@@ -34,27 +34,26 @@ export class GroupsController {
 
   @Get('memberships')
   @Auth()
-  @ApiOperation({ summary: 'Find all user\'s memberships and roles' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Authorized access', 
+  @ApiOperation({ summary: "Find all user's memberships and roles" })
+  @ApiResponse({
+    status: 200,
+    description: 'Authorized access',
     schema: {
-        example: [
-          {
-            id: 'clq123abc0001xyz',
-            groupId: 'clq456def0002xyz',
-            role: 'ADMIN',
-            joinedAt: '2026-04-25T10:00:00.000Z',
-            group: {
-              name: 'Desenvolvedores Frontend'
-            }
+      example: [
+        {
+          id: 'clq123abc0001xyz',
+          groupId: 'clq456def0002xyz',
+          role: 'ADMIN',
+          joinedAt: '2026-04-25T10:00:00.000Z',
+          group: {
+            name: 'Desenvolvedores Frontend'
           }
-        ]
-      }
+        }
+      ]
     }
-  )
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getMemberships(@CurrentUser() user: User ){
+  async getMemberships(@CurrentUser() user: User) {
     return this.groupsService.findUserMemberships(user)
   }
 }

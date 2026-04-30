@@ -1,9 +1,7 @@
 {
   "name": "bio-database",
   "private": true,
-  "workspaces": [
-    "apps/*"
-  ],
+  "workspaces": ["apps/*"],
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",
     "concurrently": "^9.2.1",

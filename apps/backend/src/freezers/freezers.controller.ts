@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common'
-import { ApiBody, ApiOperation, ApiParam, ApiResponse} from '@nestjs/swagger'
-import { Auth, CurrentUser } from '../auth/auth.guard'
+import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger'
+import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
-import { FreezersService } from './freezers.service'
+import { FreezerStatusDTO } from './dto/ArchiveFreezer'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
 import { UpdateFreezerDTO } from './dto/UpdateFreezer'
-import { FreezerStatusDTO } from './dto/ArchiveFreezer'
+import { FreezersService } from './freezers.service'
 
 @Controller('freezers')
 export class FreezersController {
@@ -24,7 +24,7 @@ export class FreezersController {
         name: 'Haier Biomedical DW-86L',
         locationDescription: 'Prédio A, 3º andar, sala 304',
         createdBy: '123e4567-e89b-12d3-a456-426614174000',
-        archived: false,
+        isArchived: false,
         archivedAt: null
       }
     }
@@ -45,13 +45,13 @@ export class FreezersController {
         id: '550e8400-e29b-41d4-a716-446655440000',
         name: 'Haier Biomedical DW-86L',
         locationDescription: 'Prédio A, 3º andar, sala 304',
-        createdBy: '123e4567-e89b-12d3-a456-426614174000',
+        createdBy: '123e4567-e89b-12d3-a456-426614174000'
       }
     }
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getAllFreezers(){
-    return this.freezersService.findAllFreezers()
+  async getAllFreezers(@CurrentUser() user: User) {
+    return this.freezersService.findAllFreezers(user)
   }
 
   @Get(':id')
@@ -70,16 +70,14 @@ export class FreezersController {
         id: '550e8400-e29b-41d4-a716-446655440000',
         name: 'Haier Biomedical DW-86L',
         locationDescription: 'Prédio A, 3º andar, sala 304',
-        createdBy: '123e4567-e89b-12d3-a456-426614174000',
+        createdBy: '123e4567-e89b-12d3-a456-426614174000'
       }
     }
   })
   @ApiResponse({ status: 404, description: 'Freezer not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getFreezerById(
-    @Param('id', ParseUUIDPipe) id: string
-  ){
-    return this.freezersService.findFreezerById(id)
+  async getFreezerById(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
+    return this.freezersService.findFreezerById(id, user)
   }
 
   @Get(':id/samples')
@@ -92,19 +90,16 @@ export class FreezersController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Freezer samples found',
+    description: 'Freezer samples found'
   })
   @ApiResponse({ status: 404, description: 'Freezer samples not found' })
-  async getTubesFreezer(
-    @Param('id', ParseUUIDPipe) id: string
-  ){
-    return this.freezersService.findTubesFreezer(id)
+  async getTubesFreezer(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
+    return this.freezersService.findTubesFreezer(id, user)
   }
-
 
   @Patch(':id')
   @Auth()
-  @ApiOperation({ summary: 'Update freezer'})
+  @ApiOperation({ summary: 'Update freezer' })
   @ApiResponse({
     status: 200,
     description: 'Freezer updated successfully',
@@ -114,14 +109,14 @@ export class FreezersController {
         name: 'Haier Biomedical DW-86L',
         locationDescription: 'Prédio A, 3º andar, sala 304',
         createdBy: '123e4567-e89b-12d3-a456-426614174000',
-        archived: false,
+        isArchived: false,
         archivedAt: null
       }
     }
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid request body',
+    description: 'Invalid request body'
   })
   async updateFreezer(
     @Param('id') id: string,
@@ -133,14 +128,14 @@ export class FreezersController {
 
   @Patch(':id/archived')
   @Auth()
-  @ApiOperation({ summary: 'Update freezer status'})
+  @ApiOperation({ summary: 'Update freezer status' })
   @ApiResponse({
     status: 200,
-    description: 'Freezer archived option updated successfully',
+    description: 'Freezer archived option updated successfully'
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid request body',
+    description: 'Invalid request body'
   })
   async updateArchivedFreezer(
     @Param('id') id: string,

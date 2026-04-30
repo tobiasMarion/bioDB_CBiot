@@ -69,7 +69,7 @@ model User {
   isAdmin        Boolean @default(false)
 
   createdAt  DateTime  @default(now())
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   memberships   GroupMembership[]
@@ -96,7 +96,7 @@ model Group {
   createdBy String
 
   createdAt  DateTime  @default(now())
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   creator     User              @relation(fields: [createdBy], references: [id])
@@ -115,7 +115,7 @@ model GroupMembership {
   role     GroupRole
   joinedAt DateTime  @default(now())
 
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   user  User  @relation(fields: [userId], references: [id])
@@ -132,7 +132,7 @@ model GroupInvite {
   status        InviteStatus @default(PENDING)
 
   createdAt  DateTime  @default(now())
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   group       Group @relation(fields: [groupId], references: [id])
@@ -149,7 +149,7 @@ model Sample {
   groupId        String
   createdBy      String
 
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -174,7 +174,7 @@ model Tube {
   row    Int?
   column Int?
 
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -196,7 +196,7 @@ model Freezer {
   locationDescription String
   createdBy           String
 
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -211,7 +211,7 @@ model Box {
   label     String
   createdBy String
 
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -245,7 +245,7 @@ model TubeEvent {
 
   performedAt DateTime @default(now())
 
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   tube    Tube @relation(fields: [tubeId], references: [id])
@@ -264,7 +264,7 @@ model SampleShare {
   permission    SamplePermission
   sharedBy      String
 
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -283,7 +283,7 @@ model TubeAttribute {
   value     String
   createdBy String
 
-  archived   Boolean   @default(false)
+  isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   createdAt DateTime @default(now())

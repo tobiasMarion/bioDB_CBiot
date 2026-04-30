@@ -1,6 +1,9 @@
 import ky, { type Options } from 'ky'
 
-export function createClient(baseUrl: string, options?: Options & { disableRedirectOn401?: boolean }) {
+export function createClient(
+  baseUrl: string,
+  options?: Options & { disableRedirectOn401?: boolean }
+) {
   const disableRedirect = options?.disableRedirectOn401
 
   const baseClient = ky.create({
@@ -17,21 +20,23 @@ export function createClient(baseUrl: string, options?: Options & { disableRedir
         }
       ],
 
-      afterResponse: disableRedirect ? [] : [
-        async state => {
-          const { response } = state
+      afterResponse: disableRedirect
+        ? []
+        : [
+            async state => {
+              const { response } = state
 
-          if (response.status === 401) {
-            localStorage.removeItem('access_token')
+              if (response.status === 401) {
+                localStorage.removeItem('access_token')
 
-            if (!location.pathname.includes('/login')) {
-              window.location.href = '/login'
+                if (!location.pathname.includes('/login')) {
+                  window.location.href = '/login'
+                }
+              }
+
+              return response
             }
-          }
-
-          return response
-        }
-      ]
+          ]
     }
   })
 
