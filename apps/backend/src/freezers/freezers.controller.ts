@@ -1,8 +1,7 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger'
 import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
-import { FreezerStatusDTO } from './dto/ArchiveFreezer'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
 import { UpdateFreezerDTO } from './dto/UpdateFreezer'
 import { FreezersService } from './freezers.service'
@@ -126,22 +125,18 @@ export class FreezersController {
     return this.freezersService.update(id, data, user)
   }
 
-  @Patch(':id/archived')
+  @Delete(':id')
   @Auth()
-  @ApiOperation({ summary: 'Update freezer status' })
+  @ApiOperation({ summary: 'Archive freezer' })
   @ApiResponse({
     status: 200,
-    description: 'Freezer archived option updated successfully'
+    description: 'Freezer archived successfully'
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid request body'
+    description: 'Cannot archive freezer containing active tubes'
   })
-  async updateArchivedFreezer(
-    @Param('id') id: string,
-    @Body() data: FreezerStatusDTO,
-    @CurrentUser() user: User
-  ) {
-    return this.freezersService.updateFreezerStatus(id, data, user)
+  async archiveFreezer(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.freezersService.archive(id, user)
   }
 }
