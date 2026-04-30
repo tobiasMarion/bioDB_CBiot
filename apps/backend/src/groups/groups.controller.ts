@@ -28,6 +28,9 @@ export class GroupsController {
     }
   })
   @ApiResponse({ status: 400, description: 'Validation error' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({ status: 409, description: 'Conflict - Group creation failed' })
   async sendGroup(@Body() body: CreateGroupDTO, @CurrentUser() user: User) {
     return this.groupsService.create(body, user)
   }
@@ -53,6 +56,7 @@ export class GroupsController {
     }
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error' })
   async getMemberships(@CurrentUser() user: User) {
     return this.groupsService.findUserMemberships(user)
   }
