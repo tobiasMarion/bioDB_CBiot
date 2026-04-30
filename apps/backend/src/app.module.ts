@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common'
+import { AuthModule } from './auth/auth.module'
 import { PrismaModule } from './common/prisma/prisma.module'
-import { ExampleModule } from './example/example.module'
-import { GroupsModule } from './groups/groups.module';
+import { FreezersModule } from './freezers/freezers.module'
+import { GroupsModule } from './groups/groups.module'
 
 @Module({
-  imports: [PrismaModule, ExampleModule, GroupsModule],
+  imports: [PrismaModule, GroupsModule, FreezersModule, AuthModule],
   controllers: [],
   providers: []
 })
