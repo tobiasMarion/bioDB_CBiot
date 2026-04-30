@@ -50,15 +50,18 @@ export class AuthGuard implements CanActivate {
 
     const user = await this.prisma.user.upsert({
       where: { externalAuthId: payload.id },
-      update: { email: payload.email },
+      update: {
+        email: payload.email,
+        name: payload.name,
+        isAdmin: payload.isAdmin
+      },
       create: {
         externalAuthId: payload.id,
         email: payload.email,
-        name: payload.email,
+        name: payload.name,
         isAdmin: payload.isAdmin ?? false
       }
     })
-
     request.user = user
 
     return true
