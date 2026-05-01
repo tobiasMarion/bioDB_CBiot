@@ -1,7 +1,8 @@
-import * as React from 'react'
-import { ChevronsUpDown, Plus } from 'lucide-react'
-import { useNavigate } from '@tanstack/react-router'
+import { ChevronsUpDown, Plus, Users2, ShieldAlert } from 'lucide-react'
+import { useNavigate, useRouterState } from '@tanstack/react-router'
 
+import type { Group } from '@/lib/api/get-groups'
+import { Avatar, AvatarFallback } from '../ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,48 +12,71 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar
-} from '@/components/ui/sidebar'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+} from '../ui/dropdown-menu'
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 function getInitials(name: string) {
+  if (!name) return 'GP'
   return name.substring(0, 2).toUpperCase()
 }
 
-export function TeamSwitcher({
-  teams,
-  isAdmin = false
-}: {
-  teams: {
-    id: string
-    name: string
-    plan: string
-  }[]
-  isAdmin?: boolean
-}) {
-  const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
+export function GroupSwitcher({ teams, isAdmin }: { teams: Group[]; isAdmin: boolean }) {
+  const isMobile = useIsMobile()
   const navigate = useNavigate()
 
-  if (!activeTeam) {
-    return null
+  const state = useRouterState()
+  const groupIdFromUrl = state.matches.find(m => m.params.groupId)?.params.groupId
+
+  const activeTeam = teams.find(t => t.id === groupIdFromUrl) || teams[0]
+
+  const handleTeamChange = (team: Group) => {
+    localStorage.setItem('lastAccessedGroup', team.id)
+    navigate({
+      to: '/app/$groupId/samples',
+      params: { groupId: team.id }
+    })
   }
 
-  const handleTeamChange = (team: (typeof teams)[0]) => {
-    setActiveTeam(team)
-    navigate({ to: `/app/${team.id}` })
+  if (teams.length === 0) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            size='lg'
+            className='text-muted-foreground/60'
+            tooltip={isAdmin ? 'Create your first group' : 'No groups joined'}
+          >
+            <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-muted/50'>
+              {isAdmin ? <Users2 className='size-4' /> : <ShieldAlert className='size-4' />}
+            </div>
+            <div className='grid flex-1 text-left text-sm leading-tight ml-1'>
+              <span className='truncate font-semibold'>
+                {isAdmin ? 'No groups yet' : 'Access restricted'}
+              </span>
+              <span className='truncate text-xs'>
+                {isAdmin ? 'Click to create one' : 'Wait for an invitation'}
+              </span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
+  }
+
+  const getSubtitle = (team: Group) => {
+    if (team.role) {
+      return team.role.charAt(0).toUpperCase() + team.role.slice(1).toLowerCase()
+    }
+    const count = team.amountOfMembers || 0
+    return `${count} ${count === 1 ? 'member' : 'members'}`
   }
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger className='w-full'>
+          <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size='lg'
               className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
@@ -64,7 +88,9 @@ export function TeamSwitcher({
               </Avatar>
               <div className='grid flex-1 text-left text-sm leading-tight ml-1'>
                 <span className='truncate font-semibold'>{activeTeam.name}</span>
-                <span className='truncate text-xs text-muted-foreground'>{activeTeam.plan}</span>
+                <span className='truncate text-xs text-muted-foreground'>
+                  {getSubtitle(activeTeam)}
+                </span>
               </div>
               <ChevronsUpDown className='ml-auto opacity-50' />
             </SidebarMenuButton>
@@ -90,10 +116,11 @@ export function TeamSwitcher({
                       {getInitials(team.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className='flex flex-col'>
+                  <div className='flex flex-col flex-1'>
                     <span className='font-medium text-sm'>{team.name}</span>
+                    <span className='text-xs text-muted-foreground'>{getSubtitle(team)}</span>
                   </div>
-                  <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+                  {index < 9 && <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>

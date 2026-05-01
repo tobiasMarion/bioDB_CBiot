@@ -1,5 +1,5 @@
-import { Bell, ChevronsUpDown, LogOut } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
+import { Bell, ChevronsUpDown, LogOut } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -30,12 +30,13 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
 
-  const initials = user.name
-    ?.split(' ')
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase() || 'U'
+  const initials =
+    user.name
+      ?.split(' ')
+      .map(n => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase() || 'U'
 
   const handleLogout = () => {
     navigate({ to: '/logout' })
@@ -45,7 +46,7 @@ export function NavUser({
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size='lg'
               className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'

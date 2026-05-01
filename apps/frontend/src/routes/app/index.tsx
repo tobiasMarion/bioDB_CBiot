@@ -1,57 +1,54 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { FolderX } from 'lucide-react'
-
-// TODO: Replace with real service call later
-const MOCK_MEMBERSHIPS: any[] = []
+import { Button } from '@/components/ui/button'
+import { getGroups } from '@/lib/api/get-groups'
+import { authStore } from '@/lib/auth/store' //
+import { useQuery } from '@tanstack/react-query'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
+import { Plus, Users, ShieldAlert } from 'lucide-react'
 
 export const Route = createFileRoute('/app/')({
-  loader: async () => {
-    const memberships = MOCK_MEMBERSHIPS
-
-    if (memberships.length > 0) {
-      const lastGroupId = localStorage.getItem('last_accessed_group_id')
-      let targetGroupId = memberships[0].groupId
-
-      if (lastGroupId && memberships.some((m) => m.groupId === lastGroupId)) {
-        targetGroupId = lastGroupId
-      } else {
-        localStorage.setItem('last_accessed_group_id', targetGroupId)
-      }
-
-      throw redirect({
-        to: '/app/$groupId/samples',
-        params: {
-          groupId: targetGroupId
-        }
-      })
-    }
-
-    return { memberships }
-  },
-  component: RouteComponent
+  component: AppIndex
 })
 
-function RouteComponent() {
-  const { memberships } = Route.useLoaderData()
+function AppIndex() {
+  const user = authStore.getUser()
+  const isAdmin = user?.isAdmin ?? false //[cite: 11]
 
-  if (memberships.length === 0) {
-    return (
-      <div className='flex h-[80vh] w-full flex-col items-center justify-center gap-4 rounded-lg border border-dashed p-8 text-center animate-in fade-in-50'>
-        <div className='flex h-20 w-20 items-center justify-center rounded-full bg-muted'>
-          <FolderX className='h-10 w-10 text-muted-foreground' />
-        </div>
-        <div className='flex max-w-[420px] flex-col gap-2'>
-          <h3 className='text-xl font-semibold tracking-tight'>Nenhum grupo encontrado</h3>
-          <p className='text-sm text-muted-foreground'>
-            Você ainda não faz parte de nenhum grupo de pesquisa ou laboratório. Por favor, solicite
-            a um administrador que adicione sua conta a um grupo para que você possa acessar e
-            gerenciar as amostras.
-          </p>
-        </div>
-      </div>
-    )
+  const { data: groups, isLoading } = useQuery({
+    queryKey: ['groups'],
+    queryFn: getGroups
+  })
+
+  if (isLoading) return null
+
+  if (groups && groups.length > 0) {
+    const firstGroup = groups[0].id
+    return <Navigate to='/app/$groupId/samples' params={{ groupId: firstGroup }} />
   }
 
-  return null
-}
+  return (
+    <div className='flex h-[80vh] flex-col items-center justify-center text-center gap-4'>
+      <div className='bg-muted rounded-full p-6'>
+        {isAdmin ? (
+          <Users className='h-12 w-12 text-muted-foreground' />
+        ) : (
+          <ShieldAlert className='h-12 w-12 text-muted-foreground' />
+        )}
+      </div>
+      <div>
+        <h2 className='text-2xl font-bold'>{isAdmin ? 'No groups found' : 'Access restricted'}</h2>
+        <p className='text-muted-foreground'>
+          {isAdmin
+            ? 'You are not a member of any group. Create one to start.'
+            : 'You don’t have access to any groups. Please contact an admin for an invite.'}
+        </p>
+      </div>
 
+      {isAdmin && (
+        <Button className='mt-2 gap-2'>
+          <Plus className='h-4 w-4' />
+          Create your first group
+        </Button>
+      )}
+    </div>
+  )
+}
