@@ -41,7 +41,7 @@ app.post<{ Body: LoginBody }>('/login', async (request, reply) => {
 
   const user: TokenPayload = {
     id: userId,
-    name: 'John Doe',
+    name: isAdmin ? 'Marcio Dorn' : 'Jonas Martelo',
     email,
     isAdmin: isAdmin
   }

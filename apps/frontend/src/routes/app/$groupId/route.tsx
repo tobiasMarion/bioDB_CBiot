@@ -1,6 +1,6 @@
-import { createFileRoute, redirect, Outlet } from '@tanstack/react-router'
-import { getGroups, type Group } from '@/lib/api/get-groups'
+import { type Group, getGroups } from '@/lib/api/get-groups'
 import { queryClient } from '@/lib/api/query-client'
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/app/$groupId')({
   beforeLoad: async ({ params }) => {

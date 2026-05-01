@@ -3,7 +3,7 @@ import { getGroups } from '@/lib/api/get-groups'
 import { authStore } from '@/lib/auth/store' //
 import { useQuery } from '@tanstack/react-query'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
-import { Plus, Users, ShieldAlert } from 'lucide-react'
+import { Plus, ShieldAlert, Users } from 'lucide-react'
 
 export const Route = createFileRoute('/app/')({
   component: AppIndex

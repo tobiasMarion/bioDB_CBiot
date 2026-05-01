@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { FlaskConical, ShieldCheck, Snowflake, Users } from 'lucide-react'
 import { useParams } from '@tanstack/react-router'
+import { FlaskConical, ShieldCheck, Snowflake, Users } from 'lucide-react'
 
 import {
   Sidebar,
@@ -9,8 +9,8 @@ import {
   SidebarHeader,
   SidebarRail
 } from '@/components/ui/sidebar'
-import { authStore } from '@/lib/auth/store'
 import { getGroups } from '@/lib/api/get-groups'
+import { authStore } from '@/lib/auth/store'
 import { GroupSwitcher } from './group-switcher'
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'

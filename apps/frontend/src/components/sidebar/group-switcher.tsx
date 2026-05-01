@@ -1,6 +1,7 @@
-import { ChevronsUpDown, Plus, Users2, ShieldAlert } from 'lucide-react'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
+import { ChevronsUpDown, Plus, ShieldAlert, Users2 } from 'lucide-react'
 
+import { useIsMobile } from '@/hooks/use-mobile'
 import type { Group } from '@/lib/api/get-groups'
 import { Avatar, AvatarFallback } from '../ui/avatar'
 import {
@@ -14,7 +15,6 @@ import {
   DropdownMenuTrigger
 } from '../ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar'
-import { useIsMobile } from '@/hooks/use-mobile'
 
 function getInitials(name: string) {
   if (!name) return 'GP'
