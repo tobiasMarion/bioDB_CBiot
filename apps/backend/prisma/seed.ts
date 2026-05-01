@@ -13,17 +13,6 @@ const prisma = new PrismaClient({
 })
 
 async function main() {
-  // ──────────────────────────────────────────────
-  // EXAMPLE
-  // ──────────────────────────────────────────────
-  const examples = [
-    { name: 'Alice', email: 'alice@email.com', age: 25, description: 'Pesquisadora sênior' },
-    { name: 'Bob', email: 'bob@email.com', age: 30, description: null },
-    { name: 'Carol', email: 'carol@email.com', age: 28, description: 'Analista de dados' }
-  ]
-  // ──────────────────────────────────────────────
-  // USERS
-  // ──────────────────────────────────────────────
   const users = [
     {
       id: 'user-1',
@@ -75,17 +64,19 @@ async function main() {
   // ──────────────────────────────────────────────
   const invites = [
     {
-      id: 'invite-1',
-      groupId: 'group-1',
-      invitedUserId: 'user-3',
-      invitedBy: 'user-1',
+      id: 'inv_000000000000000000001',
+      groupId: 'grp_000000000000000000001',
+      invitedUserId: 'usr_000000000000000000005',
+      invitedBy: 'usr_000000000000000000002',
+      role: GroupRole.RESEARCHER,
       status: InviteStatus.PENDING
     },
     {
-      id: 'invite-2',
-      groupId: 'group-2',
-      invitedUserId: 'user-4',
-      invitedBy: 'user-2',
+      id: 'inv_000000000000000000002',
+      groupId: 'grp_000000000000000000002',
+      invitedUserId: 'usr_000000000000000000004',
+      invitedBy: 'usr_000000000000000000002',
+      role: GroupRole.RESEARCHER,
       status: InviteStatus.ACCEPTED
     }
   ]
@@ -274,13 +265,6 @@ async function main() {
   // ──────────────────────────────────────────────
   // INSERTING INTO THE DB (IF ID DOESN'T EXIST)
   // ──────────────────────────────────────────────
-  for (const example of examples) {
-    await prisma.example.upsert({
-      where: { email: example.email },
-      update: {},
-      create: example
-    })
-  }
   for (const user of users) {
     await prisma.user.upsert({
       where: { id: user.id },

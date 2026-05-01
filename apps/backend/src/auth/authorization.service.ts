@@ -13,13 +13,10 @@ export type AdminOnlyPermission =
   | 'VIEW_ALL_SAMPLES'
   | 'VIEW_REPORTS'
 
-export type GroupPermission =
+export type StandardGroupPermission =
   | 'VIEW_GROUP'
   | 'UPDATE_GROUP'
   | 'DELETE_GROUP'
-  | 'PROMOTE_MANAGER'
-  | 'INVITE_MEMBER'
-  | 'REMOVE_MEMBER'
   | 'SHARE_SAMPLE'
   | 'CREATE_SAMPLE'
   | 'UPDATE_SAMPLE'
@@ -28,7 +25,9 @@ export type GroupPermission =
   | 'CREATE_BOX'
   | 'MANAGE_STORAGE'
 
-export type Permission = AdminOnlyPermission | GroupPermission
+export type ManageMembershipPermission = 'MANAGE_MEMBERSHIP_ROLE'
+
+export type Permission = AdminOnlyPermission | StandardGroupPermission | ManageMembershipPermission
 
 export type AssertParams =
   | {
@@ -38,8 +37,15 @@ export type AssertParams =
     }
   | {
       user: User
-      permission: GroupPermission
+      permission: StandardGroupPermission
       groupId: string
+      message?: string
+    }
+  | {
+      user: User
+      permission: ManageMembershipPermission
+      groupId: string
+      targetRoles: GroupRole[]
       message?: string
     }
 
@@ -50,35 +56,36 @@ export type CanParams =
     }
   | {
       user: User
-      permission: GroupPermission
+      permission: StandardGroupPermission
       groupId: string
+    }
+  | {
+      user: User
+      permission: ManageMembershipPermission
+      groupId: string
+      targetRoles: GroupRole[]
     }
 
 // RESEARCHER < MANAGER < LEADER
-const ROLE_LEVEL: Record<GroupRole, number> = {
+export const ROLE_LEVEL: Record<GroupRole, number> = {
   [GroupRole.RESEARCHER]: 1,
   [GroupRole.MANAGER]: 2,
   [GroupRole.LEADER]: 3
 }
 
-const REQUIRED_ROLE: Record<GroupPermission, GroupRole> = {
+const REQUIRED_ROLE: Record<StandardGroupPermission, GroupRole> = {
   VIEW_GROUP: GroupRole.RESEARCHER,
-  UPDATE_GROUP: GroupRole.LEADER, // RIN03
+  UPDATE_GROUP: GroupRole.LEADER,
   DELETE_GROUP: GroupRole.LEADER,
 
-  PROMOTE_MANAGER: GroupRole.LEADER, // RF08, RIN03
+  SHARE_SAMPLE: GroupRole.MANAGER,
 
-  INVITE_MEMBER: GroupRole.MANAGER, // RF09
-  REMOVE_MEMBER: GroupRole.MANAGER,
-
-  SHARE_SAMPLE: GroupRole.MANAGER, // RF18
-
-  CREATE_SAMPLE: GroupRole.RESEARCHER, // RF11
+  CREATE_SAMPLE: GroupRole.RESEARCHER,
   UPDATE_SAMPLE: GroupRole.RESEARCHER,
   DELETE_SAMPLE: GroupRole.MANAGER,
 
-  CREATE_TUBE: GroupRole.RESEARCHER, // RF11
-  CREATE_BOX: GroupRole.RESEARCHER, // RF11
+  CREATE_TUBE: GroupRole.RESEARCHER,
+  CREATE_BOX: GroupRole.RESEARCHER,
 
   MANAGE_STORAGE: GroupRole.MANAGER
 }
@@ -128,8 +135,26 @@ export class AuthorizationService {
       return false
     }
 
-    const requiredRole = REQUIRED_ROLE[permission as GroupPermission]
+    const currentLevel = ROLE_LEVEL[membership.role]
 
-    return ROLE_LEVEL[membership.role] >= ROLE_LEVEL[requiredRole]
+    if (permission === 'MANAGE_MEMBERSHIP_ROLE') {
+      const { targetRoles } = params as { targetRoles: GroupRole[] }
+
+      if (!targetRoles || targetRoles.length === 0) {
+        return false
+      }
+
+      for (const targetRole of targetRoles) {
+        if (currentLevel <= ROLE_LEVEL[targetRole]) {
+          return false
+        }
+      }
+
+      return true
+    }
+
+    const requiredRole = REQUIRED_ROLE[permission as StandardGroupPermission]
+
+    return currentLevel >= ROLE_LEVEL[requiredRole]
   }
 }

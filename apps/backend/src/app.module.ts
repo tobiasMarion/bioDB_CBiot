@@ -3,9 +3,10 @@ import { AuthModule } from './auth/auth.module'
 import { PrismaModule } from './common/prisma/prisma.module'
 import { FreezersModule } from './freezers/freezers.module'
 import { GroupsModule } from './groups/groups.module'
+import { InvitesModule } from './invites/invites.module'
 
 @Module({
-  imports: [PrismaModule, GroupsModule, FreezersModule, AuthModule],
+  imports: [PrismaModule, GroupsModule, FreezersModule, AuthModule, InvitesModule],
   controllers: [],
   providers: []
 })
