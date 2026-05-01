@@ -49,6 +49,7 @@ export class GroupsController {
           createdAt: '2026-05-01T10:00:00.000Z',
           isArchived: false,
           archivedAt: null,
+          role: 'LEADER',
           _count: {
             memberships: 5
           }

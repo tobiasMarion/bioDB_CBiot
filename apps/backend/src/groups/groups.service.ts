@@ -47,21 +47,26 @@ export class GroupsService {
   }
 
   async findAll(user: User) {
-    if (user.isAdmin) {
-      return this.prisma.group.findMany({
-        where: { isArchived: false },
-        include: { _count: { select: { memberships: { where: { isArchived: false } } } } }
-      })
-    }
-    return this.prisma.group.findMany({
+    const groups = await this.prisma.group.findMany({
       where: {
         isArchived: false,
-        memberships: {
-          some: { userId: user.id, isArchived: false }
-        }
+        ...(!user.isAdmin && {
+          memberships: { some: { userId: user.id, isArchived: false } }
+        })
       },
-      include: { _count: { select: { memberships: { where: { isArchived: false } } } } }
+      include: {
+        _count: { select: { memberships: { where: { isArchived: false } } } },
+        memberships: {
+          where: { userId: user.id, isArchived: false },
+          select: { role: true }
+        }
+      }
     })
+
+    return groups.map(({ memberships, ...group }) => ({
+      ...group,
+      role: memberships[0]?.role ?? null
+    }))
   }
 
   async findById(id: string, user: User) {
