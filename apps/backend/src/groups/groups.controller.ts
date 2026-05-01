@@ -50,9 +50,7 @@ export class GroupsController {
           isArchived: false,
           archivedAt: null,
           role: 'LEADER',
-          _count: {
-            memberships: 5
-          }
+          amountOfMembers: 5
         }
       ]
     }

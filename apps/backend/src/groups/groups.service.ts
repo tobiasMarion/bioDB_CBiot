@@ -63,12 +63,12 @@ export class GroupsService {
       }
     })
 
-    return groups.map(({ memberships, ...group }) => ({
+    return groups.map(({ memberships, _count, ...group }) => ({
       ...group,
+      amountOfMembers: _count?.memberships || 0,
       role: memberships[0]?.role ?? null
     }))
   }
-
   async findById(id: string, user: User) {
     await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId: id })
 
