@@ -12,6 +12,7 @@ export type AdminOnlyPermission =
   | 'UPDATE_FREEZER'
   | 'VIEW_ALL_SAMPLES'
   | 'VIEW_REPORTS'
+  | 'VIEW_ALL_USERS'
 
 export type StandardGroupPermission =
   | 'VIEW_GROUP'
@@ -29,44 +30,29 @@ export type ManageMembershipPermission = 'MANAGE_MEMBERSHIP_ROLE'
 
 export type Permission = AdminOnlyPermission | StandardGroupPermission | ManageMembershipPermission
 
-export type AssertParams =
-  | {
-      user: User
-      permission: AdminOnlyPermission
-      message?: string
-    }
-  | {
-      user: User
-      permission: StandardGroupPermission
-      groupId: string
-      message?: string
-    }
-  | {
-      user: User
-      permission: ManageMembershipPermission
-      groupId: string
-      targetRoles: GroupRole[]
-      message?: string
-    }
+type BaseParams = {
+  user: User
+  message?: string
+}
 
-export type CanParams =
-  | {
-      user: User
-      permission: AdminOnlyPermission
-    }
-  | {
-      user: User
-      permission: StandardGroupPermission
-      groupId: string
-    }
-  | {
-      user: User
-      permission: ManageMembershipPermission
-      groupId: string
-      targetRoles: GroupRole[]
-    }
+export type AdminParams = BaseParams & {
+  permission: AdminOnlyPermission
+}
 
-// RESEARCHER < MANAGER < LEADER
+export type GroupParams = BaseParams & {
+  permission: StandardGroupPermission
+  groupId: string
+}
+
+export type MembershipParams = BaseParams & {
+  permission: ManageMembershipPermission
+  groupId: string
+  targetRoles: GroupRole[]
+}
+
+export type AssertParams = AdminParams | GroupParams | MembershipParams
+export type CanParams = AdminParams | GroupParams | MembershipParams
+
 export const ROLE_LEVEL: Record<GroupRole, number> = {
   [GroupRole.RESEARCHER]: 1,
   [GroupRole.MANAGER]: 2,
@@ -98,8 +84,21 @@ const ADMIN_PERMISSIONS = new Set<AdminOnlyPermission>([
   'CREATE_FREEZER',
   'UPDATE_FREEZER',
   'VIEW_ALL_SAMPLES',
-  'VIEW_REPORTS'
+  'VIEW_REPORTS',
+  'VIEW_ALL_USERS'
 ])
+
+function isAdminPermission(permission: Permission): permission is AdminOnlyPermission {
+  return ADMIN_PERMISSIONS.has(permission as AdminOnlyPermission)
+}
+
+function hasGroupContext(params: CanParams): params is GroupParams | MembershipParams {
+  return 'groupId' in params
+}
+
+function isMembershipPermission(params: CanParams): params is MembershipParams {
+  return params.permission === 'MANAGE_MEMBERSHIP_ROLE'
+}
 
 @Injectable()
 export class AuthorizationService {
@@ -116,7 +115,7 @@ export class AuthorizationService {
   async can(params: CanParams): Promise<boolean> {
     const { user, permission } = params
 
-    if (ADMIN_PERMISSIONS.has(permission as AdminOnlyPermission)) {
+    if (isAdminPermission(permission)) {
       return user.isAdmin
     }
 
@@ -124,37 +123,58 @@ export class AuthorizationService {
       return true
     }
 
-    const { groupId } = params as { groupId: string }
+    if (!hasGroupContext(params)) {
+      return false
+    }
 
     const membership = await this.prisma.groupMembership.findUnique({
-      where: { userId_groupId: { userId: user.id, groupId } },
-      select: { role: true, isArchived: true, group: { select: { isArchived: true } } }
+      where: {
+        userId_groupId: {
+          userId: user.id,
+          groupId: params.groupId
+        }
+      },
+      select: {
+        role: true,
+        isArchived: true,
+        group: {
+          select: {
+            isArchived: true
+          }
+        }
+      }
     })
 
-    if (!membership || membership.isArchived || membership.group.isArchived) {
+    if (!membership) {
+      return false
+    }
+
+    if (membership.isArchived || membership.group.isArchived) {
       return false
     }
 
     const currentLevel = ROLE_LEVEL[membership.role]
 
-    if (permission === 'MANAGE_MEMBERSHIP_ROLE') {
-      const { targetRoles } = params as { targetRoles: GroupRole[] }
-
-      if (!targetRoles || targetRoles.length === 0) {
-        return false
-      }
-
-      for (const targetRole of targetRoles) {
-        if (currentLevel <= ROLE_LEVEL[targetRole]) {
-          return false
-        }
-      }
-
-      return true
+    if (isMembershipPermission(params)) {
+      return this.canManageRoles(currentLevel, params.targetRoles)
     }
 
-    const requiredRole = REQUIRED_ROLE[permission as StandardGroupPermission]
+    const requiredRole = REQUIRED_ROLE[permission]
 
     return currentLevel >= ROLE_LEVEL[requiredRole]
+  }
+
+  private canManageRoles(currentLevel: number, targetRoles: GroupRole[]): boolean {
+    if (targetRoles.length === 0) {
+      return false
+    }
+
+    for (const role of targetRoles) {
+      if (currentLevel <= ROLE_LEVEL[role]) {
+        return false
+      }
+    }
+
+    return true
   }
 }
