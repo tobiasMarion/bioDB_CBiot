@@ -7,7 +7,7 @@ import {
 import { auditCreate, auditDelete, auditUpdate } from '../auth/audit.utils'
 import { AuthorizationService } from '../auth/authorization.service'
 import type { User } from '../auth/types/user.type'
-import { Prisma } from '../common/prisma/generated/client'
+import { Prisma, GroupRole, GroupMembership } from '../common/prisma/generated/client'
 import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateGroupDTO } from './dto/CreateGroup'
 import { SendInviteDTO } from './dto/SendInvite'
@@ -24,20 +24,22 @@ export class GroupsService {
     await this.auth.assert({ user, permission: 'CREATE_GROUP' })
 
     try {
-      const newGroup = await this.prisma.group.create({
-        data: { ...data, createdBy: user.id }
-      })
-
-      await this.prisma.auditLog.create({
-        data: auditCreate({
-          entityType: 'GROUP',
-          entityId: newGroup.id,
-          performedBy: user.id,
-          current: newGroup
+      return await this.prisma.$transaction(async tx => {
+        const newGroup = await tx.group.create({
+          data: { ...data, createdBy: user.id }
         })
-      })
 
-      return newGroup
+        await tx.auditLog.create({
+          data: auditCreate({
+            entityType: 'GROUP',
+            entityId: newGroup.id,
+            performedBy: user.id,
+            current: newGroup
+          })
+        })
+
+        return newGroup
+      })
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new ConflictException('Failed to create group')
@@ -69,6 +71,7 @@ export class GroupsService {
       role: memberships[0]?.role ?? null
     }))
   }
+
   async findById(id: string, user: User) {
     await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId: id })
 
@@ -92,17 +95,19 @@ export class GroupsService {
     const previous = await this.prisma.group.findUnique({ where: { id } })
     if (!previous || previous.isArchived) throw new NotFoundException('Group not found')
 
-    const archived = await this.prisma.group.update({
-      where: { id },
-      data: { isArchived: true, archivedAt: new Date() }
-    })
+    await this.prisma.$transaction(async tx => {
+      await tx.group.update({
+        where: { id },
+        data: { isArchived: true, archivedAt: new Date() }
+      })
 
-    await this.prisma.auditLog.create({
-      data: auditDelete({
-        entityType: 'GROUP',
-        entityId: id,
-        performedBy: user.id,
-        previous
+      await tx.auditLog.create({
+        data: auditDelete({
+          entityType: 'GROUP',
+          entityId: id,
+          performedBy: user.id,
+          previous
+        })
       })
     })
 
@@ -165,14 +170,14 @@ export class GroupsService {
       user: currentUser,
       permission: 'MANAGE_MEMBERSHIP_ROLE',
       groupId,
-      targetRoles: [membership.role, data.role],
+      targetRoles: [membership.role, data.role as GroupRole],
       message: 'You can only manage users with a role strictly below yours'
     })
 
     const previous = membership
     const updated = await this.prisma.groupMembership.update({
       where: { id: membership.id },
-      data: { role: data.role }
+      data: { role: data.role as GroupRole }
     })
 
     await this.prisma.auditLog.create({
@@ -231,11 +236,13 @@ export class GroupsService {
       throw new NotFoundException('Invited user not found')
     }
 
+    const role = data.role as GroupRole
+
     await this.auth.assert({
       user: currentUser,
       permission: 'MANAGE_MEMBERSHIP_ROLE',
       groupId,
-      targetRoles: [data.role],
+      targetRoles: [role],
       message: 'You can only invite users to a role strictly below yours'
     })
 
@@ -245,6 +252,11 @@ export class GroupsService {
 
     if (existingMembership && !existingMembership.isArchived) {
       throw new ConflictException('User is already a member of this group')
+    }
+
+    // Se o convidado for o próprio usuário, adiciona direto
+    if (data.invitedUserId === currentUser.id) {
+      return this.handleSelfJoin(groupId, role, currentUser, existingMembership)
     }
 
     const existingInvite = await this.prisma.groupInvite.findFirst({
@@ -266,7 +278,7 @@ export class GroupsService {
           groupId,
           invitedUserId: data.invitedUserId,
           invitedBy: currentUser.id,
-          role: data.role
+          role
         }
       })
 
@@ -279,7 +291,44 @@ export class GroupsService {
         })
       })
 
-      return invite
+      return { type: 'invite', data: invite }
+    })
+  }
+
+  private async handleSelfJoin(
+    groupId: string,
+    role: GroupRole,
+    currentUser: User,
+    existingMembership: GroupMembership | null
+  ) {
+    return this.prisma.$transaction(async tx => {
+      const membership = existingMembership?.isArchived
+        ? await tx.groupMembership.update({
+            where: { id: existingMembership.id },
+            data: {
+              isArchived: false,
+              archivedAt: null,
+              role
+            }
+          })
+        : await tx.groupMembership.create({
+            data: {
+              groupId,
+              userId: currentUser.id,
+              role
+            }
+          })
+
+      await tx.auditLog.create({
+        data: auditCreate({
+          entityType: 'MEMBERSHIP',
+          entityId: membership.id,
+          performedBy: currentUser.id,
+          current: membership
+        })
+      })
+
+      return { type: 'membership', data: membership }
     })
   }
 }

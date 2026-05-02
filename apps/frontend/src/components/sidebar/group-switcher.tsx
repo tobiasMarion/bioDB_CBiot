@@ -11,7 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '../ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar'
@@ -113,7 +112,7 @@ export function GroupSwitcher({ teams, isAdmin }: { teams: Group[]; isAdmin: boo
                 <DropdownMenuLabel className='text-xs text-muted-foreground uppercase tracking-wider font-semibold'>
                   Grupos
                 </DropdownMenuLabel>
-                {teams.map((team, index) => (
+                {teams.map(team => (
                   <DropdownMenuItem
                     key={team.id}
                     onClick={() => handleTeamChange(team)}
@@ -128,7 +127,6 @@ export function GroupSwitcher({ teams, isAdmin }: { teams: Group[]; isAdmin: boo
                       <span className='font-medium text-sm'>{team.name}</span>
                       <span className='text-xs text-muted-foreground'>{getSubtitle(team)}</span>
                     </div>
-                    {index < 9 && <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuGroup>

@@ -13,7 +13,7 @@ import {
 } from '../../ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover'
 import { Label } from '../../ui/label'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getAllUsers } from '@/lib/api/get-all-users'
 import { sendGroupInvite } from '@/lib/api/send-invite'
 
@@ -30,6 +30,8 @@ interface User {
 }
 
 export function AssignLeaderForm({ groupId, groupName, onFinish }: AssignLeaderFormProps) {
+  const queryClient = useQueryClient()
+
   const [leaderPopoverOpen, setLeaderPopoverOpen] = useState(false)
   const [selectedLeaderId, setSelectedLeaderId] = useState('')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -50,6 +52,7 @@ export function AssignLeaderForm({ groupId, groupName, onFinish }: AssignLeaderF
       }),
     onSuccess: () => {
       setErrorMessage(null)
+      queryClient.invalidateQueries({ queryKey: ['groups'] })
       onFinish()
     },
     onError: error => {
