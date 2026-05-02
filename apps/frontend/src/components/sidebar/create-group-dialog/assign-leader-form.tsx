@@ -1,8 +1,10 @@
-import { useState } from 'react'
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
+import { getAllUsers } from '@/lib/api/get-all-users'
+import { sendGroupInvite } from '@/lib/api/send-invite'
 import { cn } from '@/lib/utils'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '../../ui/button'
-import { DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../ui/dialog'
 import {
   Command,
   CommandEmpty,
@@ -11,11 +13,9 @@ import {
   CommandItem,
   CommandList
 } from '../../ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover'
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog'
 import { Label } from '../../ui/label'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getAllUsers } from '@/lib/api/get-all-users'
-import { sendGroupInvite } from '@/lib/api/send-invite'
+import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover'
 
 interface AssignLeaderFormProps {
   groupId: string

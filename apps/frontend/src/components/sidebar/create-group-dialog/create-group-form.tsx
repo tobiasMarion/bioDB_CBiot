@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { createNewGroup } from '@/lib/api/create-group'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '../../ui/button'
-import { DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../ui/dialog'
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog'
 import { Input } from '../../ui/input'
 import { Label } from '../../ui/label'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createNewGroup } from '@/lib/api/create-group'
 
 interface CreateGroupFormProps {
   onCancel: () => void

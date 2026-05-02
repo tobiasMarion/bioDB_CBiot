@@ -7,6 +7,5 @@ export interface User {
 }
 
 export function getAllUsers() {
-  console.log('dfasdfasd')
   return apiClient.get('auth/users').json<User[]>()
 }

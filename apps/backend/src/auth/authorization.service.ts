@@ -24,6 +24,7 @@ export type StandardGroupPermission =
   | 'CREATE_TUBE'
   | 'CREATE_BOX'
   | 'MANAGE_STORAGE'
+  | 'VIEW_PENDING_INVITES'
 
 export type ManageMembershipPermission = 'MANAGE_MEMBERSHIP_ROLE'
 
@@ -62,17 +63,14 @@ const REQUIRED_ROLE: Record<StandardGroupPermission, GroupRole> = {
   VIEW_GROUP: GroupRole.RESEARCHER,
   UPDATE_GROUP: GroupRole.LEADER,
   DELETE_GROUP: GroupRole.LEADER,
-
   SHARE_SAMPLE: GroupRole.MANAGER,
-
   CREATE_SAMPLE: GroupRole.RESEARCHER,
   UPDATE_SAMPLE: GroupRole.RESEARCHER,
   DELETE_SAMPLE: GroupRole.MANAGER,
-
   CREATE_TUBE: GroupRole.RESEARCHER,
   CREATE_BOX: GroupRole.RESEARCHER,
-
-  MANAGE_STORAGE: GroupRole.MANAGER
+  MANAGE_STORAGE: GroupRole.MANAGER,
+  VIEW_PENDING_INVITES: GroupRole.RESEARCHER
 }
 
 const ADMIN_PERMISSIONS = new Set<AdminOnlyPermission>([

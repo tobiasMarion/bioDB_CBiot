@@ -1,7 +1,6 @@
 import { apiClient } from './api-client'
 import type { Group } from './get-groups'
-
-export type Role = 'LEADER' | 'MANAGER' | 'RESEARCHER'
+import type { Role } from './types/role'
 
 export interface SendGroupInvite {
   groupId: string

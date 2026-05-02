@@ -7,7 +7,7 @@ import {
 import { auditCreate, auditDelete, auditUpdate } from '../auth/audit.utils'
 import { AuthorizationService } from '../auth/authorization.service'
 import type { User } from '../auth/types/user.type'
-import { Prisma, GroupRole, GroupMembership } from '../common/prisma/generated/client'
+import { GroupMembership, GroupRole, Prisma } from '../common/prisma/generated/client'
 import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateGroupDTO } from './dto/CreateGroup'
 import { SendInviteDTO } from './dto/SendInvite'
@@ -329,6 +329,25 @@ export class GroupsService {
       })
 
       return { type: 'membership', data: membership }
+    })
+  }
+
+  async getGroupInvites(groupId: string, user: User) {
+    await this.auth.assert({ user, groupId: groupId, permission: 'VIEW_PENDING_INVITES' })
+
+    return this.prisma.groupInvite.findMany({
+      where: { groupId, status: 'PENDING', isArchived: false },
+      select: {
+        id: true,
+        groupId: true,
+        invitedUserId: true,
+        invitedBy: true,
+        role: true,
+        status: true,
+        createdAt: true,
+        invitedUser: { select: { id: true, name: true, email: true } },
+        sender: { select: { id: true, name: true, email: true } }
+      }
     })
   }
 }

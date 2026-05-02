@@ -1,6 +1,3 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
-import { Loader2, Bell, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,8 +6,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { getMyInvites, type GroupInvite } from '@/lib/api/get-my-invites'
 import { answerInvite } from '@/lib/api/answer-invite'
+import { type GroupInvite, getMyInvites } from '@/lib/api/get-my-invites'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
+import { Bell, Check, Loader2, X } from 'lucide-react'
 
 export function Notifications() {
   const queryClient = useQueryClient()

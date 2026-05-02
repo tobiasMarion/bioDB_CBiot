@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { Auth, CurrentUser } from './authentication.guard'
 import { AuthService } from './auth.service'
+import { Auth, CurrentUser } from './authentication.guard'
 import type { User } from './types/user.type'
 
 @ApiTags('Auth')

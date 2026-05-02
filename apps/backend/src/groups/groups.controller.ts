@@ -237,4 +237,38 @@ export class GroupsController {
   ) {
     return this.groupsService.sendInvite(id, body, currentUser)
   }
+
+  @Get(':id/invites')
+  @Auth()
+  @ApiOperation({ summary: 'List pending invites for a group' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of pending invites',
+    schema: {
+      example: [
+        {
+          id: '660e8400-e29b-41d4-a716-446655440000',
+          groupId: '550e8400-e29b-41d4-a716-446655440000',
+          invitedUserId: '987e6543-e21b-34d5-c654-426614174000',
+          invitedBy: '123e4567-e89b-12d3-a456-426614174000',
+          role: 'RESEARCHER',
+          status: 'PENDING',
+          createdAt: '2026-05-01T10:00:00.000Z',
+          invitedUser: {
+            id: '987e6543-e21b-34d5-c654-426614174000',
+            name: 'Jane Doe',
+            email: 'jane@test.com'
+          },
+          sender: {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            name: 'Admin Name',
+            email: 'admin@test.com'
+          }
+        }
+      ]
+    }
+  })
+  async getGroupInvites(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.groupsService.getGroupInvites(id, user)
+  }
 }
