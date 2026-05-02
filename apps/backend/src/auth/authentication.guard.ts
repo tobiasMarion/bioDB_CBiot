@@ -10,6 +10,7 @@ import type { Request } from 'express'
 import * as jwt from 'jsonwebtoken'
 import { PrismaService } from '../common/prisma/prisma.service'
 import type { User } from './types/user.type'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client'
 
 const SECRET = process.env.JWT_SECRET || 'dev-secret'
 
@@ -30,41 +31,61 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>()
+    request.user = await this.resolveUser(this.extractToken(request))
+    return true
+  }
 
+  private extractToken(request: AuthenticatedRequest): string {
     const authHeader = request.headers.authorization
-    if (!authHeader) {
-      throw new UnauthorizedException('Missing Authorization header')
-    }
+    if (!authHeader) throw new UnauthorizedException('Missing Authorization header')
 
     const [, token] = authHeader.split(' ')
-    if (!token) {
-      throw new UnauthorizedException('Missing token')
-    }
+    if (!token) throw new UnauthorizedException('Missing token')
 
-    let payload: JwtPayload
+    return token
+  }
+
+  private verifyToken(token: string): JwtPayload {
     try {
-      payload = jwt.verify(token, SECRET) as JwtPayload
+      return jwt.verify(token, SECRET) as JwtPayload
     } catch {
       throw new UnauthorizedException('Invalid token')
     }
+  }
 
-    const user = await this.prisma.user.upsert({
-      where: { externalAuthId: payload.id },
-      update: {
-        email: payload.email,
-        name: payload.name,
-        isAdmin: payload.isAdmin
-      },
-      create: {
-        externalAuthId: payload.id,
-        email: payload.email,
-        name: payload.name,
-        isAdmin: payload.isAdmin ?? false
-      }
-    })
-    request.user = user
+  private async resolveUser(token: string): Promise<User> {
+    const payload = this.verifyToken(token)
 
-    return true
+    try {
+      return await this.prisma.user.upsert({
+        where: { externalAuthId: payload.id },
+        update: {
+          email: payload.email,
+          name: payload.name,
+          isAdmin: payload.isAdmin
+        },
+        create: {
+          externalAuthId: payload.id,
+          email: payload.email,
+          name: payload.name,
+          isAdmin: payload.isAdmin ?? false
+        }
+      })
+    } catch (err) {
+      return this.handleUpsertError(err, payload.id)
+    }
+  }
+
+  private async handleUpsertError(err: unknown, externalAuthId: string): Promise<User> {
+    const isUniqueConstraintViolation =
+      err instanceof PrismaClientKnownRequestError && err.code === 'P2002'
+
+    if (!isUniqueConstraintViolation) throw err
+
+    const user = await this.prisma.user.findUnique({ where: { externalAuthId } })
+    if (!user) throw new UnauthorizedException('User not found after conflict')
+
+    return user
   }
 }
 
