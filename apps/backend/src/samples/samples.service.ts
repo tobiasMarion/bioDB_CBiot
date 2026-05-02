@@ -3,7 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { auditCreate } from '../auth/audit.utils';
+import { auditCreate, auditUpdate, auditDelete } from '../auth/audit.utils';
 import { AuthorizationService } from '../auth/authorization.service';
 import type { User } from '../auth/types/user.type';
 import { Prisma } from '../common/prisma/generated/client';
@@ -98,13 +98,12 @@ export class SamplesService {
       });
 
       await tx.auditLog.create({
-        data: {
+        data: auditDelete({
           entityType: 'SAMPLE',
           entityId: id,
-          action: 'ARCHIVE',
           performedBy: user.id,
-          changes: { archived: true },
-        },
+          previous: sample,
+        }),
       });
 
       return archivedSample;
@@ -137,16 +136,13 @@ export class SamplesService {
         });
 
         await tx.auditLog.create({
-          data: {
+          data: auditUpdate({
             entityType: 'SAMPLE',
             entityId: id,
-            action: 'UPDATE',
             performedBy: user.id,
-            changes: {
-              before: currentSample,
-              after: updatedSample,
-            },
-          },
+            previous: currentSample,
+            current: updatedSample,
+          }),
         });
 
         return updatedSample;
