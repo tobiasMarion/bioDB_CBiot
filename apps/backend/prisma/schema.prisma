@@ -36,6 +36,8 @@ enum AuditEntityType {
   SHARE
   USER
   FREEZER
+  MEMBERSHIP
+  INVITE
 }
 
 enum AuditAction {
@@ -119,6 +121,7 @@ model GroupInvite {
   groupId       String
   invitedUserId String
   invitedBy     String
+  role          GroupRole
   status        InviteStatus @default(PENDING)
 
   createdAt  DateTime  @default(now())

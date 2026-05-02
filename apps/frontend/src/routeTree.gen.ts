@@ -14,6 +14,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AuthLogoutRouteImport } from './routes/_auth/logout'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppGroupIdRouteRouteImport } from './routes/app/$groupId/route'
+import { Route as AppGroupIdSamplesRouteImport } from './routes/app/$groupId/samples'
+import { Route as AppGroupIdMembersRouteImport } from './routes/app/$groupId/members'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
@@ -40,34 +43,82 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppGroupIdRouteRoute = AppGroupIdRouteRouteImport.update({
+  id: '/$groupId',
+  path: '/$groupId',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppGroupIdSamplesRoute = AppGroupIdSamplesRouteImport.update({
+  id: '/samples',
+  path: '/samples',
+  getParentRoute: () => AppGroupIdRouteRoute,
+} as any)
+const AppGroupIdMembersRoute = AppGroupIdMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AppGroupIdRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
+  '/app/$groupId': typeof AppGroupIdRouteRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/logout': typeof AuthLogoutRoute
   '/app/': typeof AppIndexRoute
+  '/app/$groupId/members': typeof AppGroupIdMembersRoute
+  '/app/$groupId/samples': typeof AppGroupIdSamplesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app/$groupId': typeof AppGroupIdRouteRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/logout': typeof AuthLogoutRoute
   '/app': typeof AppIndexRoute
+  '/app/$groupId/members': typeof AppGroupIdMembersRoute
+  '/app/$groupId/samples': typeof AppGroupIdSamplesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
+  '/app/$groupId': typeof AppGroupIdRouteRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/logout': typeof AuthLogoutRoute
   '/app/': typeof AppIndexRoute
+  '/app/$groupId/members': typeof AppGroupIdMembersRoute
+  '/app/$groupId/samples': typeof AppGroupIdSamplesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/login' | '/logout' | '/app/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/app/$groupId'
+    | '/login'
+    | '/logout'
+    | '/app/'
+    | '/app/$groupId/members'
+    | '/app/$groupId/samples'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/logout' | '/app'
-  id: '__root__' | '/' | '/app' | '/_auth/login' | '/_auth/logout' | '/app/'
+  to:
+    | '/'
+    | '/app/$groupId'
+    | '/login'
+    | '/logout'
+    | '/app'
+    | '/app/$groupId/members'
+    | '/app/$groupId/samples'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/app/$groupId'
+    | '/_auth/login'
+    | '/_auth/logout'
+    | '/app/'
+    | '/app/$groupId/members'
+    | '/app/$groupId/samples'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -114,14 +165,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/$groupId': {
+      id: '/app/$groupId'
+      path: '/$groupId'
+      fullPath: '/app/$groupId'
+      preLoaderRoute: typeof AppGroupIdRouteRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/$groupId/samples': {
+      id: '/app/$groupId/samples'
+      path: '/samples'
+      fullPath: '/app/$groupId/samples'
+      preLoaderRoute: typeof AppGroupIdSamplesRouteImport
+      parentRoute: typeof AppGroupIdRouteRoute
+    }
+    '/app/$groupId/members': {
+      id: '/app/$groupId/members'
+      path: '/members'
+      fullPath: '/app/$groupId/members'
+      preLoaderRoute: typeof AppGroupIdMembersRouteImport
+      parentRoute: typeof AppGroupIdRouteRoute
+    }
   }
 }
 
+interface AppGroupIdRouteRouteChildren {
+  AppGroupIdMembersRoute: typeof AppGroupIdMembersRoute
+  AppGroupIdSamplesRoute: typeof AppGroupIdSamplesRoute
+}
+
+const AppGroupIdRouteRouteChildren: AppGroupIdRouteRouteChildren = {
+  AppGroupIdMembersRoute: AppGroupIdMembersRoute,
+  AppGroupIdSamplesRoute: AppGroupIdSamplesRoute,
+}
+
+const AppGroupIdRouteRouteWithChildren = AppGroupIdRouteRoute._addFileChildren(
+  AppGroupIdRouteRouteChildren,
+)
+
 interface AppRouteRouteChildren {
+  AppGroupIdRouteRoute: typeof AppGroupIdRouteRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppGroupIdRouteRoute: AppGroupIdRouteRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
 }
 

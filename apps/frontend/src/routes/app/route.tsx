@@ -1,14 +1,23 @@
+import { AppSidebar } from '@/components/sidebar'
 import { ToogleDarkMode } from '@/components/toogle-dark-mode'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from '@/components/ui/breadcrumb'
+import { Separator } from '@/components/ui/separator'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { bootstrapAuth } from '@/lib/auth/bootstrap-auth'
 import { authStore } from '@/lib/auth/store'
-import { Link, Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/app')({
   beforeLoad: async ({ location }) => {
     await bootstrapAuth()
-
     const user = authStore.getUser()
-    console.log(user)
 
     if (!user) {
       throw redirect({
@@ -16,8 +25,17 @@ export const Route = createFileRoute('/app')({
         search: { redirect: location.href }
       })
     }
-  },
 
+    if (location.pathname === '/app' || location.pathname === '/app/') {
+      const lastGroupId = localStorage.getItem('lastAccessedGroup')
+
+      if (lastGroupId) {
+        throw redirect({
+          to: `/app/${lastGroupId}/samples`
+        })
+      }
+    }
+  },
   component: AppLayout
 })
 
@@ -32,21 +50,34 @@ function AppLayout() {
   }
 
   return (
-    <>
-      <header>
-        <ToogleDarkMode />
-      </header>
-      <main className='flex-1 p-6 flex flex-col gap-16'>
-        <div>
-          This is the app layout
-          <h1>Hello, {user.name}</h1>
-          <span>{user.email}</span>
-          <Link to='/logout' className='block border border-red-500 p-8 w-fit'>
-            Logout
-          </Link>
-        </div>
-        <Outlet />
-      </main>
-    </>
+    <TooltipProvider delayDuration={0}>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className='flex h-16 w-full shrink-0 items-center justify-between gap-2 border-b mb-4 pr-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
+            <div className='flex items-center gap-2 px-4'>
+              <SidebarTrigger className='-ml-1' />
+              {/* Agora usando o Separator correto do Radix/Shadcn */}
+              <Separator orientation='vertical' className='mr-2 h-4' />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className='hidden md:block'>CBiot</BreadcrumbItem>
+                  <BreadcrumbSeparator className='hidden md:block' />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Biological Sample Database</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            <div className='flex items-center'>
+              <ToogleDarkMode />
+            </div>
+          </header>
+          <main className='flex flex-1 flex-col gap-4 p-4 pt-0'>
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   )
 }

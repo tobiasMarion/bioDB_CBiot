@@ -1,6 +1,8 @@
 import * as assert from 'node:assert'
 import { describe, it } from 'node:test'
+
 import { AuditAction, type AuditEntityType } from '../common/prisma/generated/client'
+
 import { auditCreate, auditDelete, auditUpdate } from './audit.utils'
 
 describe('Audit Utils', () => {
@@ -9,7 +11,7 @@ describe('Audit Utils', () => {
   const performedBy = 'user-456'
 
   describe('auditCreate', () => {
-    it('should create an audit payload with action CREATE and a snapshot of current data', () => {
+    it('should create an audit payload with action CREATE and snapshot data', () => {
       const current = {
         name: 'Test Group',
         description: 'A group for testing',
@@ -32,12 +34,12 @@ describe('Audit Utils', () => {
       })
     })
 
-    it('should ignore default fields (id, createdAt, updatedAt) in the snapshot', () => {
+    it('should ignore default fields', () => {
       const current = {
-        id: 'should-be-ignored',
-        name: 'Test Group',
-        createdAt: new Date('2023-01-01'),
-        updatedAt: new Date('2023-01-02')
+        id: 'ignore-me',
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-02'),
+        name: 'Visible'
       }
 
       const result = auditCreate({
@@ -48,15 +50,15 @@ describe('Audit Utils', () => {
       })
 
       assert.deepStrictEqual(result.changes, {
-        name: 'Test Group'
+        name: 'Visible'
       })
     })
 
-    it('should respect custom ignored fields', () => {
+    it('should respect custom ignored fields instead of defaults', () => {
       const current = {
-        name: 'Test Group',
-        secretCode: '1234',
-        createdAt: new Date()
+        id: 'should-remain',
+        name: 'Visible',
+        secret: 'hidden'
       }
 
       const result = auditCreate({
@@ -64,28 +66,44 @@ describe('Audit Utils', () => {
         entityId,
         performedBy,
         current,
-        ignoredFields: ['secretCode']
+        ignoredFields: ['secret']
       })
 
       assert.deepStrictEqual(result.changes, {
-        name: 'Test Group',
-        createdAt: current.createdAt
+        id: 'should-remain',
+        name: 'Visible'
       })
-      assert.strictEqual((result.changes as Record<string, unknown>).secretCode, undefined)
+    })
+
+    it('should preserve arrays, nulls and nested objects', () => {
+      const current = {
+        tags: ['a', 'b'],
+        meta: { enabled: true },
+        deletedAt: null
+      }
+
+      const result = auditCreate({
+        entityType,
+        entityId,
+        performedBy,
+        current
+      })
+
+      assert.deepStrictEqual(result.changes, current)
     })
   })
 
   describe('auditUpdate', () => {
-    it('should create an audit payload with action UPDATE and only changed fields', () => {
+    it('should create an audit payload with only changed fields', () => {
       const previous = {
         name: 'Old Name',
-        description: 'Same description',
+        description: 'Same',
         status: 'ACTIVE'
       }
 
       const current = {
         name: 'New Name',
-        description: 'Same description',
+        description: 'Same',
         status: 'INACTIVE'
       }
 
@@ -104,9 +122,9 @@ describe('Audit Utils', () => {
       })
     })
 
-    it('should return empty changes if nothing was modified', () => {
-      const previous = { name: 'Name', status: 'ACTIVE' }
-      const current = { name: 'Name', status: 'ACTIVE' }
+    it('should return empty changes when nothing changed', () => {
+      const previous = { name: 'Same' }
+      const current = { name: 'Same' }
 
       const result = auditUpdate({
         entityType,
@@ -119,15 +137,15 @@ describe('Audit Utils', () => {
       assert.deepStrictEqual(result.changes, {})
     })
 
-    it('should ignore differences in default fields (id, createdAt, updatedAt)', () => {
+    it('should ignore default fields', () => {
       const previous = {
-        name: 'Same Name',
-        updatedAt: new Date('2023-01-01')
+        name: 'Same',
+        updatedAt: new Date('2024-01-01')
       }
 
       const current = {
-        name: 'Same Name',
-        updatedAt: new Date('2023-01-02') // This changed but should be ignored
+        name: 'Same',
+        updatedAt: new Date('2025-01-01')
       }
 
       const result = auditUpdate({
@@ -141,15 +159,15 @@ describe('Audit Utils', () => {
       assert.deepStrictEqual(result.changes, {})
     })
 
-    it('should handle added and removed fields correctly', () => {
+    it('should detect added and removed fields', () => {
       const previous = {
         fieldA: 'Exists',
-        fieldB: 'Will be removed'
+        fieldB: 'Removed'
       }
 
       const current = {
         fieldA: 'Exists',
-        fieldC: 'Newly added'
+        fieldC: 'Added'
       } as unknown as typeof previous
 
       const result = auditUpdate({
@@ -161,17 +179,67 @@ describe('Audit Utils', () => {
       })
 
       assert.deepStrictEqual(result.changes, {
-        fieldB: { from: 'Will be removed', to: undefined },
-        fieldC: { from: undefined, to: 'Newly added' }
+        fieldB: { from: 'Removed', to: undefined },
+        fieldC: { from: undefined, to: 'Added' }
+      })
+    })
+
+    it('should respect custom ignored fields', () => {
+      const previous = {
+        version: 1,
+        name: 'Old'
+      }
+
+      const current = {
+        version: 2,
+        name: 'New'
+      }
+
+      const result = auditUpdate({
+        entityType,
+        entityId,
+        performedBy,
+        previous,
+        current,
+        ignoredFields: ['version']
+      })
+
+      assert.deepStrictEqual(result.changes, {
+        name: { from: 'Old', to: 'New' }
+      })
+    })
+
+    it('should compare nested objects deeply through serialization', () => {
+      const previous = {
+        config: { enabled: true, level: 1 }
+      }
+
+      const current = {
+        config: { enabled: true, level: 2 }
+      }
+
+      const result = auditUpdate({
+        entityType,
+        entityId,
+        performedBy,
+        previous,
+        current
+      })
+
+      assert.deepStrictEqual(result.changes, {
+        config: {
+          from: { enabled: true, level: 1 },
+          to: { enabled: true, level: 2 }
+        }
       })
     })
   })
 
   describe('auditDelete', () => {
-    it('should create an audit payload with action ARCHIVE and a snapshot of previous data', () => {
+    it('should create an audit payload with ARCHIVE action', () => {
       const previous = {
         name: 'Deleted Group',
-        description: 'This will be archived'
+        description: 'Archived'
       }
 
       const result = auditDelete({
@@ -190,11 +258,11 @@ describe('Audit Utils', () => {
       })
     })
 
-    it('should ignore default fields (id, createdAt, updatedAt) in the snapshot', () => {
+    it('should ignore default fields', () => {
       const previous = {
-        id: 'some-id',
-        name: 'Deleted Group',
-        updatedAt: new Date()
+        id: 'ignore',
+        updatedAt: new Date(),
+        name: 'Deleted'
       }
 
       const result = auditDelete({
@@ -205,7 +273,28 @@ describe('Audit Utils', () => {
       })
 
       assert.deepStrictEqual(result.changes, {
-        name: 'Deleted Group'
+        name: 'Deleted'
+      })
+    })
+
+    it('should respect custom ignored fields', () => {
+      const previous = {
+        id: 'keep-id',
+        internalCode: 'hide',
+        name: 'Deleted'
+      }
+
+      const result = auditDelete({
+        entityType,
+        entityId,
+        performedBy,
+        previous,
+        ignoredFields: ['internalCode']
+      })
+
+      assert.deepStrictEqual(result.changes, {
+        id: 'keep-id',
+        name: 'Deleted'
       })
     })
   })

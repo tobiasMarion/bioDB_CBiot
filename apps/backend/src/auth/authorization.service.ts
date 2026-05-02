@@ -13,13 +13,10 @@ export type AdminOnlyPermission =
   | 'VIEW_ALL_SAMPLES'
   | 'VIEW_REPORTS'
 
-export type GroupPermission =
+export type StandardGroupPermission =
   | 'VIEW_GROUP'
   | 'UPDATE_GROUP'
   | 'DELETE_GROUP'
-  | 'PROMOTE_MANAGER'
-  | 'INVITE_MEMBER'
-  | 'REMOVE_MEMBER'
   | 'SHARE_SAMPLE'
   | 'CREATE_SAMPLE'
   | 'UPDATE_SAMPLE'
@@ -27,60 +24,53 @@ export type GroupPermission =
   | 'CREATE_TUBE'
   | 'CREATE_BOX'
   | 'MANAGE_STORAGE'
+  | 'VIEW_PENDING_INVITES'
 
-export type Permission = AdminOnlyPermission | GroupPermission
+export type ManageMembershipPermission = 'MANAGE_MEMBERSHIP_ROLE'
 
-export type AssertParams =
-  | {
-      user: User
-      permission: AdminOnlyPermission
-      message?: string
-    }
-  | {
-      user: User
-      permission: GroupPermission
-      groupId: string
-      message?: string
-    }
+export type Permission = AdminOnlyPermission | StandardGroupPermission | ManageMembershipPermission
 
-export type CanParams =
-  | {
-      user: User
-      permission: AdminOnlyPermission
-    }
-  | {
-      user: User
-      permission: GroupPermission
-      groupId: string
-    }
+type BaseParams = {
+  user: User
+  message?: string
+}
 
-// RESEARCHER < MANAGER < LEADER
-const ROLE_LEVEL: Record<GroupRole, number> = {
+export type AdminParams = BaseParams & {
+  permission: AdminOnlyPermission
+}
+
+export type GroupParams = BaseParams & {
+  permission: StandardGroupPermission
+  groupId: string
+}
+
+export type MembershipParams = BaseParams & {
+  permission: ManageMembershipPermission
+  groupId: string
+  targetRoles: GroupRole[]
+}
+
+export type AssertParams = AdminParams | GroupParams | MembershipParams
+export type CanParams = AdminParams | GroupParams | MembershipParams
+
+export const ROLE_LEVEL: Record<GroupRole, number> = {
   [GroupRole.RESEARCHER]: 1,
   [GroupRole.MANAGER]: 2,
   [GroupRole.LEADER]: 3
 }
 
-const REQUIRED_ROLE: Record<GroupPermission, GroupRole> = {
+const REQUIRED_ROLE: Record<StandardGroupPermission, GroupRole> = {
   VIEW_GROUP: GroupRole.RESEARCHER,
-  UPDATE_GROUP: GroupRole.LEADER, // RIN03
+  UPDATE_GROUP: GroupRole.LEADER,
   DELETE_GROUP: GroupRole.LEADER,
-
-  PROMOTE_MANAGER: GroupRole.LEADER, // RF08, RIN03
-
-  INVITE_MEMBER: GroupRole.MANAGER, // RF09
-  REMOVE_MEMBER: GroupRole.MANAGER,
-
-  SHARE_SAMPLE: GroupRole.MANAGER, // RF18
-
-  CREATE_SAMPLE: GroupRole.RESEARCHER, // RF11
+  SHARE_SAMPLE: GroupRole.MANAGER,
+  CREATE_SAMPLE: GroupRole.RESEARCHER,
   UPDATE_SAMPLE: GroupRole.RESEARCHER,
   DELETE_SAMPLE: GroupRole.MANAGER,
-
-  CREATE_TUBE: GroupRole.RESEARCHER, // RF11
-  CREATE_BOX: GroupRole.RESEARCHER, // RF11
-
-  MANAGE_STORAGE: GroupRole.MANAGER
+  CREATE_TUBE: GroupRole.RESEARCHER,
+  CREATE_BOX: GroupRole.RESEARCHER,
+  MANAGE_STORAGE: GroupRole.MANAGER,
+  VIEW_PENDING_INVITES: GroupRole.RESEARCHER
 }
 
 const ADMIN_PERMISSIONS = new Set<AdminOnlyPermission>([
@@ -93,6 +83,18 @@ const ADMIN_PERMISSIONS = new Set<AdminOnlyPermission>([
   'VIEW_ALL_SAMPLES',
   'VIEW_REPORTS'
 ])
+
+function isAdminPermission(permission: Permission): permission is AdminOnlyPermission {
+  return ADMIN_PERMISSIONS.has(permission as AdminOnlyPermission)
+}
+
+function hasGroupContext(params: CanParams): params is GroupParams | MembershipParams {
+  return 'groupId' in params
+}
+
+function isMembershipPermission(params: CanParams): params is MembershipParams {
+  return params.permission === 'MANAGE_MEMBERSHIP_ROLE'
+}
 
 @Injectable()
 export class AuthorizationService {
@@ -109,7 +111,7 @@ export class AuthorizationService {
   async can(params: CanParams): Promise<boolean> {
     const { user, permission } = params
 
-    if (ADMIN_PERMISSIONS.has(permission as AdminOnlyPermission)) {
+    if (isAdminPermission(permission)) {
       return user.isAdmin
     }
 
@@ -117,19 +119,58 @@ export class AuthorizationService {
       return true
     }
 
-    const { groupId } = params as { groupId: string }
-
-    const membership = await this.prisma.groupMembership.findUnique({
-      where: { userId_groupId: { userId: user.id, groupId } },
-      select: { role: true, isArchived: true, group: { select: { isArchived: true } } }
-    })
-
-    if (!membership || membership.isArchived || membership.group.isArchived) {
+    if (!hasGroupContext(params)) {
       return false
     }
 
-    const requiredRole = REQUIRED_ROLE[permission as GroupPermission]
+    const membership = await this.prisma.groupMembership.findUnique({
+      where: {
+        userId_groupId: {
+          userId: user.id,
+          groupId: params.groupId
+        }
+      },
+      select: {
+        role: true,
+        isArchived: true,
+        group: {
+          select: {
+            isArchived: true
+          }
+        }
+      }
+    })
 
-    return ROLE_LEVEL[membership.role] >= ROLE_LEVEL[requiredRole]
+    if (!membership) {
+      return false
+    }
+
+    if (membership.isArchived || membership.group.isArchived) {
+      return false
+    }
+
+    const currentLevel = ROLE_LEVEL[membership.role]
+
+    if (isMembershipPermission(params)) {
+      return this.canManageRoles(currentLevel, params.targetRoles)
+    }
+
+    const requiredRole = REQUIRED_ROLE[permission]
+
+    return currentLevel >= ROLE_LEVEL[requiredRole]
+  }
+
+  private canManageRoles(currentLevel: number, targetRoles: GroupRole[]): boolean {
+    if (targetRoles.length === 0) {
+      return false
+    }
+
+    for (const role of targetRoles) {
+      if (currentLevel <= ROLE_LEVEL[role]) {
+        return false
+      }
+    }
+
+    return true
   }
 }
