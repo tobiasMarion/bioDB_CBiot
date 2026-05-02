@@ -30,7 +30,7 @@ export class AuthController {
       ]
     }
   })
-  getUsers(@CurrentUser() user: User) {
-    return this.authService.findAllUsers(user)
+  getUsers(@CurrentUser() _: User) {
+    return this.authService.findAllUsers()
   }
 }

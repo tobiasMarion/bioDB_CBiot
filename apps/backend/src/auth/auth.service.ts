@@ -10,8 +10,7 @@ export class AuthService {
     private readonly auth: AuthorizationService
   ) {}
 
-  async findAllUsers(user: User) {
-    await this.auth.assert({ user, permission: 'VIEW_ALL_USERS' })
+  async findAllUsers() {
     return await this.prisma.user.findMany({
       where: { isArchived: false },
       select: { id: true, name: true, email: true }

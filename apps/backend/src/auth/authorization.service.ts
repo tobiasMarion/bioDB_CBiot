@@ -12,7 +12,6 @@ export type AdminOnlyPermission =
   | 'UPDATE_FREEZER'
   | 'VIEW_ALL_SAMPLES'
   | 'VIEW_REPORTS'
-  | 'VIEW_ALL_USERS'
 
 export type StandardGroupPermission =
   | 'VIEW_GROUP'
@@ -84,8 +83,7 @@ const ADMIN_PERMISSIONS = new Set<AdminOnlyPermission>([
   'CREATE_FREEZER',
   'UPDATE_FREEZER',
   'VIEW_ALL_SAMPLES',
-  'VIEW_REPORTS',
-  'VIEW_ALL_USERS'
+  'VIEW_REPORTS'
 ])
 
 function isAdminPermission(permission: Permission): permission is AdminOnlyPermission {
