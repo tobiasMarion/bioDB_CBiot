@@ -4,7 +4,7 @@ import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
 import { InvitesService } from './invites.service'
 
-@ApiTags('invites')
+@ApiTags('Invites')
 @Controller()
 export class InvitesController {
   constructor(private readonly invitesService: InvitesService) {}
