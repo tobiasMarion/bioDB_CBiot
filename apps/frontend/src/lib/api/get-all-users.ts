@@ -7,5 +7,5 @@ export interface User {
 }
 
 export function getAllUsers() {
-  return apiClient.get('auth/users').json<User[]>()
+  return apiClient.get('users/').json<User[]>()
 }

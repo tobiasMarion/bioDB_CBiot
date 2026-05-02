@@ -13,7 +13,7 @@ export class AuthService {
   async findAllUsers() {
     return await this.prisma.user.findMany({
       where: { isArchived: false },
-      select: { id: true, name: true, email: true }
+      select: { id: true, name: true, email: true, isAdmin: true }
     })
   }
 }

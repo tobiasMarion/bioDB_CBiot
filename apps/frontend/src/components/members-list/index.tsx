@@ -28,7 +28,6 @@ export function MembersList() {
   const queryClient = useQueryClient()
   const currentUser = authStore.getUser()
 
-  console.log(currentUser)
   const isAdmin = currentUser?.isAdmin ?? false
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null)
