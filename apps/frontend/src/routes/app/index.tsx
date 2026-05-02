@@ -11,7 +11,7 @@ export const Route = createFileRoute('/app/')({
 
 function AppIndex() {
   const user = authStore.getUser()
-  const isAdmin = user?.isAdmin ?? false //[cite: 11]
+  const isAdmin = user?.isAdmin ?? false
 
   const { data: groups, isLoading } = useQuery({
     queryKey: ['groups'],
