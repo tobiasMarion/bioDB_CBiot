@@ -63,9 +63,6 @@ export function MembersList() {
     }
   })
 
-  // Fix: viewerRank must be -1 while members are still loading to avoid
-  // computing permissions against an empty array, which would incorrectly
-  // yield rank 0 and hide the Invite button even for leaders/admins.
   const viewerRank = isLoadingMembers ? -1 : getViewerRank(isAdmin, members, currentUser?.id ?? '')
   const invitableRoles = getInvitableRoles(viewerRank)
   const canInvite = invitableRoles.length > 0

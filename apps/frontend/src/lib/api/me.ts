@@ -1,11 +1,5 @@
 import { apiClient } from './api-client'
-
-export type User = {
-  id: string
-  email: string
-  name: string
-  isAdmin: boolean
-}
+import type { User } from './types/user'
 
 export async function getMe() {
   return await apiClient.get('users/me').json<User>()

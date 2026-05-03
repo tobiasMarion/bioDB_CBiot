@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronsUpDown, LogOut } from 'lucide-react'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,15 +18,14 @@ import {
 } from '@/components/ui/sidebar'
 import { Notifications } from './notifications'
 
-export function NavUser({
-  user
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+export interface User {
+  id: string
+  name: string
+  email: string
+  isAdmin: boolean
+}
+
+export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
 
@@ -44,19 +43,26 @@ export function NavUser({
 
   return (
     <SidebarMenu>
-      <SidebarMenuItem className='flex items-center gap-1.5 p-1'>
+      <SidebarMenuItem className='flex items-center gap-2'>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size='lg'
-              className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground flex-1'
+              className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
             >
               <Avatar className='h-8 w-8 rounded-lg'>
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className='rounded-lg'>{initials}</AvatarFallback>
+                {/* Removido o AvatarImage. Agora apenas o Fallback estilizado como o GroupSwitcher */}
+                <AvatarFallback className='rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold'>
+                  {initials}
+                </AvatarFallback>
               </Avatar>
-              <div className='grid flex-1 text-left text-sm leading-tight'>
-                <span className='truncate font-medium'>{user.name}</span>
+              <div className='grid flex-1 text-left text-sm leading-tight ml-1'>
+                <span className='truncate font-semibold'>
+                  {user.name}{' '}
+                  {user.isAdmin && (
+                    <span className='text-muted-foreground font-normal'>(Admin)</span>
+                  )}
+                </span>
                 <span className='truncate text-xs text-muted-foreground'>{user.email}</span>
               </div>
               <ChevronsUpDown className='ml-auto size-4 opacity-50' />
@@ -71,24 +77,27 @@ export function NavUser({
             <DropdownMenuLabel className='p-0 font-normal'>
               <div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
                 <Avatar className='h-8 w-8 rounded-lg'>
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className='rounded-lg'>{initials}</AvatarFallback>
+                  <AvatarFallback className='rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold'>
+                    {initials}
+                  </AvatarFallback>
                 </Avatar>
-                <div className='grid flex-1 text-left text-sm leading-tight'>
-                  <span className='truncate font-medium'>{user.name}</span>
+                <div className='grid flex-1 text-left text-sm leading-tight ml-1'>
+                  <span className='truncate font-semibold'>{user.name}</span>
                   <span className='truncate text-xs text-muted-foreground'>{user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuItem onClick={handleLogout} className='cursor-pointer'>
               <LogOut className='mr-2 h-4 w-4' />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Notifications />
+        <div className='group-data-[collapsible=icon]:hidden'>
+          <Notifications />
+        </div>
       </SidebarMenuItem>
     </SidebarMenu>
   )

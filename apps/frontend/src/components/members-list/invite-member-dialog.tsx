@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { type User, getAllUsers } from '@/lib/api/get-all-users'
+import { getAllUsers } from '@/lib/api/get-all-users'
 import { sendGroupInvite } from '@/lib/api/send-invite'
 import type { Role } from '@/lib/api/types/role'
 import { cn } from '@/lib/utils'
@@ -25,6 +25,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { ROLE_META, RoleBadge } from './role-meta'
+import type { User } from '@/lib/api/types/user'
 
 interface InviteMemberDialogProps {
   open: boolean
