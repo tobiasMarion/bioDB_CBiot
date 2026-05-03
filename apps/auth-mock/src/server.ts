@@ -24,8 +24,8 @@ type TokenPayload = {
   isAdmin: boolean
 }
 
-function generateUserId(email: string, password: string) {
-  return crypto.createHash('sha256').update(`${email}:${password}`).digest('hex')
+function generateUserId(email: string) {
+  return crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex')
 }
 
 app.post<{ Body: LoginBody }>('/login', async (request, reply) => {
@@ -35,13 +35,13 @@ app.post<{ Body: LoginBody }>('/login', async (request, reply) => {
     return reply.status(400).send({ error: 'Missing credentials' })
   }
 
-  const userId = generateUserId(email, password)
+  const userId = generateUserId(email)
 
   const isAdmin = email.toLowerCase().startsWith('admin@')
 
   const user: TokenPayload = {
     id: userId,
-    name: isAdmin ? 'Marcio Dorn' : 'Jonas Martelo',
+    name: isAdmin ? 'Admnistrador Exemplo' : 'Jonas Martelo',
     email,
     isAdmin: isAdmin
   }

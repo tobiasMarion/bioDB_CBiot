@@ -1,4 +1,4 @@
-import type { User } from './service'
+import type { User } from '../api/types/user'
 
 let user: User | null = null
 let initialized = false

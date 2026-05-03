@@ -1,12 +1,6 @@
 import { authClient } from '@/lib/api/auth-client'
-import { authStore } from './store'
-
-export type User = {
-  id: string
-  email: string
-  name: string
-  isAdmin: boolean
-}
+import { authStore } from './store' //
+import { getMe } from '../api/me'
 
 export const authService = {
   getUser() {
@@ -14,15 +8,19 @@ export const authService = {
   },
 
   async login(email: string, password: string) {
-    const data = await authClient
+    const { token } = await authClient
       .post('login', {
         json: { email, password }
       })
-      .json<{ token: string; user: User }>()
+      .json<{ token: string }>()
 
-    localStorage.setItem('access_token', data.token)
+    localStorage.setItem('access_token', token)
 
-    return data
+    const user = await getMe()
+
+    authStore.setUser(user)
+
+    return { token, user }
   },
 
   async me() {
@@ -31,8 +29,9 @@ export const authService = {
       return existingUser
     }
 
-    const user = await authClient.get('me').json<User>()
+    const user = await getMe()
     authStore.setUser(user)
+
     return user
   },
 

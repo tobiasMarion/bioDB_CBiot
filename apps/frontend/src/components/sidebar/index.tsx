@@ -74,11 +74,14 @@ export function AppSidebar() {
 
       <SidebarFooter>
         <NavUser
-          user={{
-            name: user?.name || 'User',
-            email: user?.email || '',
-            avatar: ''
-          }}
+          user={
+            user || {
+              id: 'system-fallback',
+              name: 'User',
+              email: '',
+              isAdmin: false
+            }
+          }
         />
       </SidebarFooter>
       <SidebarRail />
