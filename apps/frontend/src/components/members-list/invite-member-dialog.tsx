@@ -66,6 +66,7 @@ export function InviteMemberDialog({
       setSelectedUserId('')
       setSelectedRole('')
       queryClient.invalidateQueries({ queryKey: ['group-invites-pending', groupId] })
+      queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })
       onOpenChange(false)
     },
     onError: () => {
@@ -162,7 +163,6 @@ export function InviteMemberDialog({
               </Popover>
             </div>
 
-            {/* Role picker */}
             <div className='grid gap-2'>
               <Label>Role</Label>
               <Popover open={rolePopoverOpen} onOpenChange={setRolePopoverOpen}>
