@@ -1,6 +1,6 @@
+import type { Role } from '@/lib/api/types/role'
 import { Crown, FlaskConical, Shield } from 'lucide-react'
 import type { ElementType } from 'react'
-import type { Role } from '@/lib/api/types/role'
 
 export interface RoleMeta {
   label: string

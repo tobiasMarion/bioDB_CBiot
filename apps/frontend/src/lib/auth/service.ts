@@ -1,6 +1,6 @@
 import { authClient } from '@/lib/api/auth-client'
-import { authStore } from './store' //
 import { getMe } from '../api/me'
+import { authStore } from './store' //
 
 export const authService = {
   getUser() {

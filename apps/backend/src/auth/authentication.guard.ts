@@ -6,11 +6,11 @@ import {
   UseGuards,
   createParamDecorator
 } from '@nestjs/common'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client'
 import type { Request } from 'express'
 import * as jwt from 'jsonwebtoken'
 import { PrismaService } from '../common/prisma/prisma.service'
 import type { User } from './types/user.type'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client'
 
 const SECRET = process.env.JWT_SECRET || 'dev-secret'
 

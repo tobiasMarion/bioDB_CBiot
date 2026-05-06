@@ -8,7 +8,7 @@ import {
 import type { GroupMember } from '@/lib/api/get-group-members'
 import type { Role } from '@/lib/api/types/role'
 import { ChevronDown, UserMinus } from 'lucide-react'
-import { getInitials, ROLE_META, RoleBadge } from './role-meta'
+import { ROLE_META, RoleBadge, getInitials } from './role-meta'
 
 interface MemberRowProps {
   member: GroupMember

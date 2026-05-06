@@ -1,6 +1,6 @@
 import type { PendingGroupInvite } from '@/lib/api/get-group-invites'
 import { Clock } from 'lucide-react'
-import { getInitials, RoleBadge } from './role-meta'
+import { RoleBadge, getInitials } from './role-meta'
 
 export function PendingInviteRow({ invite }: { invite: PendingGroupInvite }) {
   return (
