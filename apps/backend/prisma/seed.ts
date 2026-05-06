@@ -27,7 +27,7 @@ async function main() {
     data: {
       externalAuthId: 'auth0|admin_user',
       email: 'admin@biobank.ufrgs.br',
-      name: 'System Administrator',
+      name: 'Fernando Pessoa',
       isAdmin: true
     }
   })
@@ -36,7 +36,7 @@ async function main() {
     data: {
       externalAuthId: 'auth0|tobias_marion',
       email: 'tobias.marion@ufrgs.br',
-      name: 'Tobias Marion',
+      name: 'João Galhardo',
       isAdmin: false
     }
   })
@@ -45,7 +45,7 @@ async function main() {
     data: {
       externalAuthId: 'auth0|guest_researcher',
       email: 'guest@ufrgs.br',
-      name: 'Guest Researcher'
+      name: 'Pedro Pereira'
     }
   })
 

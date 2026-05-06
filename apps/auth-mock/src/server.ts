@@ -24,8 +24,49 @@ type TokenPayload = {
   isAdmin: boolean
 }
 
-function generateUserId(email: string) {
-  return crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex')
+function generateUserId(email: string, password: string) {
+  return crypto.createHash('sha256').update(`${email}:${password}`).digest('hex')
+}
+
+const mockUsers: Record<string, { name: string; isAdmin: boolean }> = {
+  'admin@example.com': {
+    name: 'Administrador Exemplo',
+    isAdmin: true
+  },
+  'tobias@example.com': {
+    name: 'Tobias Cadoná Marion',
+    isAdmin: false
+  },
+  'lucas@example.com': {
+    name: 'Lucas Silva',
+    isAdmin: false
+  },
+  'jonas@example.com': {
+    name: 'Jonas Martelo',
+    isAdmin: false
+  }
+}
+
+function getUserFromEmail(email: string): Omit<TokenPayload, 'id'> {
+  const normalizedEmail = email.toLowerCase().trim()
+
+  const mockUser = mockUsers[normalizedEmail]
+
+  if (mockUser) {
+    return {
+      name: mockUser.name,
+      email,
+      isAdmin: mockUser.isAdmin
+    }
+  }
+
+  const nameFromEmail = email.split('@')[0]
+
+  return {
+    name: nameFromEmail,
+    email,
+    isAdmin: false
+  }
 }
 
 app.post<{ Body: LoginBody }>('/login', async (request, reply) => {
@@ -35,15 +76,13 @@ app.post<{ Body: LoginBody }>('/login', async (request, reply) => {
     return reply.status(400).send({ error: 'Missing credentials' })
   }
 
-  const userId = generateUserId(email)
+  const userId = generateUserId(email, password)
 
-  const isAdmin = email.toLowerCase().startsWith('admin@')
+  const baseUser = getUserFromEmail(email)
 
   const user: TokenPayload = {
     id: userId,
-    name: isAdmin ? 'Admnistrador Exemplo' : 'Jonas Martelo',
-    email,
-    isAdmin: isAdmin
+    ...baseUser
   }
 
   const token = jwt.sign(user, SECRET, { expiresIn: '12h' })
