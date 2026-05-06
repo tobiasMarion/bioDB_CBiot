@@ -1,17 +1,14 @@
 import type { Role } from '@/lib/api/types/role'
-import { Crown, FlaskConical, Shield } from 'lucide-react'
-import type { ElementType } from 'react'
 
 export interface RoleMeta {
   label: string
-  icon: ElementType
   className: string
 }
 
 export const ROLE_META: Record<Role, RoleMeta> = {
-  LEADER: { label: 'Leader', icon: Crown, className: 'text-amber-500' },
-  MANAGER: { label: 'Manager', icon: Shield, className: 'text-blue-500' },
-  RESEARCHER: { label: 'Researcher', icon: FlaskConical, className: 'text-muted-foreground' }
+  LEADER: { label: 'Leader', className: 'text-amber-600 dark:text-amber-500' },
+  MANAGER: { label: 'Manager', className: 'text-blue-600 dark:text-blue-500' },
+  RESEARCHER: { label: 'Researcher', className: 'text-muted-foreground' }
 }
 
 export function getInitials(name: string): string {
@@ -23,12 +20,7 @@ export function getInitials(name: string): string {
     .toUpperCase()
 }
 
-export function RoleBadge({ role }: { role: Role }) {
-  const { label, icon: Icon, className } = ROLE_META[role]
-  return (
-    <span className={`flex items-center gap-1 text-xs font-medium ${className}`}>
-      <Icon className='h-3 w-3' />
-      {label}
-    </span>
-  )
+export function RoleBadge({ role, className }: { role: Role; className?: string }) {
+  const { label, className: textClass } = ROLE_META[role]
+  return <span className={`text-xs font-medium ${textClass} ${className || ''}`}>{label}</span>
 }

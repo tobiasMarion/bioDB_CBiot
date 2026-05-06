@@ -30,45 +30,52 @@ export function MemberRow({
   const canEdit = assignableRoles.length > 0
 
   return (
-    <div className='flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted/50 transition-colors'>
-      <div className='flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-medium text-muted-foreground'>
-        {getInitials(member.user.name)}
+    <div className='flex items-center justify-between gap-4 p-3 transition-colors hover:bg-muted/50 border-b border-border/50 last:border-b-0'>
+      <div className='flex items-center gap-3 min-w-0 flex-1'>
+        <div className='flex size-8 shrink-0 items-center justify-center rounded-lg border border-border/50 bg-muted text-xs font-medium text-muted-foreground'>
+          {getInitials(member.user.name)}
+        </div>
+
+        <div className='grid flex-1 min-w-0 text-left'>
+          <span className='truncate text-sm font-medium leading-none'>{member.user.name}</span>
+          <span className='truncate text-xs text-muted-foreground leading-snug mt-0.5'>
+            {member.user.email}
+          </span>
+        </div>
       </div>
 
-      <div className='grid flex-1 min-w-0 text-sm leading-tight'>
-        <span className='truncate font-medium'>{member.user.name}</span>
-        <span className='truncate text-xs text-muted-foreground'>{member.user.email}</span>
-      </div>
-
-      <div className='flex items-center gap-1'>
+      <div className='flex items-center gap-2 shrink-0'>
         {canEdit ? (
           <DropdownMenu>
-            <DropdownMenuTrigger
-              disabled={isPending}
-              className='flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-            >
-              <RoleBadge role={member.role} />
-              <ChevronDown className='h-3 w-3 text-muted-foreground ml-0.5' />
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant='outline'
+                size='sm'
+                disabled={isPending}
+                className='h-8 px-2.5 gap-2 font-normal transition-colors focus-visible:ring-0'
+              >
+                <RoleBadge role={member.role} />
+                <ChevronDown className='size-3.5 text-muted-foreground opacity-50' />
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align='end' className='min-w-36 rounded-lg' sideOffset={4}>
+            <DropdownMenuContent align='end' className='w-40 rounded-lg' sideOffset={4}>
               {assignableRoles.map(role => {
-                const { label, icon: Icon, className } = ROLE_META[role]
+                const { label, className } = ROLE_META[role]
                 return (
                   <DropdownMenuItem
                     key={role}
                     onClick={() => onRoleChange(member.userId, role)}
-                    className='gap-2'
+                    className='gap-2.5 cursor-pointer py-2'
                   >
-                    <Icon className={`h-3.5 w-3.5 ${className}`} />
-                    {label}
+                    <span className={`font-medium text-sm ${className}`}>{label}</span>
                   </DropdownMenuItem>
                 )
               })}
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <div className='px-2 py-1'>
-            <RoleBadge role={member.role} />
+          <div className='flex h-8 items-center px-2.5 border border-transparent'>
+            <RoleBadge role={member.role} className='text-muted-foreground' />
           </div>
         )}
 
@@ -76,11 +83,12 @@ export function MemberRow({
           <Button
             size='icon'
             variant='ghost'
-            className='h-7 w-7 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10'
+            className='size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/15'
             disabled={isPending}
             onClick={() => onRemove(member)}
           >
-            <UserMinus className='h-3.5 w-3.5' />
+            <UserMinus className='size-4' />
+            <span className='sr-only'>Remove member</span>
           </Button>
         )}
       </div>

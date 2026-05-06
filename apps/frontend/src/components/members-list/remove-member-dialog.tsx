@@ -30,26 +30,27 @@ export function RemoveMemberDialog({
         if (!open) onCancel()
       }}
     >
-      <DialogContent className='sm:max-w-sm'>
+      <DialogContent className='sm:max-w-md'>
         <DialogHeader>
           <DialogTitle>Remove member</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to remove <strong>{member?.user.name}</strong> from this group?
-            They will need a new invite to rejoin.
+          <DialogDescription className='leading-snug'>
+            Are you sure you want to remove{' '}
+            <span className='font-medium text-foreground'>{member?.user.name}</span> from this
+            group? They will need a new invite to rejoin.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className='gap-2 sm:gap-0 mt-2'>
           <Button variant='ghost' onClick={onCancel} disabled={isPending}>
             Cancel
           </Button>
           <Button variant='destructive' onClick={onConfirm} disabled={isPending}>
             {isPending ? (
               <>
-                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                <Loader2 className='mr-2 size-4 animate-spin' />
                 Removing...
               </>
             ) : (
-              'Remove'
+              'Remove member'
             )}
           </Button>
         </DialogFooter>
