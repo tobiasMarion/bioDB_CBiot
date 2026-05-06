@@ -33,7 +33,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className='sm:max-w-115'>
+      <DialogContent className='w-[calc(100vw-2rem)] sm:max-w-md'>
         {step === 1 ? (
           <CreateGroupForm
             onCancel={() => handleOpenChange(false)}
