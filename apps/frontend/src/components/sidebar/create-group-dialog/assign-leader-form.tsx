@@ -3,7 +3,7 @@ import { sendGroupInvite } from '@/lib/api/send-invite'
 import { cn } from '@/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import { Button } from '../../ui/button'
 import {
   Command,
@@ -61,7 +61,7 @@ export function AssignLeaderForm({ groupId, groupName, onFinish }: AssignLeaderF
     }
   })
 
-  function handleInviteLeader(e: React.FormEvent<HTMLFormElement>) {
+  function handleInviteLeader(e: SubmitEvent) {
     e.preventDefault()
 
     if (!groupId || !selectedLeaderId) return
@@ -124,7 +124,6 @@ export function AssignLeaderForm({ groupId, groupName, onFinish }: AssignLeaderF
                         }}
                         className='flex cursor-pointer items-center gap-2.5 rounded-md p-2'
                       >
-                        {/* Container fixo para o ícone de Check, garantindo alinhamento do texto */}
                         <div className='flex size-4 shrink-0 items-center justify-center'>
                           {selectedLeaderId === researcher.id && (
                             <Check className='size-4 text-primary' />

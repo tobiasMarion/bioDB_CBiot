@@ -5,7 +5,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { useSidebar } from '@/components/ui/sidebar' // Importando o hook da sidebar
+import { useSidebar } from '@/components/ui/sidebar'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { answerInvite } from '@/lib/api/answer-invite'
 import { type GroupInvite, getMyInvites } from '@/lib/api/get-my-invites'
@@ -16,7 +16,7 @@ import { Bell, Check, Loader2, X } from 'lucide-react'
 export function Notifications() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const { isMobile } = useSidebar() // Pegando o estado do mobile direto do seu design system
+  const { isMobile } = useSidebar()
 
   const { data: invitesResponse, isLoading } = useQuery({
     queryKey: ['group-invites'],
@@ -62,7 +62,6 @@ export function Notifications() {
           </Button>
         </DropdownMenuTrigger>
 
-        {/* Aqui está a mágica: side e align dinâmicos baseados no isMobile */}
         <DropdownMenuContent
           className='w-[calc(100vw-2rem)] sm:w-105 rounded-lg'
           side={isMobile ? 'bottom' : 'right'}
