@@ -7,6 +7,21 @@ import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateSampleDTO } from './dto/CreateSample'
 import { UpdateSampleDTO } from './dto/UpdateSample'
 
+const sampleSelect = {
+  id: true,
+  name: true,
+  type: true,
+  originOrganism: true,
+  sourceLab: true,
+  groupId: true,
+  createdBy: true,
+  createdAt: true,
+  updatedAt: true,
+  creator: {
+    select: { id: true, name: true, email: true }
+  }
+}
+
 @Injectable()
 export class SamplesService {
   constructor(
@@ -31,7 +46,8 @@ export class SamplesService {
             sourceLab: data.sourceLab,
             groupId: groupId,
             createdBy: user.id
-          }
+          },
+          select: sampleSelect
         })
 
         await tx.auditLog.create({
@@ -55,18 +71,16 @@ export class SamplesService {
     }
   }
 
-  async findAllByGroup(groupId: string) {
+  async findAllByGroup(groupId: string, user: User) {
+    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
+
     return this.prisma.sample.findMany({
       where: {
         groupId: groupId,
         isArchived: false
       },
       orderBy: { createdAt: 'desc' },
-      include: {
-        creator: {
-          select: { name: true, email: true }
-        }
-      }
+      select: sampleSelect
     })
   }
 
@@ -90,7 +104,8 @@ export class SamplesService {
         data: {
           isArchived: true,
           archivedAt: new Date()
-        }
+        },
+        select: sampleSelect
       })
 
       await tx.auditLog.create({
@@ -104,6 +119,72 @@ export class SamplesService {
 
       return archivedSample
     })
+  }
+
+  async getStats(groupId: string, user: User) {
+    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
+
+    const thirtyDaysFromNow = new Date()
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
+
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+    const [
+      totalSamples,
+      samplesLastMonth,
+      totalTubes,
+      boxesWithTubes,
+      expiringSoon,
+      differentOrganisms
+    ] = await Promise.all([
+      this.prisma.sample.count({
+        where: { groupId, isArchived: false }
+      }),
+      this.prisma.sample.count({
+        where: {
+          groupId,
+          isArchived: false,
+          createdAt: { gte: thirtyDaysAgo }
+        }
+      }),
+      this.prisma.tube.count({
+        where: {
+          sample: { groupId },
+          isArchived: false
+        }
+      }),
+      this.prisma.box.count({
+        where: {
+          freezer: { isArchived: false },
+          tubes: { some: { isArchived: false, sample: { groupId } } }
+        }
+      }),
+      this.prisma.tube.count({
+        where: {
+          sample: { groupId },
+          isArchived: false,
+          expirationDate: {
+            lte: thirtyDaysFromNow,
+            gte: new Date()
+          }
+        }
+      }),
+      this.prisma.sample.groupBy({
+        by: ['originOrganism'],
+        where: { groupId, isArchived: false, originOrganism: { not: '' } },
+        _count: { originOrganism: true }
+      })
+    ])
+
+    return {
+      totalSamples,
+      samplesLastMonth,
+      totalTubes,
+      boxesWithTubes,
+      expiringSoon,
+      differentOrganisms: differentOrganisms.length
+    }
   }
 
   async update(id: string, data: UpdateSampleDTO, user: User) {
@@ -128,8 +209,12 @@ export class SamplesService {
             type: data.type,
             originOrganism: data.originOrganism,
             sourceLab: data.sourceLab
-          }
+          },
+          select: sampleSelect
         })
+
+        const fullUpdatedSample = await tx.sample.findUnique({ where: { id } })
+        if (!fullUpdatedSample) throw new NotFoundException('Sample not found')
 
         await tx.auditLog.create({
           data: auditUpdate({
@@ -137,7 +222,7 @@ export class SamplesService {
             entityId: id,
             performedBy: user.id,
             previous: currentSample,
-            current: updatedSample
+            current: fullUpdatedSample
           })
         })
 
