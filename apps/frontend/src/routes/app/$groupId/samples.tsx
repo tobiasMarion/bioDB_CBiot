@@ -1,4 +1,5 @@
 import { HeroSamplesCard } from '@/components/hero-sample-card'
+import { StatCard } from '@/components/stats-cards'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getGroupDetails } from '@/lib/api/get-group-details'
@@ -23,22 +24,27 @@ function RouteComponent() {
       <div className='flex flex-col gap-10 px-5 py-6 lg:px-8'>
         <HeroSamplesCard groupName={group?.name} isLoading={isLoading} />
 
-        {/* STATS */}
         <section className='grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4'>
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className='p-5'>
-                <div className='space-y-4'>
-                  <Skeleton className='h-4 w-24 rounded-md' />
-
-                  <div className='space-y-2'>
-                    <Skeleton className='h-8 w-20 rounded-md' />
-                    <Skeleton className='h-3 w-32 rounded-md' />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <StatCard
+            label='Total Samples'
+            value={(1247).toLocaleString('pt-BR')}
+            subtext='+24 this month'
+          />
+          <StatCard
+            label='Total Tubes'
+            value={(3891).toLocaleString('pt-BR')}
+            subtext='in 38 different boxes'
+          />
+          <StatCard
+            label='Expiring Soon'
+            value={(12).toLocaleString('pt-BR')}
+            subtext='in the next 30 days'
+          />
+          <StatCard
+            label='Different Organisms'
+            value={(7).toLocaleString('pt-BR')}
+            subtext='origin species'
+          />
         </section>
 
         {/* TABLE */}

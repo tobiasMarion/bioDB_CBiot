@@ -5,7 +5,7 @@ import { Skeleton } from './ui/skeleton'
 export function HeroSamplesCard({
   groupName,
   isLoading
-}: { groupName?: string; isLoading: boolean }) {
+}: { groupName: string | undefined; isLoading: boolean }) {
   return (
     <Card className='relative overflow-hidden border bg-linear-to-br from-slate-50 via-white to-cyan-50/40 dark:bg-none dark:bg-background'>
       <div className='absolute inset-0 z-0 bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.15),transparent_50%)] dark:bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.06),transparent_50%)]' />
