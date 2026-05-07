@@ -51,13 +51,13 @@ function AppLayout() {
     })
   }
 
-  const { groupId } = useParams({ strict: false })
+  // const { groupId } = useParams({ strict: false })
 
-  const { data: group } = useQuery({
-    queryKey: ['group', groupId],
-    queryFn: () => getGroupById(groupId!),
-    enabled: !!groupId
-  })
+  // const { data: group } = useQuery({
+  //   queryKey: ['group', groupId],
+  //   queryFn: () => getGroupById(groupId!),
+  //   enabled: !!groupId
+  // })
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -83,7 +83,7 @@ function AppLayout() {
                     <BreadcrumbLink>Biological Sample Database</BreadcrumbLink>
                   </BreadcrumbItem>
 
-                  {group && (
+                  {/* {group && (
                     <>
                       <BreadcrumbSeparator />
 
@@ -91,7 +91,7 @@ function AppLayout() {
                         <BreadcrumbPage>{group.name}</BreadcrumbPage>
                       </BreadcrumbItem>
                     </>
-                  )}
+                  )} */}
                 </BreadcrumbList>
               </Breadcrumb>
             </div>

@@ -3,6 +3,7 @@ import { bootstrapAuth } from '@/lib/auth/bootstrap-auth'
 import { authStore } from '@/lib/auth/store'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Dna } from 'lucide-react'
+import loginImage from '@/assets/login.jpg'
 
 export const Route = createFileRoute('/_auth/login')({
   beforeLoad: async () => {
@@ -37,7 +38,7 @@ function LoginPage() {
 
       <div className='relative hidden bg-muted lg:block'>
         <img
-          src='https://ui.shadcn.com/placeholder.svg'
+          src={loginImage}
           alt='Example'
           className='absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale'
         />
