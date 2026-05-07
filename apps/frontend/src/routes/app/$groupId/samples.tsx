@@ -3,6 +3,7 @@ import { StatCard } from '@/components/stats-cards'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getGroupDetails } from '@/lib/api/get-group-details'
+import { getSamplesStats } from '@/lib/api/get-samples-stats'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useParams } from '@tanstack/react-router'
 
@@ -14,35 +15,40 @@ function RouteComponent() {
   const params = useParams({ from: '/app/$groupId/samples' })
   const groupId = params.groupId
 
-  const { data: group, isLoading } = useQuery({
+  const { data: group, isLoading: isLoadingGroup } = useQuery({
     queryKey: ['group', groupId],
     queryFn: () => getGroupDetails(groupId)
+  })
+
+  const { data: stats } = useQuery({
+    queryKey: ['samples-stats', groupId],
+    queryFn: () => getSamplesStats(groupId)
   })
 
   return (
     <div className='min-h-screen bg-background text-foreground'>
       <div className='flex flex-col gap-10 px-5 py-6 lg:px-8'>
-        <HeroSamplesCard groupName={group?.name} isLoading={isLoading} />
+        <HeroSamplesCard groupName={group?.name} isLoading={isLoadingGroup} />
 
         <section className='grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4'>
           <StatCard
             label='Total Samples'
-            value={(1247).toLocaleString('pt-BR')}
-            subtext='+24 this month'
+            value={stats?.totalSamples.toLocaleString('pt-BR') ?? '0'}
+            subtext={`+${stats?.samplesLastMonth ?? 0} this month`}
           />
           <StatCard
             label='Total Tubes'
-            value={(3891).toLocaleString('pt-BR')}
-            subtext='in 38 different boxes'
+            value={stats?.totalTubes.toLocaleString('pt-BR') ?? '0'}
+            subtext={`in ${stats?.boxesWithTubes ?? 0} different boxes`}
           />
           <StatCard
             label='Expiring Soon'
-            value={(12).toLocaleString('pt-BR')}
+            value={stats?.expiringSoon.toLocaleString('pt-BR') ?? '0'}
             subtext='in the next 30 days'
           />
           <StatCard
             label='Different Organisms'
-            value={(7).toLocaleString('pt-BR')}
+            value={stats?.differentOrganisms.toLocaleString('pt-BR') ?? '0'}
             subtext='origin species'
           />
         </section>
