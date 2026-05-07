@@ -88,31 +88,18 @@ export class GroupsController {
   @ApiOperation({ summary: 'Get group details' })
   @ApiResponse({
     status: 200,
-    description: 'Group details',
+    description: 'Group details with current user membership',
     schema: {
       example: {
         id: '550e8400-e29b-41d4-a716-446655440000',
         name: 'My New Group',
         createdBy: '123e4567-e89b-12d3-a456-426614174000',
         createdAt: '2026-05-01T10:00:00.000Z',
-        isArchived: false,
-        archivedAt: null,
-        memberships: [
-          {
-            id: '990e8400-e29b-41d4-a716-446655440000',
-            userId: '123e4567-e89b-12d3-a456-426614174000',
-            groupId: '550e8400-e29b-41d4-a716-446655440000',
-            role: 'LEADER',
-            joinedAt: '2026-05-01T10:00:00.000Z',
-            isArchived: false,
-            archivedAt: null,
-            user: {
-              id: '123e4567-e89b-12d3-a456-426614174000',
-              name: 'Admin Name',
-              email: 'admin@test.com'
-            }
-          }
-        ]
+        membership: {
+          id: '990e8400-e29b-41d4-a716-446655440000',
+          role: 'LEADER',
+          joinedAt: '2026-05-01T10:00:00.000Z'
+        }
       }
     }
   })

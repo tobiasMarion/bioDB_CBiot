@@ -84,7 +84,7 @@ function useMaterial(config: MaterialConfig): THREE.MeshPhysicalMaterial {
         metalness,
         clearcoat,
         clearcoatRoughness,
-        envMapIntensity,
+        envMapIntensity
       }),
     [roughness, metalness, clearcoat, clearcoatRoughness, envMapIntensity]
   )
@@ -111,7 +111,11 @@ function HelixStrand({ offset, material, colorA, colorB }: HelixStrandProps) {
   return <mesh geometry={geo} material={material} />
 }
 
-function createSphereGeo(yPos: number, colorA: THREE.Color, colorB: THREE.Color): THREE.BufferGeometry {
+function createSphereGeo(
+  yPos: number,
+  colorA: THREE.Color,
+  colorB: THREE.Color
+): THREE.BufferGeometry {
   const g = new THREE.SphereGeometry(SPHERE_RADIUS, 12, 12)
   g.translate(0, yPos, 0)
   applyVertexGradient(g, colorA, colorB, Y_MIN, Y_MAX)
@@ -152,7 +156,7 @@ function Rungs({ material, colorA, colorB }: RungsProps) {
     () =>
       items.map(({ pA, pB }) => ({
         geoA: createSphereGeo(pA.y, colorA, colorB),
-        geoB: createSphereGeo(pB.y, colorA, colorB),
+        geoB: createSphereGeo(pB.y, colorA, colorB)
       })),
     [items, colorA, colorB]
   )
@@ -199,7 +203,7 @@ interface DNAHelixProps extends Partial<MaterialConfig> {
   style?: React.CSSProperties
 }
 
-export default function DNAHelix({
+export function DNAHelix({
   colorBottom = '#4ade80',
   colorTop = '#22d3ee',
   roughness = 0.28,
@@ -208,15 +212,24 @@ export default function DNAHelix({
   clearcoatRoughness = 0.12,
   envMapIntensity = 1.1,
   className = '',
-  style = {},
+  style = {}
 }: DNAHelixProps) {
   const colorA = useMemo(() => new THREE.Color(colorBottom), [colorBottom])
   const colorB = useMemo(() => new THREE.Color(colorTop), [colorTop])
 
-  const material = useMaterial({ roughness, metalness, clearcoat, clearcoatRoughness, envMapIntensity })
+  const material = useMaterial({
+    roughness,
+    metalness,
+    clearcoat,
+    clearcoatRoughness,
+    envMapIntensity
+  })
 
   return (
-    <div className={className} style={{ width: '100%', height: '100%', background: 'transparent', ...style }}>
+    <div
+      className={className}
+      style={{ width: '100%', height: '100%', background: 'transparent', ...style }}
+    >
       <Canvas
         camera={{ position: [0, 0, 5], fov: 42 }}
         gl={{ antialias: true, alpha: true }}
@@ -224,11 +237,11 @@ export default function DNAHelix({
         performance={{ min: 0.5 }}
       >
         <ambientLight intensity={0.25} />
-        <directionalLight position={[8, 8, 5]} intensity={1.0} color="#ffffff" />
-        <directionalLight position={[-5, -3, -5]} intensity={0.25} color="#aac4ff" />
-        <pointLight position={[3, 6, 4]} intensity={0.6} color="#ffffff" />
-        <pointLight position={[-3, -5, -3]} intensity={0.25} color="#8ab4ff" />
-        <Environment preset="city" />
+        <directionalLight position={[8, 8, 5]} intensity={1.0} color='#ffffff' />
+        <directionalLight position={[-5, -3, -5]} intensity={0.25} color='#aac4ff' />
+        <pointLight position={[3, 6, 4]} intensity={0.6} color='#ffffff' />
+        <pointLight position={[-3, -5, -3]} intensity={0.25} color='#8ab4ff' />
+        <Environment preset='city' />
         <DNAGroup material={material} colorA={colorA} colorB={colorB} />
       </Canvas>
     </div>

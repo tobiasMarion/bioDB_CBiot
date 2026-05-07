@@ -13,6 +13,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { bootstrapAuth } from '@/lib/auth/bootstrap-auth'
 import { authStore } from '@/lib/auth/store'
+import { getGroupDetails } from '@/lib/api/get-group-details'
 import { useQuery } from '@tanstack/react-query'
 import { Outlet, createFileRoute, redirect, useParams } from '@tanstack/react-router'
 
@@ -51,13 +52,14 @@ function AppLayout() {
     })
   }
 
-  // const { groupId } = useParams({ strict: false })
+  const params = useParams({ strict: false })
+  const groupId = params.groupId as string | undefined
 
-  // const { data: group } = useQuery({
-  //   queryKey: ['group', groupId],
-  //   queryFn: () => getGroupById(groupId!),
-  //   enabled: !!groupId
-  // })
+  const { data: group } = useQuery({
+    queryKey: ['group', groupId],
+    queryFn: () => getGroupDetails(groupId!),
+    enabled: !!groupId
+  })
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -83,7 +85,7 @@ function AppLayout() {
                     <BreadcrumbLink>Biological Sample Database</BreadcrumbLink>
                   </BreadcrumbItem>
 
-                  {/* {group && (
+                  {group && (
                     <>
                       <BreadcrumbSeparator />
 
@@ -91,7 +93,7 @@ function AppLayout() {
                         <BreadcrumbPage>{group.name}</BreadcrumbPage>
                       </BreadcrumbItem>
                     </>
-                  )} */}
+                  )}
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
