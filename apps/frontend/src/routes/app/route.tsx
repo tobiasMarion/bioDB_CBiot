@@ -11,15 +11,16 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { getGroupDetails } from '@/lib/api/get-group-details'
 import { bootstrapAuth } from '@/lib/auth/bootstrap-auth'
 import { authStore } from '@/lib/auth/store'
-import { getGroupDetails } from '@/lib/api/get-group-details'
 import { useQuery } from '@tanstack/react-query'
 import { Outlet, createFileRoute, redirect, useParams } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/app')({
   beforeLoad: async ({ location }) => {
     await bootstrapAuth()
+
     const user = authStore.getUser()
 
     if (!user) {
@@ -31,11 +32,8 @@ export const Route = createFileRoute('/app')({
 
     if (location.pathname === '/app' || location.pathname === '/app/') {
       const lastGroupId = localStorage.getItem('lastAccessedGroup')
-
       if (lastGroupId) {
-        throw redirect({
-          to: `/app/${lastGroupId}/samples`
-        })
+        throw redirect({ to: `/app/${lastGroupId}/samples` })
       }
     }
   },
@@ -45,20 +43,21 @@ export const Route = createFileRoute('/app')({
 function AppLayout() {
   const user = authStore.getUser()
 
-  if (!user) {
-    throw redirect({
-      to: '/login',
-      search: { redirect: location.href }
-    })
-  }
+  if (!user) return null
 
   const params = useParams({ strict: false })
-  const groupId = params.groupId as string | undefined
+  const groupId = typeof params.groupId === 'string' ? params.groupId : undefined
 
   const { data: group } = useQuery({
     queryKey: ['group', groupId],
-    queryFn: () => getGroupDetails(groupId!),
-    enabled: !!groupId
+    queryFn: () => {
+      if (!groupId) {
+        throw new Error('groupId is required')
+      }
+
+      return getGroupDetails(groupId)
+    },
+    enabled: Boolean(groupId)
   })
 
   return (
@@ -67,7 +66,7 @@ function AppLayout() {
         <AppSidebar />
 
         <SidebarInset>
-          <header className='mb-4 flex h-16 w-full shrink-0 items-center justify-between gap-2 border-b pr-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
+          <header className='group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 mb-4 flex h-16 w-full shrink-0 items-center justify-between gap-2 border-b pr-4 transition-[width,height] ease-linear'>
             <div className='flex items-center gap-2 px-4'>
               <SidebarTrigger className='-ml-1' />
 

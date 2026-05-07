@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -10,14 +9,15 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { Plus } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 // import { getSamples } from '@/lib/api/get-samples'
 import type { Sample } from '@/lib/api/get-samples'
-import { SamplesToolbar } from './samples-toolbar'
-import { SamplesPagination } from './samples-pagination'
+import { useQuery } from '@tanstack/react-query'
+import { Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { SamplesActions } from './samples-actions'
-import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { SamplesPagination } from './samples-pagination'
+import { SamplesToolbar } from './samples-toolbar'
 
 interface SamplesTableProps {
   groupId: string
@@ -407,7 +407,7 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
               <TableHead>Source Lab</TableHead>
               <TableHead>Origin Organism</TableHead>
               <TableHead className='text-right'>Tubes</TableHead>
-              <TableHead className='text-right w-[168px]'>Actions</TableHead>
+              <TableHead className='text-right w-42'>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

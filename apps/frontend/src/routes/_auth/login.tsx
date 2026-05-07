@@ -1,9 +1,9 @@
+import loginImage from '@/assets/login.jpg'
 import { LoginForm } from '@/components/login-form'
 import { bootstrapAuth } from '@/lib/auth/bootstrap-auth'
 import { authStore } from '@/lib/auth/store'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Dna } from 'lucide-react'
-import loginImage from '@/assets/login.jpg'
 
 export const Route = createFileRoute('/_auth/login')({
   beforeLoad: async () => {

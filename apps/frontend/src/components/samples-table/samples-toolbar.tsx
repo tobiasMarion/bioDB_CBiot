@@ -1,4 +1,3 @@
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -8,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 
 interface SamplesToolbarProps {
@@ -49,7 +49,7 @@ export function SamplesToolbar({
               Filters
               {hasActiveFilters && (
                 <span className='ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground'>
-                  {(!!typeFilter ? 1 : 0) + (search ? 1 : 0)}
+                  {(typeFilter ? 1 : 0) + (search ? 1 : 0)}
                 </span>
               )}
             </Button>

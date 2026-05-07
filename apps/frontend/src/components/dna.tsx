@@ -1,6 +1,6 @@
 import { Environment, Float } from '@react-three/drei'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
 const NUM_RUNGS = 35
@@ -14,6 +14,8 @@ const SPHERE_RADIUS = 0.12
 const TILT_Q = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.2, 0, -0.8, 'XYZ'))
 const Y_MIN = -HELIX_HEIGHT / 6
 const Y_MAX = HELIX_HEIGHT / 6
+
+const UP = new THREE.Vector3(0, 1, 0)
 
 interface MaterialConfig {
   roughness: number
@@ -61,10 +63,10 @@ function applyVertexGradient(
   const colors = new Float32Array(pos.count * 3)
   const aL = colorA.clone().convertSRGBToLinear()
   const bL = colorB.clone().convertSRGBToLinear()
+  const range = yMax - yMin
 
   for (let i = 0; i < pos.count; i++) {
-    const y = pos.getY(i)
-    const t = THREE.MathUtils.clamp((y - yMin) / (yMax - yMin), 0, 1)
+    const t = THREE.MathUtils.clamp((pos.getY(i) - yMin) / range, 0, 1)
     colors[i * 3] = aL.r + (bL.r - aL.r) * t
     colors[i * 3 + 1] = aL.g + (bL.g - aL.g) * t
     colors[i * 3 + 2] = aL.b + (bL.b - aL.b) * t
@@ -74,20 +76,57 @@ function applyVertexGradient(
   return geometry
 }
 
+function buildSphereGeo(
+  yPos: number,
+  colorA: THREE.Color,
+  colorB: THREE.Color
+): THREE.BufferGeometry {
+  const g = new THREE.SphereGeometry(SPHERE_RADIUS, 12, 12)
+  g.translate(0, yPos, 0)
+  applyVertexGradient(g, colorA, colorB, Y_MIN, Y_MAX)
+  g.translate(0, -yPos, 0)
+  return g
+}
+
+function DisposeOnUnmount() {
+  const { gl } = useThree()
+  useEffect(
+    () => () => {
+      gl.dispose()
+    },
+    [gl]
+  )
+  return null
+}
+
 function useMaterial(config: MaterialConfig): THREE.MeshPhysicalMaterial {
-  const { roughness, metalness, clearcoat, clearcoatRoughness, envMapIntensity } = config
-  return useMemo(
+  const material = useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
         vertexColors: true,
-        roughness,
-        metalness,
-        clearcoat,
-        clearcoatRoughness,
-        envMapIntensity
+        roughness: config.roughness,
+        metalness: config.metalness,
+        clearcoat: config.clearcoat,
+        clearcoatRoughness: config.clearcoatRoughness,
+        envMapIntensity: config.envMapIntensity
       }),
-    [roughness, metalness, clearcoat, clearcoatRoughness, envMapIntensity]
+    [
+      config.roughness,
+      config.metalness,
+      config.clearcoat,
+      config.clearcoatRoughness,
+      config.envMapIntensity
+    ]
   )
+
+  useEffect(
+    () => () => {
+      material.dispose()
+    },
+    [material]
+  )
+
+  return material
 }
 
 function HelixStrand({ offset, material, colorA, colorB }: HelixStrandProps) {
@@ -108,19 +147,14 @@ function HelixStrand({ offset, material, colorA, colorB }: HelixStrandProps) {
     return applyVertexGradient(g, colorA, colorB, Y_MIN, Y_MAX)
   }, [offset, colorA, colorB])
 
-  return <mesh geometry={geo} material={material} />
-}
+  useEffect(
+    () => () => {
+      geo.dispose()
+    },
+    [geo]
+  )
 
-function createSphereGeo(
-  yPos: number,
-  colorA: THREE.Color,
-  colorB: THREE.Color
-): THREE.BufferGeometry {
-  const g = new THREE.SphereGeometry(SPHERE_RADIUS, 12, 12)
-  g.translate(0, yPos, 0)
-  applyVertexGradient(g, colorA, colorB, Y_MIN, Y_MAX)
-  g.translate(0, -yPos, 0)
-  return g
+  return <mesh geometry={geo} material={material} />
 }
 
 function Rungs({ material, colorA, colorB }: RungsProps) {
@@ -138,7 +172,7 @@ function Rungs({ material, colorA, colorB }: RungsProps) {
       const dir = pB.clone().sub(pA).normalize()
       const len = pA.distanceTo(pB)
       const mid = pA.clone().lerp(pB, 0.5)
-      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir)
+      const q = new THREE.Quaternion().setFromUnitVectors(UP, dir)
       return { pA, pB, mid, len, q, y }
     })
   }, [])
@@ -155,10 +189,27 @@ function Rungs({ material, colorA, colorB }: RungsProps) {
   const sphereGeos = useMemo(
     () =>
       items.map(({ pA, pB }) => ({
-        geoA: createSphereGeo(pA.y, colorA, colorB),
-        geoB: createSphereGeo(pB.y, colorA, colorB)
+        geoA: buildSphereGeo(pA.y, colorA, colorB),
+        geoB: buildSphereGeo(pB.y, colorA, colorB)
       })),
     [items, colorA, colorB]
+  )
+
+  useEffect(
+    () => () => {
+      for (const g of cylinderGeos) g.dispose()
+    },
+    [cylinderGeos]
+  )
+
+  useEffect(
+    () => () => {
+      for (const { geoA, geoB } of sphereGeos) {
+        geoA.dispose()
+        geoB.dispose()
+      }
+    },
+    [sphereGeos]
   )
 
   return (
@@ -217,13 +268,12 @@ export function DNAHelix({
   const colorA = useMemo(() => new THREE.Color(colorBottom), [colorBottom])
   const colorB = useMemo(() => new THREE.Color(colorTop), [colorTop])
 
-  const material = useMaterial({
-    roughness,
-    metalness,
-    clearcoat,
-    clearcoatRoughness,
-    envMapIntensity
-  })
+  const materialConfig: MaterialConfig = useMemo(
+    () => ({ roughness, metalness, clearcoat, clearcoatRoughness, envMapIntensity }),
+    [roughness, metalness, clearcoat, clearcoatRoughness, envMapIntensity]
+  )
+
+  const material = useMaterial(materialConfig)
 
   return (
     <div
@@ -232,10 +282,12 @@ export function DNAHelix({
     >
       <Canvas
         camera={{ position: [0, 0, 5], fov: 42 }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         style={{ background: 'transparent' }}
         performance={{ min: 0.5 }}
+        frameloop='always'
       >
+        <DisposeOnUnmount />
         <ambientLight intensity={0.25} />
         <directionalLight position={[8, 8, 5]} intensity={1.0} color='#ffffff' />
         <directionalLight position={[-5, -3, -5]} intensity={0.25} color='#aac4ff' />
