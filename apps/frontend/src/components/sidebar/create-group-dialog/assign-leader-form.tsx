@@ -3,7 +3,7 @@ import { sendGroupInvite } from '@/lib/api/send-invite'
 import { cn } from '@/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
-import { useState, type SubmitEvent } from 'react'
+import { type SubmitEvent, useState } from 'react'
 import { Button } from '../../ui/button'
 import {
   Command,
