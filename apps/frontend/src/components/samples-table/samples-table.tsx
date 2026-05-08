@@ -77,6 +77,10 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
     setCurrentPage(1)
   }
 
+  function isSharedSample(sample: Sample) {
+    return sample.group.id !== groupId
+  }
+
   const handleView = (sample: Sample) => {
     console.log('View sample:', sample.id)
   }
@@ -174,7 +178,7 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
                       className='flex gap-2 items-center'
                     >
                       {sample.name}
-                      {sample.group.id !== groupId && (
+                      {isSharedSample(sample) && (
                         <TooltipProvider>
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
@@ -202,6 +206,7 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
                   </TableCell>
                   <TableCell className='text-right'>
                     <SamplesActions
+                      disableShare={isSharedSample(sample)}
                       onView={() => handleView(sample)}
                       onShare={() => handleShare(sample)}
                     />
