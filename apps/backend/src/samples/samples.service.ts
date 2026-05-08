@@ -6,6 +6,7 @@ import { Prisma } from '../common/prisma/generated/client'
 import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateSampleDTO } from './dto/CreateSample'
 import { UpdateSampleDTO } from './dto/UpdateSample'
+import type { GetSamplesFilter } from './dto/GetSamplesFilter'
 
 const sampleSelect = {
   id: true,
@@ -14,11 +15,23 @@ const sampleSelect = {
   originOrganism: true,
   sourceLab: true,
   groupId: true,
+  group: {
+    select: { id: true, name: true }
+  },
   createdBy: true,
   createdAt: true,
   updatedAt: true,
   creator: {
     select: { id: true, name: true, email: true }
+  }
+}
+
+const sampleListSelect = {
+  ...sampleSelect,
+  _count: {
+    select: {
+      tubes: { where: { isArchived: false } }
+    }
   }
 }
 
@@ -71,17 +84,52 @@ export class SamplesService {
     }
   }
 
-  async findAllByGroup(groupId: string, user: User) {
+  async findAllByGroup(groupId: string, user: User, params: GetSamplesFilter) {
     await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
 
-    return this.prisma.sample.findMany({
-      where: {
-        groupId: groupId,
-        isArchived: false
-      },
-      orderBy: { createdAt: 'desc' },
-      select: sampleSelect
-    })
+    const page = params?.page ?? 1
+    const pageSize = Math.min(params?.pageSize ?? 20, 100)
+
+    const searchFilter: Prisma.SampleWhereInput | undefined = params?.search
+      ? {
+          OR: [
+            { name: { contains: params.search, mode: 'insensitive' } },
+            { type: { contains: params.search, mode: 'insensitive' } },
+            { originOrganism: { contains: params.search, mode: 'insensitive' } },
+            { sourceLab: { contains: params.search, mode: 'insensitive' } }
+          ]
+        }
+      : undefined
+
+    const where: Prisma.SampleWhereInput = {
+      AND: [
+        { isArchived: false },
+        ...(params?.type ? [{ type: params.type }] : []),
+        ...(searchFilter ? [searchFilter] : []),
+        {
+          OR: [{ groupId }, { shares: { some: { targetGroupId: groupId, isArchived: false } } }]
+        }
+      ]
+    }
+
+    const [samples, total] = await Promise.all([
+      this.prisma.sample.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: sampleListSelect
+      }),
+      this.prisma.sample.count({ where })
+    ])
+
+    return {
+      samples: samples.map(({ _count, groupId, ...sample }) => ({
+        ...sample,
+        amountOfTubes: _count.tubes
+      })),
+      total
+    }
   }
 
   async archive(id: string, user: User) {

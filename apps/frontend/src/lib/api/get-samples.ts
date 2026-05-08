@@ -4,10 +4,13 @@ export type Sample = {
   id: string
   name: string
   type: string
-  tubesCount: number
+  amountOfTubes: number
   originOrganism: string
   sourceLab: string
-  groupId: string
+  group: {
+    id: string
+    name: string
+  }
   createdBy: string
   createdAt: string
   updatedAt: string
@@ -25,6 +28,13 @@ export type GetSamplesParams = {
   pageSize?: number
 }
 
+export type GetSamplesResponse = {
+  samples: Sample[]
+  total: number
+}
+
 export function getSamples(groupId: string, params?: GetSamplesParams) {
-  return apiClient.get(`groups/${groupId}/samples`, { searchParams: params }).json<Sample[]>()
+  return apiClient
+    .get(`groups/${groupId}/samples`, { searchParams: params })
+    .json<GetSamplesResponse>()
 }

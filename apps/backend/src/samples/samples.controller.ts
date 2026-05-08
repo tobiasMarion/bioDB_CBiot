@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query
+} from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
@@ -82,7 +93,10 @@ export class SamplesController {
           type: 'DNA',
           originOrganism: 'Homo sapiens',
           sourceLab: 'Lab A',
-          groupId: 'g12345678-1234-1234-1234-123456789012',
+          group: {
+            id: 'uuid-group-owner',
+            name: 'Genetics Lab'
+          },
           createdBy: 'u12345678-1234-1234-1234-123456789012',
           createdAt: '2026-05-07T12:00:00.000Z',
           updatedAt: '2026-05-07T12:00:00.000Z',
@@ -90,13 +104,21 @@ export class SamplesController {
             id: 'u12345678-1234-1234-1234-123456789012',
             name: 'John Doe',
             email: 'john@example.com'
-          }
+          },
+          amountOfTubes: 4
         }
       ]
     }
   })
-  async findAll(@Param('groupId') groupId: string, @CurrentUser() user: User) {
-    return this.samplesService.findAllByGroup(groupId, user)
+  async findAll(
+    @Param('groupId') groupId: string,
+    @CurrentUser() user: User,
+    @Query('search') search?: string,
+    @Query('type') type?: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize?: number
+  ) {
+    return this.samplesService.findAllByGroup(groupId, user, { search, type, page, pageSize })
   }
 
   @Get('groups/:groupId/samples/stats')
