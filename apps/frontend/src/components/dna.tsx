@@ -14,8 +14,10 @@ const SPHERE_RADIUS = 0.12
 const TILT_Q = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.2, 0, -0.8, 'XYZ'))
 const Y_MIN = -HELIX_HEIGHT / 6
 const Y_MAX = HELIX_HEIGHT / 6
-
 const UP = new THREE.Vector3(0, 1, 0)
+
+const BASE_CYLINDER_GEO = new THREE.CylinderGeometry(RUNG_RADIUS, RUNG_RADIUS, 1, 6, 1)
+const BASE_SPHERE_GEO = new THREE.SphereGeometry(SPHERE_RADIUS, 8, 8)
 
 interface MaterialConfig {
   roughness: number
@@ -35,21 +37,16 @@ interface HelixStrandProps extends ColorProps {
   material: THREE.MeshPhysicalMaterial
 }
 
-interface RungsProps extends ColorProps {
+interface RunsInstancedProps extends ColorProps {
   material: THREE.MeshPhysicalMaterial
 }
 
 interface DNAGroupProps extends ColorProps {
-  material: THREE.MeshPhysicalMaterial
+  materialConfig: MaterialConfig
 }
 
-interface RungItem {
-  pA: THREE.Vector3
-  pB: THREE.Vector3
-  mid: THREE.Vector3
-  len: number
-  q: THREE.Quaternion
-  y: number
+function yToT(y: number): number {
+  return THREE.MathUtils.clamp((y - Y_MIN) / (Y_MAX - Y_MIN), 0, 1)
 }
 
 function applyVertexGradient(
@@ -74,29 +71,6 @@ function applyVertexGradient(
 
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
   return geometry
-}
-
-function buildSphereGeo(
-  yPos: number,
-  colorA: THREE.Color,
-  colorB: THREE.Color
-): THREE.BufferGeometry {
-  const g = new THREE.SphereGeometry(SPHERE_RADIUS, 12, 12)
-  g.translate(0, yPos, 0)
-  applyVertexGradient(g, colorA, colorB, Y_MIN, Y_MAX)
-  g.translate(0, -yPos, 0)
-  return g
-}
-
-function DisposeOnUnmount() {
-  const { gl } = useThree()
-  useEffect(
-    () => () => {
-      gl.dispose()
-    },
-    [gl]
-  )
-  return null
 }
 
 function useMaterial(config: MaterialConfig): THREE.MeshPhysicalMaterial {
@@ -129,11 +103,22 @@ function useMaterial(config: MaterialConfig): THREE.MeshPhysicalMaterial {
   return material
 }
 
+function DisposeOnUnmount() {
+  const { gl } = useThree()
+  useEffect(
+    () => () => {
+      gl.dispose()
+    },
+    [gl]
+  )
+  return null
+}
+
 function HelixStrand({ offset, material, colorA, colorB }: HelixStrandProps) {
   const geo = useMemo(() => {
     const pts: THREE.Vector3[] = []
-    for (let i = 0; i <= 160; i++) {
-      const t = i / 160
+    for (let i = 0; i <= 80; i++) {
+      const t = i / 80
       const a = t * Math.PI * 2 * TURNS + offset
       pts.push(
         new THREE.Vector3(
@@ -143,7 +128,7 @@ function HelixStrand({ offset, material, colorA, colorB }: HelixStrandProps) {
         )
       )
     }
-    const g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 160, STRAND_RADIUS, 8, false)
+    const g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 80, STRAND_RADIUS, 7, false)
     return applyVertexGradient(g, colorA, colorB, Y_MIN, Y_MAX)
   }, [offset, colorA, colorB])
 
@@ -157,9 +142,23 @@ function HelixStrand({ offset, material, colorA, colorB }: HelixStrandProps) {
   return <mesh geometry={geo} material={material} />
 }
 
-function Rungs({ material, colorA, colorB }: RungsProps) {
-  const items: RungItem[] = useMemo(() => {
-    return Array.from({ length: NUM_RUNGS }, (_, i) => {
+function RunsInstanced({ material, colorA, colorB }: RunsInstancedProps) {
+  const cylRef = useRef<THREE.InstancedMesh>(null)
+  const sphARef = useRef<THREE.InstancedMesh>(null)
+  const sphBRef = useRef<THREE.InstancedMesh>(null)
+
+  const { items, cylinderMat, sphereMat } = useMemo(() => {
+    const cylinderMat = new THREE.MeshPhysicalMaterial({
+      roughness: material.roughness,
+      metalness: material.metalness,
+      clearcoat: material.clearcoat,
+      clearcoatRoughness: material.clearcoatRoughness,
+      envMapIntensity: material.envMapIntensity,
+      vertexColors: false
+    })
+    const sphereMat = cylinderMat.clone()
+
+    const items = Array.from({ length: NUM_RUNGS }, (_, i) => {
       const t = i / (NUM_RUNGS - 1)
       const ang = t * Math.PI * 2 * TURNS
       const y = (t - 0.5) * HELIX_HEIGHT
@@ -169,65 +168,78 @@ function Rungs({ material, colorA, colorB }: RungsProps) {
         y,
         Math.sin(ang + Math.PI) * HELIX_RADIUS
       )
-      const dir = pB.clone().sub(pA).normalize()
       const len = pA.distanceTo(pB)
       const mid = pA.clone().lerp(pB, 0.5)
+      const dir = pB.clone().sub(pA).normalize()
       const q = new THREE.Quaternion().setFromUnitVectors(UP, dir)
       return { pA, pB, mid, len, q, y }
     })
-  }, [])
 
-  const cylinderGeos = useMemo(
-    () =>
-      items.map(({ len }) => {
-        const g = new THREE.CylinderGeometry(RUNG_RADIUS, RUNG_RADIUS, len * 0.94, 7, 1)
-        return applyVertexGradient(g, colorA, colorB, Y_MIN, Y_MAX)
-      }),
-    [items, colorA, colorB]
-  )
+    return { items, cylinderMat, sphereMat }
+  }, [material])
 
-  const sphereGeos = useMemo(
-    () =>
-      items.map(({ pA, pB }) => ({
-        geoA: buildSphereGeo(pA.y, colorA, colorB),
-        geoB: buildSphereGeo(pB.y, colorA, colorB)
-      })),
-    [items, colorA, colorB]
-  )
+  useEffect(() => {
+    const dummy = new THREE.Object3D()
+    const aL = colorA.clone().convertSRGBToLinear()
+    const bL = colorB.clone().convertSRGBToLinear()
 
-  useEffect(
-    () => () => {
-      for (const g of cylinderGeos) g.dispose()
-    },
-    [cylinderGeos]
-  )
+    items.forEach(({ mid, len, q, pA, pB, y }, i) => {
+      const col = aL.clone().lerp(bL, yToT(y))
 
-  useEffect(
-    () => () => {
-      for (const { geoA, geoB } of sphereGeos) {
-        geoA.dispose()
-        geoB.dispose()
+      if (cylRef.current) {
+        dummy.position.copy(mid)
+        dummy.quaternion.copy(q)
+        dummy.scale.set(1, len * 0.94, 1)
+        dummy.updateMatrix()
+        cylRef.current.setMatrixAt(i, dummy.matrix)
+        cylRef.current.setColorAt(i, col)
       }
+
+      if (sphARef.current) {
+        dummy.position.copy(pA)
+        dummy.quaternion.identity()
+        dummy.scale.setScalar(1)
+        dummy.updateMatrix()
+        sphARef.current.setMatrixAt(i, dummy.matrix)
+        sphARef.current.setColorAt(i, aL.clone().lerp(bL, yToT(pA.y)))
+      }
+
+      if (sphBRef.current) {
+        dummy.position.copy(pB)
+        dummy.quaternion.identity()
+        dummy.scale.setScalar(1)
+        dummy.updateMatrix()
+        sphBRef.current.setMatrixAt(i, dummy.matrix)
+        sphBRef.current.setColorAt(i, aL.clone().lerp(bL, yToT(pB.y)))
+      }
+    })
+
+    for (const ref of [cylRef, sphARef, sphBRef]) {
+      if (!ref.current) continue
+      ref.current.instanceMatrix.needsUpdate = true
+      if (ref.current.instanceColor) ref.current.instanceColor.needsUpdate = true
+    }
+  }, [items, colorA, colorB])
+
+  useEffect(
+    () => () => {
+      cylinderMat.dispose()
+      sphereMat.dispose()
     },
-    [sphereGeos]
+    [cylinderMat, sphereMat]
   )
 
   return (
     <>
-      {items.map(({ pA, pB, mid, q }, i) => (
-        <group key={i}>
-          <group position={mid} quaternion={q}>
-            <mesh geometry={cylinderGeos[i]} material={material} />
-          </group>
-          <mesh position={pA} geometry={sphereGeos[i].geoA} material={material} />
-          <mesh position={pB} geometry={sphereGeos[i].geoB} material={material} />
-        </group>
-      ))}
+      <instancedMesh ref={cylRef} args={[BASE_CYLINDER_GEO, cylinderMat, NUM_RUNGS]} />
+      <instancedMesh ref={sphARef} args={[BASE_SPHERE_GEO, sphereMat, NUM_RUNGS]} />
+      <instancedMesh ref={sphBRef} args={[BASE_SPHERE_GEO, sphereMat, NUM_RUNGS]} />
     </>
   )
 }
 
-function DNAGroup({ material, colorA, colorB }: DNAGroupProps) {
+function DNAGroup({ materialConfig, colorA, colorB }: DNAGroupProps) {
+  const material = useMaterial(materialConfig)
   const spinRef = useRef<THREE.Group>(null)
 
   useFrame(({ clock }) => {
@@ -238,7 +250,7 @@ function DNAGroup({ material, colorA, colorB }: DNAGroupProps) {
     <Float speed={0.65} rotationIntensity={0.05} floatIntensity={0.1}>
       <group quaternion={TILT_Q}>
         <group ref={spinRef}>
-          <Rungs material={material} colorA={colorA} colorB={colorB} />
+          <RunsInstanced material={material} colorA={colorA} colorB={colorB} />
           <HelixStrand offset={0} material={material} colorA={colorA} colorB={colorB} />
           <HelixStrand offset={Math.PI} material={material} colorA={colorA} colorB={colorB} />
         </group>
@@ -273,8 +285,6 @@ export function DNAHelix({
     [roughness, metalness, clearcoat, clearcoatRoughness, envMapIntensity]
   )
 
-  const material = useMaterial(materialConfig)
-
   return (
     <div
       className={className}
@@ -288,13 +298,16 @@ export function DNAHelix({
         frameloop='always'
       >
         <DisposeOnUnmount />
-        <ambientLight intensity={0.25} />
-        <directionalLight position={[8, 8, 5]} intensity={1.0} color='#ffffff' />
-        <directionalLight position={[-5, -3, -5]} intensity={0.25} color='#aac4ff' />
-        <pointLight position={[3, 6, 4]} intensity={0.6} color='#ffffff' />
-        <pointLight position={[-3, -5, -3]} intensity={0.25} color='#8ab4ff' />
-        <Environment preset='city' />
-        <DNAGroup material={material} colorA={colorA} colorB={colorB} />
+        <hemisphereLight args={['#ffe8c0', '#1a3a6e', 1.5]} />
+        <directionalLight position={[8, 8, 5]} intensity={2.5} color='#ffffff' />
+        <directionalLight position={[-5, -3, -5]} intensity={0.8} color='#aac4ff' />
+        <pointLight position={[3, 6, 4]} intensity={2.0} color='#ffffff' />
+        <pointLight position={[-3, -5, -3]} intensity={0.8} color='#8ab4ff' />
+        <pointLight position={[0, -6, 2]} intensity={0.8} color='#4488ff' />
+        <Environment resolution={32} background={false}>
+          <color attach='background' args={['#334466']} />
+        </Environment>
+        <DNAGroup materialConfig={materialConfig} colorA={colorA} colorB={colorB} />
       </Canvas>
     </div>
   )

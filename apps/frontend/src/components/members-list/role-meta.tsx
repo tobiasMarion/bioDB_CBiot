@@ -6,9 +6,9 @@ export interface RoleMeta {
 }
 
 export const ROLE_META: Record<Role, RoleMeta> = {
-  LEADER: { label: 'Leader', className: 'text-amber-600 dark:text-amber-500' },
-  MANAGER: { label: 'Manager', className: 'text-blue-600 dark:text-blue-500' },
-  RESEARCHER: { label: 'Researcher', className: 'text-muted-foreground' }
+  LEADER: { label: 'Leader', className: 'text-cyan-600 dark:text-cyan-500' },
+  MANAGER: { label: 'Manager', className: 'text-teal-600 dark:text-teal-500' },
+  RESEARCHER: { label: 'Researcher', className: 'text-slate-500 dark:text-slate-400' }
 }
 
 export function getInitials(name: string): string {

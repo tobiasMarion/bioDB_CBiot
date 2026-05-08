@@ -25,7 +25,7 @@ type TokenPayload = {
 }
 
 function generateUserId(email: string, password: string) {
-  return crypto.createHash('sha256').update(`${email}:${password}`).digest('hex')
+  return crypto.createHash('sha256').update(`${email}`).digest('hex')
 }
 
 const mockUsers: Record<string, { name: string; isAdmin: boolean }> = {
