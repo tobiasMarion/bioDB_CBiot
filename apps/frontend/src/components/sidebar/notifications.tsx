@@ -63,7 +63,7 @@ export function Notifications() {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
-          className='w-[calc(100vw-2rem)] sm:w-105 rounded-lg'
+          className='w-[calc(100dvw-2rem)] sm:w-105 rounded-lg'
           side={isMobile ? 'bottom' : 'right'}
           align={isMobile ? 'center' : 'end'}
           sideOffset={4}
