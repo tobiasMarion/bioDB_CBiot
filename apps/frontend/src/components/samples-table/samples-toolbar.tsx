@@ -70,18 +70,18 @@ export function SamplesToolbar({
   const hasPendingChanges = JSON.stringify(pendingTypes) !== JSON.stringify(typeFilter)
 
   return (
-    <div className='flex flex-col sm:flex-row gap-3 items-stretch sm:items-center'>
-      <div className='relative flex-1'>
+    <div className='flex flex-col sm:flex-row gap-2 sm:gap-3'>
+      <div className='relative w-full'>
         <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
         <Input
           placeholder='Search samples...'
           value={search}
           onChange={e => onSearchChange(e.target.value)}
-          className='pl-9 h-9'
+          className='pl-9 h-9 w-full'
         />
       </div>
 
-      <div className='flex gap-2'>
+      <div className='flex gap-2 w-full sm:w-auto'>
         <DropdownMenu
           modal={false}
           open={isOpen}

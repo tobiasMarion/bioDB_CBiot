@@ -120,19 +120,21 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
 
   return (
     <div className='flex flex-col gap-4'>
-      <div className='flex items-center justify-between'>
-        <SamplesToolbar
-          search={search}
-          onSearchChange={handleSearchChange}
-          typeFilter={typeFilter}
-          onTypeFilterChange={handleTypeFilterChange}
-          availableTypes={availableTypes}
-          onClearFilters={handleClearFilters}
-          hasActiveFilters={hasActiveFilters}
-        />
+      <div className='flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between'>
+        <div className='flex-1 order-2 sm:order-1'>
+          <SamplesToolbar
+            search={search}
+            onSearchChange={handleSearchChange}
+            typeFilter={typeFilter}
+            onTypeFilterChange={handleTypeFilterChange}
+            availableTypes={availableTypes}
+            onClearFilters={handleClearFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
+        </div>
         <Button
           size='sm'
-          className='gap-2 shrink-0 [&:hover]:bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.08),transparent_50%)]'
+          className='order-1 sm:order-2 gap-2 w-full sm:w-auto [&:hover]:bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.08),transparent_50%)]'
         >
           <Plus className='size-4' />
           New Sample
