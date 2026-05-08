@@ -218,7 +218,9 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
                         {sample.amountOfTubes}
                       </TableCell>
                       <TableCell>
-                        <Badge variant='secondary'>{sample.type}</Badge>
+                        <Badge variant='outline' className='text-muted-foreground'>
+                          {sample.type}
+                        </Badge>
                       </TableCell>
                       <TableCell className='text-muted-foreground'>
                         {sample.sourceLab || '-'}
@@ -227,7 +229,7 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
                         {sample.originOrganism || '-'}
                       </TableCell>
                       <TableCell className='text-muted-foreground text-sm'>
-                        {new Date(sample.createdAt).toLocaleDateString()}
+                        {new Date(sample.createdAt).toLocaleDateString('pt-BR')}
                       </TableCell>
                       <TableCell className='text-right'>
                         <SamplesActions
