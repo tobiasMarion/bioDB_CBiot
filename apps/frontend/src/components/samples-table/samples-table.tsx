@@ -10,7 +10,9 @@ import {
   TableRow
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { getSamples, type Sample } from '@/lib/api/get-samples'
+import { getSamples } from '@/lib/api/get-samples'
+import type { Sample } from '@/lib/api/get-samples'
+import { getSamplesTypes } from '@/lib/api/get-samples-types'
 import { useQuery } from '@tanstack/react-query'
 import { Plus, Share2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -28,7 +30,7 @@ const SEARCH_DEBOUNCE_MS = 300
 export function SamplesTable({ groupId }: SamplesTableProps) {
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [typeFilter, setTypeFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
@@ -36,16 +38,23 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
     return () => clearTimeout(timer)
   }, [search])
 
+  const { data: availableTypesData } = useQuery({
+    queryKey: ['samples-types', groupId],
+    queryFn: () => getSamplesTypes(groupId)
+  })
+
+  const availableTypes = availableTypesData ?? []
+
   const { data, isLoading } = useQuery({
     queryKey: [
       'samples',
       groupId,
-      { search: debouncedSearch, type: typeFilter, page: currentPage }
+      { search: debouncedSearch, types: typeFilter, page: currentPage }
     ],
     queryFn: () =>
       getSamples(groupId, {
         search: debouncedSearch || undefined,
-        type: typeFilter || undefined,
+        types: typeFilter.length > 0 ? typeFilter.join(',') : undefined,
         page: currentPage,
         pageSize: ITEMS_PER_PAGE
       })
@@ -55,25 +64,21 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
   const totalItems = data?.total ?? 0
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE)
 
-  const availableTypes = Array.from(
-    new Set(samples.map((s: Sample) => s.type).filter(Boolean))
-  ).sort() as string[]
-
-  const hasActiveFilters = !!search || !!typeFilter
+  const hasActiveFilters = !!search || typeFilter.length > 0
 
   const handleSearchChange = (value: string) => {
     setSearch(value)
     setCurrentPage(1)
   }
 
-  const handleTypeFilterChange = (value: string) => {
-    setTypeFilter(value)
+  const handleTypeFilterChange = (selectedTypes: string[]) => {
+    setTypeFilter(selectedTypes)
     setCurrentPage(1)
   }
 
   const handleClearFilters = () => {
     setSearch('')
-    setTypeFilter('')
+    setTypeFilter([])
     setCurrentPage(1)
   }
 

@@ -23,7 +23,7 @@ export type Sample = {
 
 export type GetSamplesParams = {
   search?: string
-  type?: string
+  types?: string
   page?: number
   pageSize?: number
 }

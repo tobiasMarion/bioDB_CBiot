@@ -5,8 +5,8 @@ import type { User } from '../auth/types/user.type'
 import { Prisma } from '../common/prisma/generated/client'
 import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateSampleDTO } from './dto/CreateSample'
-import { UpdateSampleDTO } from './dto/UpdateSample'
 import type { GetSamplesFilter } from './dto/GetSamplesFilter'
+import { UpdateSampleDTO } from './dto/UpdateSample'
 
 const sampleSelect = {
   id: true,
@@ -104,7 +104,7 @@ export class SamplesService {
     const where: Prisma.SampleWhereInput = {
       AND: [
         { isArchived: false },
-        ...(params?.type ? [{ type: params.type }] : []),
+        ...(params?.types?.length ? [{ type: { in: params.types } }] : []),
         ...(searchFilter ? [searchFilter] : []),
         {
           OR: [{ groupId }, { shares: { some: { targetGroupId: groupId, isArchived: false } } }]
@@ -279,5 +279,20 @@ export class SamplesService {
     } catch (error) {
       throw new InternalServerErrorException('Error updating sample')
     }
+  }
+
+  async getAvailableTypes(groupId: string, user: User) {
+    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
+
+    const types = await this.prisma.sample.groupBy({
+      by: ['type'],
+      where: {
+        isArchived: false,
+        OR: [{ groupId }, { shares: { some: { targetGroupId: groupId, isArchived: false } } }]
+      },
+      orderBy: { type: 'asc' }
+    })
+
+    return types.map(t => t.type).filter(Boolean)
   }
 }

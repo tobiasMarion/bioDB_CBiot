@@ -1,7 +1,7 @@
-import { bootstrapAuth } from '@/lib/auth/bootstrap-auth'
-import { authStore } from '@/lib/auth/store'
 import { getGroups } from '@/lib/api/get-groups'
 import { queryClient } from '@/lib/api/query-client'
+import { bootstrapAuth } from '@/lib/auth/bootstrap-auth'
+import { authStore } from '@/lib/auth/store'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({

@@ -114,11 +114,17 @@ export class SamplesController {
     @Param('groupId') groupId: string,
     @CurrentUser() user: User,
     @Query('search') search?: string,
-    @Query('type') type?: string,
+    @Query('types') types?: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
     @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize?: number
   ) {
-    return this.samplesService.findAllByGroup(groupId, user, { search, type, page, pageSize })
+    const typesArray = types ? types.split(',').filter(Boolean) : undefined
+    return this.samplesService.findAllByGroup(groupId, user, {
+      search,
+      types: typesArray,
+      page,
+      pageSize
+    })
   }
 
   @Get('groups/:groupId/samples/stats')
@@ -185,6 +191,27 @@ export class SamplesController {
   })
   async remove(@Param('id') id: string, @CurrentUser() user: User) {
     return this.samplesService.archive(id, user)
+  }
+
+  @Get('groups/:groupId/samples/types')
+  @Auth()
+  @ApiOperation({
+    summary: 'Get available sample types',
+    description: 'Returns all unique sample types for a group. Requires RESEARCHER role or higher.'
+  })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
+  @ApiForbiddenResponse({
+    description: 'Insufficient permissions. Requires RESEARCHER role or higher in the group.'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Types retrieved successfully',
+    schema: {
+      example: ['DNA', 'RNA', 'Protein', 'Cell Line']
+    }
+  })
+  async getAvailableTypes(@Param('groupId') groupId: string, @CurrentUser() user: User) {
+    return this.samplesService.getAvailableTypes(groupId, user)
   }
 
   @Patch('samples/:id')

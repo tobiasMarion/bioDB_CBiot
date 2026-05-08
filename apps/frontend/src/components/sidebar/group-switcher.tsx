@@ -82,7 +82,7 @@ export function GroupSwitcher({ teams, isAdmin }: { teams: Group[]; isAdmin: boo
     <>
       <SidebarMenu>
         <SidebarMenuItem>
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size='lg'
@@ -107,6 +107,7 @@ export function GroupSwitcher({ teams, isAdmin }: { teams: Group[]; isAdmin: boo
               align='start'
               side={isMobile ? 'bottom' : 'right'}
               sideOffset={4}
+              onCloseAutoFocus={e => e.preventDefault()}
             >
               <DropdownMenuGroup>
                 <DropdownMenuLabel className='text-xs text-muted-foreground uppercase tracking-wider font-semibold'>

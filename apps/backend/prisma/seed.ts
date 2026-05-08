@@ -2,12 +2,12 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import {
   AuditAction,
   AuditEntityType,
+  type Box,
+  type Freezer,
   GroupRole,
   InviteStatus,
   PrismaClient,
-  SamplePermission,
-  type Box,
-  type Freezer
+  SamplePermission
 } from '../src/common/prisma/generated/client'
 
 const prisma = new PrismaClient({

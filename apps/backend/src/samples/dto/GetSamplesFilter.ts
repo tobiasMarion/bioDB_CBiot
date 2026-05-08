@@ -1,3 +1,3 @@
 export type GetSamplesFilter =
-  | { search?: string; type?: string; page?: number; pageSize?: number }
+  | { search?: string; types?: string[]; page?: number; pageSize?: number }
   | undefined
