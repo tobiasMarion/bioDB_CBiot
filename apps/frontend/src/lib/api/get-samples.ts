@@ -26,6 +26,8 @@ export type GetSamplesParams = {
   types?: string
   page?: number
   pageSize?: number
+  sortBy?: 'name' | 'type' | 'createdAt'
+  sortOrder?: 'asc' | 'desc'
 }
 
 export type GetSamplesResponse = {

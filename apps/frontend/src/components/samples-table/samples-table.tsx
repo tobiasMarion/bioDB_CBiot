@@ -32,6 +32,8 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [sortBy, setSortBy] = useState<'name' | 'type' | 'createdAt'>('createdAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), SEARCH_DEBOUNCE_MS)
@@ -49,14 +51,16 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
     queryKey: [
       'samples',
       groupId,
-      { search: debouncedSearch, types: typeFilter, page: currentPage }
+      { search: debouncedSearch, types: typeFilter, page: currentPage, sortBy, sortOrder }
     ],
     queryFn: () =>
       getSamples(groupId, {
         search: debouncedSearch || undefined,
         types: typeFilter.length > 0 ? typeFilter.join(',') : undefined,
         page: currentPage,
-        pageSize: ITEMS_PER_PAGE
+        pageSize: ITEMS_PER_PAGE,
+        sortBy,
+        sortOrder
       })
   })
 
@@ -79,6 +83,16 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
   const handleClearFilters = () => {
     setSearch('')
     setTypeFilter([])
+    setCurrentPage(1)
+  }
+
+  const handleSortChange = (field: 'name' | 'type' | 'createdAt') => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortOrder('asc')
+    }
     setCurrentPage(1)
   }
 
@@ -106,6 +120,9 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
             availableTypes={availableTypes}
             onClearFilters={handleClearFilters}
             hasActiveFilters={hasActiveFilters}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortChange={handleSortChange}
           />
         </div>
         <Button
@@ -120,15 +137,15 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
       {isLoading ? (
         <div className='rounded-md border'>
           <div className='border-b'>
-            <div className='grid grid-cols-7 gap-4 p-4'>
-              {[...Array(7)].map((_, i) => (
+            <div className='grid grid-cols-8 gap-4 p-4'>
+              {[...Array(8)].map((_, i) => (
                 <Skeleton key={i} className='h-4' />
               ))}
             </div>
           </div>
           {[...Array(5)].map((_, i) => (
-            <div key={i} className='grid grid-cols-7 gap-4 p-4 border-t'>
-              {[...Array(7)].map((_, j) => (
+            <div key={i} className='grid grid-cols-8 gap-4 p-4 border-t'>
+              {[...Array(8)].map((_, j) => (
                 <Skeleton key={j} className='h-4' />
               ))}
             </div>
@@ -146,13 +163,14 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
                   <TableHead>Type</TableHead>
                   <TableHead>Source Lab</TableHead>
                   <TableHead>Origin Organism</TableHead>
+                  <TableHead>Created</TableHead>
                   <TableHead className='text-right w-42'>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {samples.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className='h-32 text-center'>
+                    <TableCell colSpan={8} className='h-32 text-center'>
                       {hasActiveFilters ? 'No samples match your filters.' : 'No samples found.'}
                     </TableCell>
                   </TableRow>
@@ -207,6 +225,9 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
                       </TableCell>
                       <TableCell className='text-muted-foreground'>
                         {sample.originOrganism || '-'}
+                      </TableCell>
+                      <TableCell className='text-muted-foreground text-sm'>
+                        {new Date(sample.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell className='text-right'>
                         <SamplesActions

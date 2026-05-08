@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { Check, Search, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowDownUp, Check, Search, SlidersHorizontal, X } from 'lucide-react'
 import { useState } from 'react'
 
 interface SamplesToolbarProps {
@@ -19,6 +19,9 @@ interface SamplesToolbarProps {
   availableTypes: string[]
   onClearFilters: () => void
   hasActiveFilters: boolean
+  sortBy: 'name' | 'type' | 'createdAt'
+  sortOrder: 'asc' | 'desc'
+  onSortChange: (field: 'name' | 'type' | 'createdAt') => void
 }
 
 export function SamplesToolbar({
@@ -28,7 +31,10 @@ export function SamplesToolbar({
   onTypeFilterChange,
   availableTypes,
   onClearFilters,
-  hasActiveFilters
+  hasActiveFilters,
+  sortBy,
+  sortOrder,
+  onSortChange
 }: SamplesToolbarProps) {
   const [pendingTypes, setPendingTypes] = useState<string[]>(typeFilter)
   const [isOpen, setIsOpen] = useState(false)
@@ -82,6 +88,37 @@ export function SamplesToolbar({
       </div>
 
       <div className='flex gap-2 w-full sm:w-auto'>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant='outline' size='sm' className='h-9 gap-2'>
+              <ArrowDownUp className='size-4' />
+              Sort
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align='end' className='w-40'>
+            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem
+              checked={sortBy === 'name'}
+              onCheckedChange={() => onSortChange('name')}
+            >
+              Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={sortBy === 'type'}
+              onCheckedChange={() => onSortChange('type')}
+            >
+              Type {sortBy === 'type' && (sortOrder === 'asc' ? '↑' : '↓')}
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={sortBy === 'createdAt'}
+              onCheckedChange={() => onSortChange('createdAt')}
+            >
+              Created {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <DropdownMenu
           modal={false}
           open={isOpen}

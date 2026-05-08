@@ -112,10 +112,17 @@ export class SamplesService {
       ]
     }
 
+    const sortField = params?.sortBy ?? 'createdAt'
+    const sortDirection = params?.sortOrder ?? 'desc'
+
+    const orderBy = {
+      [sortField]: sortDirection
+    } as Prisma.SampleOrderByWithRelationInput
+
     const [samples, total] = await Promise.all([
       this.prisma.sample.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         skip: (page - 1) * pageSize,
         take: pageSize,
         select: sampleListSelect

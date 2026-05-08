@@ -116,14 +116,18 @@ export class SamplesController {
     @Query('search') search?: string,
     @Query('types') types?: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
-    @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize?: number
+    @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize?: number,
+    @Query('sortBy') sortBy?: 'name' | 'type' | 'createdAt',
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc'
   ) {
     const typesArray = types ? types.split(',').filter(Boolean) : undefined
     return this.samplesService.findAllByGroup(groupId, user, {
       search,
       types: typesArray,
       page,
-      pageSize
+      pageSize,
+      sortBy,
+      sortOrder
     })
   }
 
