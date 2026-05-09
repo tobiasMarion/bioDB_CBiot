@@ -16,14 +16,8 @@ import {
   SidebarMenuItem,
   useSidebar
 } from '@/components/ui/sidebar'
+import type { User } from '@/lib/api/types/user'
 import { Notifications } from './notifications'
-
-export interface User {
-  id: string
-  name: string
-  email: string
-  isAdmin: boolean
-}
 
 export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar()
@@ -44,26 +38,34 @@ export function NavUser({ user }: { user: User }) {
   return (
     <SidebarMenu>
       <SidebarMenuItem className='flex items-center gap-2'>
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size='lg'
-              className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+              className='group/profile data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
             >
               <Avatar className='h-8 w-8 rounded-lg'>
-                {/* Removido o AvatarImage. Agora apenas o Fallback estilizado como o GroupSwitcher */}
-                <AvatarFallback className='rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold'>
+                <AvatarFallback className='rounded-lg bg-linear-to-br from-gradient-start to-gradient-end text-sidebar-primary-foreground text-xs font-semibold'>
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div className='grid flex-1 text-left text-sm leading-tight ml-1'>
-                <span className='truncate font-semibold'>
-                  {user.name}{' '}
-                  {user.isAdmin && (
-                    <span className='text-muted-foreground font-normal'>(Admin)</span>
-                  )}
-                </span>
-                <span className='truncate text-xs text-muted-foreground'>{user.email}</span>
+                <span className='truncate font-semibold'>{user.name}</span>
+
+                {user.isAdmin ? (
+                  <div className='relative mt-0.5 h-4 w-full overflow-hidden'>
+                    <div className='absolute inset-0 flex items-center transition-transform duration-300 group-hover/profile:-translate-y-full'>
+                      <span className='truncate text-xs text-muted-foreground'>Administrator</span>
+                    </div>
+                    <div className='absolute inset-0 flex items-center translate-y-full transition-transform duration-300 group-hover/profile:translate-y-0'>
+                      <span className='block w-full truncate text-xs text-muted-foreground'>
+                        {user.email}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <span className='truncate text-xs text-muted-foreground'>{user.email}</span>
+                )}
               </div>
               <ChevronsUpDown className='ml-auto size-4 opacity-50' />
             </SidebarMenuButton>
@@ -73,11 +75,12 @@ export function NavUser({ user }: { user: User }) {
             side={isMobile ? 'bottom' : 'right'}
             align='end'
             sideOffset={4}
+            onCloseAutoFocus={e => e.preventDefault()}
           >
             <DropdownMenuLabel className='p-0 font-normal'>
               <div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
                 <Avatar className='h-8 w-8 rounded-lg'>
-                  <AvatarFallback className='rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold'>
+                  <AvatarFallback className='rounded-lg bg-linear-to-br from-gradient-start to-gradient-end text-sidebar-primary-foreground text-xs font-semibold'>
                     {initials}
                   </AvatarFallback>
                 </Avatar>

@@ -11,11 +11,12 @@ import { authStore } from '@/lib/auth/store'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { UserPlus } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { InviteMemberDialog } from './invite-member-dialog'
 import { MemberRow } from './member-row'
 import { PendingInviteRow } from './pending-invite-row'
 import {
+  ROLE_RANK,
   canManageMember,
   getAssignableRoles,
   getInvitableRoles,
@@ -70,39 +71,57 @@ export function MembersList() {
   const isLoading = isLoadingMembers || isLoadingInvites
   const isMutating = isChangingRole || isRemoving
 
+  const sortedMembers = useMemo(() => {
+    return [...members].sort((a, b) => {
+      const rankDiff = ROLE_RANK[b.role] - ROLE_RANK[a.role]
+      if (rankDiff !== 0) return rankDiff
+      return a.user.name.localeCompare(b.user.name)
+    })
+  }, [members])
+
   return (
-    <div className='flex flex-col gap-4'>
-      {/* Header */}
-      <div className='flex items-center justify-between'>
-        <div>
-          <h2 className='text-sm font-semibold'>Members</h2>
-          {!isLoading && (
-            <p className='text-xs text-muted-foreground'>
-              {members.length} {members.length === 1 ? 'member' : 'members'}
-              {pendingInvites.length > 0 && ` · ${pendingInvites.length} pending`}
-            </p>
-          )}
+    <div className='flex flex-col gap-5'>
+      <div className='flex flex-col sm:flex-row sm:items-start justify-between gap-4'>
+        <div className='grid gap-1.5'>
+          <div className='flex items-center gap-3'>
+            <h2 className='text-2xl font-bold tracking-tight text-foreground'>Group Members</h2>
+            {!isLoading && (
+              <div className='flex items-center gap-1.5 mt-1'>
+                <span className='flex h-6 items-center justify-center rounded-full bg-muted px-2.5 text-xs font-medium text-foreground'>
+                  {members.length} {members.length === 1 ? 'member' : 'members'}
+                </span>
+                {pendingInvites.length > 0 && (
+                  <span className='flex h-6 items-center justify-center rounded-full border border-dashed px-2.5 text-xs font-medium text-muted-foreground'>
+                    {pendingInvites.length} pending
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          <p className='text-sm text-muted-foreground'>
+            Manage team access, assign roles, and send invitations.
+          </p>
         </div>
+
         {canInvite && (
           <Button
             size='sm'
             variant='outline'
-            className='gap-1.5 h-8 text-xs'
+            className='h-9 gap-2 shrink-0 mt-1 sm:mt-0'
             onClick={() => setInviteDialogOpen(true)}
           >
-            <UserPlus className='h-3.5 w-3.5' />
-            Invite
+            <UserPlus className='size-4' />
+            Invite member
           </Button>
         )}
       </div>
 
       <Separator />
 
-      {/* List */}
       {isLoading ? (
-        <div className='flex flex-col gap-1 p-1'>
+        <div className='flex flex-col'>
           {[...Array(3)].map((_, i) => (
-            <div key={i} className='flex items-center gap-3 px-2 py-2'>
+            <div key={i} className='flex items-center gap-3 p-3'>
               <div className='h-8 w-8 rounded-lg bg-muted animate-pulse' />
               <div className='flex-1 space-y-1.5'>
                 <div className='h-3 w-32 rounded bg-muted animate-pulse' />
@@ -112,8 +131,8 @@ export function MembersList() {
           ))}
         </div>
       ) : (
-        <div className='flex flex-col gap-1 p-1'>
-          {members.map(member => (
+        <div className='flex flex-col'>
+          {sortedMembers.map(member => (
             <MemberRow
               key={member.id}
               member={member}
@@ -127,9 +146,9 @@ export function MembersList() {
 
           {pendingInvites.length > 0 && (
             <>
-              <div className='flex items-center gap-3 px-2 py-2 mt-1'>
+              <div className='flex items-center gap-3 p-3 mt-1'>
                 <Separator className='flex-1' />
-                <span className='text-[11px] font-medium uppercase tracking-widest text-muted-foreground/50 shrink-0'>
+                <span className='text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 shrink-0'>
                   Pending
                 </span>
                 <Separator className='flex-1' />

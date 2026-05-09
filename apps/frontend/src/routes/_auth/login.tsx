@@ -1,3 +1,4 @@
+import loginImage from '@/assets/login.jpg'
 import { LoginForm } from '@/components/login-form'
 import { bootstrapAuth } from '@/lib/auth/bootstrap-auth'
 import { authStore } from '@/lib/auth/store'
@@ -37,7 +38,7 @@ function LoginPage() {
 
       <div className='relative hidden bg-muted lg:block'>
         <img
-          src='https://ui.shadcn.com/placeholder.svg'
+          src={loginImage}
           alt='Example'
           className='absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale'
         />

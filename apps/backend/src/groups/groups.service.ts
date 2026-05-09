@@ -76,17 +76,28 @@ export class GroupsService {
     await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId: id })
 
     const group = await this.prisma.group.findUnique({
-      where: { id, isArchived: false },
-      include: {
-        memberships: {
-          where: { isArchived: false },
-          include: { user: { select: { id: true, name: true, email: true } } }
-        }
-      }
+      where: { id, isArchived: false }
     })
 
     if (!group) throw new NotFoundException('Group not found')
-    return group
+
+    const membership = await this.prisma.groupMembership.findFirst({
+      where: { groupId: id, userId: user.id, isArchived: false }
+    })
+
+    return {
+      id: group.id,
+      name: group.name,
+      createdBy: group.createdBy,
+      createdAt: group.createdAt,
+      membership: membership
+        ? {
+            id: membership.id,
+            role: membership.role,
+            joinedAt: membership.joinedAt
+          }
+        : null
+    }
   }
 
   async archive(id: string, user: User) {

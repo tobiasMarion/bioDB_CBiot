@@ -1,5 +1,3 @@
-'use client'
-
 import { Dialog as DialogPrimitive } from 'radix-ui'
 
 import { Button } from '@/components/ui/button'

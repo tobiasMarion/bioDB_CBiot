@@ -95,13 +95,14 @@ export function InviteMemberDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Invite member</DialogTitle>
-            <DialogDescription>Send an invite to add a new member to this group.</DialogDescription>
+            <DialogDescription className='leading-snug'>
+              Send an invite to add a new member to this group.
+            </DialogDescription>
           </DialogHeader>
 
-          <div className='flex flex-col gap-4 py-4'>
-            {/* User picker */}
-            <div className='grid gap-2'>
-              <Label>User</Label>
+          <div className='flex flex-col gap-4 py-6'>
+            <div className='grid gap-2.5'>
+              <Label className='text-sm font-medium'>User</Label>
               <Popover open={userPopoverOpen} onOpenChange={setUserPopoverOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -118,7 +119,7 @@ export function InviteMemberDialog({
                           ? selectedUser.name
                           : 'Select user...'}
                     </span>
-                    <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                    <ChevronsUpDown className='ml-2 size-4 shrink-0 opacity-50' />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -144,7 +145,7 @@ export function InviteMemberDialog({
                           >
                             <Check
                               className={cn(
-                                'mr-2 h-4 w-4',
+                                'mr-2 size-4',
                                 selectedUserId === user.id ? 'opacity-100' : 'opacity-0'
                               )}
                             />
@@ -163,8 +164,8 @@ export function InviteMemberDialog({
               </Popover>
             </div>
 
-            <div className='grid gap-2'>
-              <Label>Role</Label>
+            <div className='grid gap-2.5'>
+              <Label className='text-sm font-medium'>Role</Label>
               <Popover open={rolePopoverOpen} onOpenChange={setRolePopoverOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -179,7 +180,7 @@ export function InviteMemberDialog({
                     ) : (
                       <span className='text-muted-foreground'>Select role...</span>
                     )}
-                    <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                    <ChevronsUpDown className='ml-2 size-4 shrink-0 opacity-50' />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -192,7 +193,7 @@ export function InviteMemberDialog({
                     <CommandList className='w-full'>
                       <CommandGroup>
                         {invitableRoles.map(role => {
-                          const { label, icon: Icon, className } = ROLE_META[role]
+                          const { label, className } = ROLE_META[role]
                           return (
                             <CommandItem
                               key={role}
@@ -205,12 +206,11 @@ export function InviteMemberDialog({
                             >
                               <Check
                                 className={cn(
-                                  'h-4 w-4',
+                                  'size-4',
                                   selectedRole === role ? 'opacity-100' : 'opacity-0'
                                 )}
                               />
-                              <Icon className={`h-3.5 w-3.5 ${className}`} />
-                              {label}
+                              <span className={`font-medium ${className}`}>{label}</span>
                             </CommandItem>
                           )
                         })}
@@ -221,10 +221,14 @@ export function InviteMemberDialog({
               </Popover>
             </div>
 
-            {errorMessage && <p className='text-sm text-destructive font-medium'>{errorMessage}</p>}
+            {errorMessage && (
+              <p className='mt-1 text-[13px] font-medium leading-none text-destructive'>
+                {errorMessage}
+              </p>
+            )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className='gap-2 sm:gap-0'>
             <Button
               type='button'
               variant='ghost'
@@ -236,7 +240,7 @@ export function InviteMemberDialog({
             <Button type='submit' disabled={!selectedUserId || !selectedRole || isInviting}>
               {isInviting ? (
                 <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  <Loader2 className='mr-2 size-4 animate-spin' />
                   Sending...
                 </>
               ) : (

@@ -40,31 +40,40 @@ export function CreateGroupForm({ onCancel, onSuccess }: CreateGroupFormProps) {
     <form onSubmit={handleCreateGroup}>
       <DialogHeader>
         <DialogTitle>Create Group</DialogTitle>
-        <DialogDescription>Give a name to the new bioDB research group.</DialogDescription>
+        <DialogDescription className='leading-snug'>
+          Give a name to the new research group.
+        </DialogDescription>
       </DialogHeader>
 
-      <div className='py-4'>
-        <div className='grid gap-2'>
-          <Label htmlFor='group-name'>Group Name</Label>
+      <div className='py-6'>
+        <div className='grid gap-2.5'>
+          <Label htmlFor='group-name' className='text-sm font-medium'>
+            Group Name
+          </Label>
           <Input
             id='group-name'
             placeholder='Ex: Genomics Laboratory'
             value={groupName}
             onChange={e => setGroupName(e.target.value)}
             disabled={isCreating}
+            className='transition-colors focus-visible:ring-1'
           />
-          {errorMessage && <p className='text-sm text-red-500 mt-1 font-medium'>{errorMessage}</p>}
+          {errorMessage && (
+            <p className='mt-1 text-[13px] font-medium leading-none text-destructive'>
+              {errorMessage}
+            </p>
+          )}
         </div>
       </div>
 
-      <DialogFooter>
-        <Button type='button' variant='outline' onClick={onCancel} disabled={isCreating}>
+      <DialogFooter className='gap-2 sm:gap-0'>
+        <Button type='button' variant='ghost' onClick={onCancel} disabled={isCreating}>
           Cancel
         </Button>
         <Button type='submit' disabled={!groupName.trim() || isCreating}>
           {isCreating ? (
             <>
-              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+              <Loader2 className='mr-2 size-4 animate-spin' />
               Creating...
             </>
           ) : (

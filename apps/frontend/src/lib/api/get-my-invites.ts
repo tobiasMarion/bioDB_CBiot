@@ -1,4 +1,5 @@
 import { apiClient } from './api-client'
+import type { Role } from './types/role'
 
 export type Action = 'accept' | 'reject'
 
@@ -7,7 +8,7 @@ export interface GroupInvite {
   groupId: string
   invitedUserId: string
   invitedBy: string
-  role: string
+  role: Role
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED'
   createdAt: string
   isArchived: boolean

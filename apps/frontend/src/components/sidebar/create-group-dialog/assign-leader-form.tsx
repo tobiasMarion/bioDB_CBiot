@@ -3,7 +3,7 @@ import { sendGroupInvite } from '@/lib/api/send-invite'
 import { cn } from '@/lib/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { type SubmitEvent, useState } from 'react'
 import { Button } from '../../ui/button'
 import {
   Command,
@@ -61,7 +61,7 @@ export function AssignLeaderForm({ groupId, groupName, onFinish }: AssignLeaderF
     }
   })
 
-  function handleInviteLeader(e: React.FormEvent<HTMLFormElement>) {
+  function handleInviteLeader(e: SubmitEvent) {
     e.preventDefault()
 
     if (!groupId || !selectedLeaderId) return
@@ -72,44 +72,47 @@ export function AssignLeaderForm({ groupId, groupName, onFinish }: AssignLeaderF
     <form onSubmit={handleInviteLeader}>
       <DialogHeader>
         <DialogTitle>Assign Leader</DialogTitle>
-        <DialogDescription>
-          Select the lead researcher for the group <strong>{groupName}</strong>.
+        <DialogDescription className='leading-snug'>
+          Select the lead researcher for{' '}
+          <span className='font-medium text-foreground'>{groupName}</span>.
         </DialogDescription>
       </DialogHeader>
 
-      <div className='py-4'>
-        <div className='grid gap-2'>
-          <Label>Researcher (Leader)</Label>
+      <div className='py-6'>
+        <div className='grid gap-2.5'>
+          <Label className='text-sm font-medium'>Researcher (Leader)</Label>
           <Popover open={leaderPopoverOpen} onOpenChange={setLeaderPopoverOpen}>
             <PopoverTrigger asChild>
               <Button
                 type='button'
                 variant='outline'
                 aria-expanded={leaderPopoverOpen}
-                className='w-full justify-between font-normal px-3'
+                className='w-full justify-between px-3 font-normal transition-colors hover:bg-muted/50'
                 disabled={isInviting || isLoadingResearchers}
               >
-                <span className='truncate'>
+                <span className={cn('truncate', !selectedLeader && 'text-muted-foreground')}>
                   {isLoadingResearchers
                     ? 'Loading researchers...'
                     : selectedLeader
                       ? selectedLeader.name
-                      : 'Select researcher...'}
+                      : 'Select a researcher...'}
                 </span>
-                <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                <ChevronsUpDown className='ml-2 size-4 shrink-0 opacity-50' />
               </Button>
             </PopoverTrigger>
 
             <PopoverContent
               align='start'
-              sideOffset={4}
+              sideOffset={8}
               style={{ width: 'var(--radix-popover-trigger-width)' }}
-              className='p-0 border-none'
+              className='p-0 border rounded-lg shadow-lg'
             >
-              <Command className='w-full border shadow-md'>
-                <CommandInput placeholder='Search researcher...' className='h-9 w-full' />
-                <CommandList className='max-h-75 overflow-y-auto w-full'>
-                  <CommandEmpty>No researcher found.</CommandEmpty>
+              <Command className='w-full'>
+                <CommandInput placeholder='Search researcher...' className='h-10' />
+                <CommandList className='max-h-60 overflow-y-auto p-1'>
+                  <CommandEmpty className='py-6 text-center text-sm text-muted-foreground'>
+                    No researcher found.
+                  </CommandEmpty>
                   <CommandGroup>
                     {researchers.map(researcher => (
                       <CommandItem
@@ -119,17 +122,16 @@ export function AssignLeaderForm({ groupId, groupName, onFinish }: AssignLeaderF
                           setSelectedLeaderId(researcher.id)
                           setLeaderPopoverOpen(false)
                         }}
-                        className='cursor-pointer'
+                        className='flex cursor-pointer items-center gap-2.5 rounded-md p-2'
                       >
-                        <Check
-                          className={cn(
-                            'mr-2 h-4 w-4',
-                            selectedLeaderId === researcher.id ? 'opacity-100' : 'opacity-0'
+                        <div className='flex size-4 shrink-0 items-center justify-center'>
+                          {selectedLeaderId === researcher.id && (
+                            <Check className='size-4 text-primary' />
                           )}
-                        />
-                        <div className='flex flex-col overflow-hidden'>
-                          <span className='font-medium truncate'>{researcher.name}</span>
-                          <span className='text-xs text-muted-foreground truncate'>
+                        </div>
+                        <div className='grid flex-1 leading-tight'>
+                          <span className='truncate font-medium'>{researcher.name}</span>
+                          <span className='mt-0.5 truncate text-xs text-muted-foreground'>
                             {researcher.email}
                           </span>
                         </div>
@@ -140,11 +142,15 @@ export function AssignLeaderForm({ groupId, groupName, onFinish }: AssignLeaderF
               </Command>
             </PopoverContent>
           </Popover>
-          {errorMessage && <p className='text-sm text-red-500 mt-1 font-medium'>{errorMessage}</p>}
+          {errorMessage && (
+            <p className='mt-1 text-[13px] font-medium leading-none text-destructive'>
+              {errorMessage}
+            </p>
+          )}
         </div>
       </div>
 
-      <DialogFooter>
+      <DialogFooter className='gap-2 sm:gap-0'>
         <Button
           type='button'
           variant='ghost'
@@ -156,7 +162,7 @@ export function AssignLeaderForm({ groupId, groupName, onFinish }: AssignLeaderF
         <Button type='submit' disabled={!selectedLeaderId || isInviting || isLoadingResearchers}>
           {isInviting ? (
             <>
-              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+              <Loader2 className='mr-2 size-4 animate-spin' />
               Assigning...
             </>
           ) : (

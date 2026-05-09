@@ -56,15 +56,31 @@ export class AuthGuard implements CanActivate {
   private async resolveUser(token: string): Promise<User> {
     const payload = this.verifyToken(token)
 
-    try {
-      return await this.prisma.user.upsert({
+    const existing = await this.prisma.user.findUnique({
+      where: { externalAuthId: payload.id }
+    })
+
+    if (existing) {
+      const needsUpdate =
+        existing.email !== payload.email ||
+        existing.name !== payload.name ||
+        existing.isAdmin !== payload.isAdmin
+
+      if (!needsUpdate) return existing
+
+      return this.prisma.user.update({
         where: { externalAuthId: payload.id },
-        update: {
+        data: {
           email: payload.email,
           name: payload.name,
           isAdmin: payload.isAdmin
-        },
-        create: {
+        }
+      })
+    }
+
+    try {
+      return await this.prisma.user.create({
+        data: {
           externalAuthId: payload.id,
           email: payload.email,
           name: payload.name,
@@ -72,18 +88,20 @@ export class AuthGuard implements CanActivate {
         }
       })
     } catch (err) {
-      return this.handleUpsertError(err, payload.id)
+      return this.handleInsertConflict(err, payload.id)
     }
   }
 
-  private async handleUpsertError(err: unknown, externalAuthId: string): Promise<User> {
+  private async handleInsertConflict(err: unknown, externalAuthId: string): Promise<User> {
     const isUniqueConstraintViolation =
       err instanceof PrismaClientKnownRequestError && err.code === 'P2002'
 
     if (!isUniqueConstraintViolation) throw err
 
+    await new Promise(r => setTimeout(r, 10))
+
     const user = await this.prisma.user.findUnique({ where: { externalAuthId } })
-    if (!user) throw new UnauthorizedException('User not found after conflict')
+    if (!user) throw new UnauthorizedException('User not found after insert conflict')
 
     return user
   }

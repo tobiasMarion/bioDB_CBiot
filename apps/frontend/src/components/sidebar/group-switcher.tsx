@@ -82,14 +82,14 @@ export function GroupSwitcher({ teams, isAdmin }: { teams: Group[]; isAdmin: boo
     <>
       <SidebarMenu>
         <SidebarMenuItem>
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size='lg'
                 className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
               >
                 <Avatar className='h-8 w-8 rounded-lg'>
-                  <AvatarFallback className='rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold'>
+                  <AvatarFallback className='rounded-lg bg-linear-to-br from-gradient-start to-gradient-end  text-sidebar-primary-foreground text-xs font-semibold'>
                     {getInitials(activeTeam.name)}
                   </AvatarFallback>
                 </Avatar>
@@ -107,6 +107,7 @@ export function GroupSwitcher({ teams, isAdmin }: { teams: Group[]; isAdmin: boo
               align='start'
               side={isMobile ? 'bottom' : 'right'}
               sideOffset={4}
+              onCloseAutoFocus={e => e.preventDefault()}
             >
               <DropdownMenuGroup>
                 <DropdownMenuLabel className='text-xs text-muted-foreground uppercase tracking-wider font-semibold'>
@@ -118,8 +119,8 @@ export function GroupSwitcher({ teams, isAdmin }: { teams: Group[]; isAdmin: boo
                     onClick={() => handleTeamChange(team)}
                     className='gap-2 p-2 cursor-pointer'
                   >
-                    <Avatar className='h-6 w-6 rounded-md'>
-                      <AvatarFallback className='rounded-md text-[10px] font-semibold'>
+                    <Avatar size='sm'>
+                      <AvatarFallback className='rounded-lg bg-linear-to-br from-gradient-start to-gradient-end text-sidebar-primary-foreground text-xs font-semibold'>
                         {getInitials(team.name)}
                       </AvatarFallback>
                     </Avatar>
