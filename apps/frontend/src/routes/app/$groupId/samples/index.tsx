@@ -6,12 +6,12 @@ import { getSamplesStats } from '@/lib/api/get-samples-stats'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useParams } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/app/$groupId/samples')({
+export const Route = createFileRoute('/app/$groupId/samples/')({
   component: RouteComponent
 })
 
 function RouteComponent() {
-  const params = useParams({ from: '/app/$groupId/samples' })
+  const params = useParams({ from: '/app/$groupId/samples/' })
   const groupId = params.groupId
 
   const { data: group, isLoading: isLoadingGroup } = useQuery({
