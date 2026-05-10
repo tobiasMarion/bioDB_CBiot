@@ -35,12 +35,12 @@ export function NavMain({
   return (
     <SidebarGroup>
       {title && (
-        <SidebarGroupLabel className='text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-1'>
+        <SidebarGroupLabel className='uppercase tracking-wider font-semibold text-muted-foreground mb-1'>
           {title}
         </SidebarGroupLabel>
       )}
 
-      <SidebarMenu className='gap-1'>
+      <SidebarMenu>
         {items.map(item => {
           const hasChildren = !!item.items?.length
 
@@ -48,7 +48,7 @@ export function NavMain({
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild tooltip={item.title}>
-                  <Link to={item.url} className='font-medium flex items-center gap-2'>
+                  <Link to={item.url} className='font-medium'>
                     {item.icon && <item.icon className='h-4 w-4 opacity-70' />}
                     <span>{item.title}</span>
                   </Link>
@@ -58,8 +58,8 @@ export function NavMain({
           }
 
           return (
-            <Collapsible key={item.title} defaultOpen={item.isActive} className='group/collapsible'>
-              <SidebarMenuItem>
+            <SidebarMenuItem key={item.title}>
+              <Collapsible defaultOpen={item.isActive} className='group/collapsible'>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton tooltip={item.title}>
                     {item.icon && <item.icon className='h-4 w-4 opacity-70' />}
@@ -83,8 +83,8 @@ export function NavMain({
                     ))}
                   </SidebarMenuSub>
                 </CollapsibleContent>
-              </SidebarMenuItem>
-            </Collapsible>
+              </Collapsible>
+            </SidebarMenuItem>
           )
         })}
       </SidebarMenu>

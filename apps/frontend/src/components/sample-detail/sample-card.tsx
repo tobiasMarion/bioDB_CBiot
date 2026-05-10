@@ -40,7 +40,7 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
       <CardContent className='relative z-10 px-8 py-8 lg:px-10'>
         <div className='flex items-start justify-between gap-8'>
           <div className='min-w-0 flex-1 space-y-5'>
-            <p className='text-[10px] font-medium tracking-widest text-muted-foreground/60 uppercase'>
+            <p className='text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
               {sample.group.name}
             </p>
 
@@ -61,13 +61,13 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
                 </Tooltip>
               </TooltipProvider>
               <Separator orientation='vertical' className='h-3 opacity-40' />
-              <span className='text-xs text-muted-foreground/70'>
-                By <span className='font-medium text-foreground/70'>{sample.creator.name}</span>
+              <span className='text-xs text-muted-foreground'>
+                By <span className='font-medium text-foreground'>{sample.creator.name}</span>
                 {' · '}
                 {sample.group.name}
               </span>
               <Separator orientation='vertical' className='h-3 opacity-40' />
-              <span className='text-xs text-muted-foreground/60'>
+              <span className='text-xs text-muted-foreground'>
                 {new Date(sample.createdAt).toLocaleDateString('pt-BR', {
                   day: '2-digit',
                   month: 'short',
@@ -78,7 +78,7 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
 
             <div className='grid grid-cols-1 gap-x-12 gap-y-3 md:grid-cols-2'>
               <div>
-                <p className='mb-1 text-[10px] font-medium tracking-widest text-muted-foreground/50 uppercase'>
+                <p className='mb-1 text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
                   Origin Organism
                 </p>
                 <InlineField
@@ -89,7 +89,7 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
                 />
               </div>
               <div>
-                <p className='mb-1 text-[10px] font-medium tracking-widest text-muted-foreground/50 uppercase'>
+                <p className='mb-1 text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
                   Source Lab
                 </p>
                 <InlineField
@@ -104,7 +104,7 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
 
           <div className='flex shrink-0 flex-col items-end gap-3 pt-1'>
             <div className='text-right'>
-              <p className='text-[10px] font-medium tracking-widest text-muted-foreground/50 uppercase'>
+              <p className='text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
                 Tubes
               </p>
               <p className='text-2xl font-semibold tabular-nums'>{sample.amountOfTubes}</p>
@@ -127,14 +127,14 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
 
         <Separator className='my-5 opacity-40' />
 
-        <p className='mb-2 text-[10px] font-medium tracking-widest text-muted-foreground/50 uppercase'>
+        <p className='mb-2 text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
           Observations
         </p>
         <Textarea
           value={observations}
           onChange={e => setObservations(e.target.value)}
           placeholder='Add observations, handling notes, or relevant context…'
-          className='min-h-16 resize-none border-muted-foreground/20 bg-background/50 text-sm backdrop-blur-sm focus-visible:border-muted-foreground/40'
+          className='min-h-16 resize-none border-border bg-background/50 text-sm backdrop-blur-sm focus-visible:border-muted-foreground'
         />
       </CardContent>
     </Card>

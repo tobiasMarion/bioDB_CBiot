@@ -18,12 +18,12 @@ export function TubeSelector({ tubes, selectedId, onSelect }: TubeSelectorProps)
         </span>
       </div>
 
-      <div
+      <ul
         className='flex flex-col divide-y divide-border overflow-y-auto'
         style={{ maxHeight: 'calc(10 * 60px)' }}
       >
         {tubes.length === 0 && (
-          <p className='py-10 text-center text-sm text-muted-foreground'>No tubes registered.</p>
+          <li className='py-10 text-center text-sm text-muted-foreground'>No tubes registered.</li>
         )}
 
         {tubes.map(tube => {
@@ -34,46 +34,49 @@ export function TubeSelector({ tubes, selectedId, onSelect }: TubeSelectorProps)
           const isUrgent = status === 'expired' || status === 'critical' || status === 'warning'
 
           return (
-            <button
-              key={tube.id}
-              type='button'
-              onClick={() => onSelect(tube)}
-              className={cn(
-                'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-100',
-                isSelected ? 'bg-muted/60' : 'hover:bg-muted/30'
-              )}
-            >
-              <div
+            <li key={tube.id}>
+              <button
+                type='button'
+                onClick={() => onSelect(tube)}
                 className={cn(
-                  'w-0.5 self-stretch rounded-full transition-all',
-                  isSelected
-                    ? 'bg-linear-to-b from-gradient-start to-gradient-end'
-                    : 'bg-transparent'
+                  'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-100',
+                  isSelected ? 'bg-muted/60' : 'hover:bg-muted/30'
                 )}
-              />
+              >
+                <div
+                  className={cn(
+                    'w-0.5 self-stretch rounded-full transition-all',
+                    isSelected
+                      ? 'bg-linear-to-b from-gradient-start to-gradient-end'
+                      : 'bg-transparent'
+                  )}
+                />
 
-              <div className='min-w-0 flex-1'>
-                <div className='flex items-center gap-1.5'>
-                  <code
-                    className={cn(
-                      'font-mono text-sm font-semibold tabular-nums transition-colors',
-                      isSelected ? 'text-foreground' : 'text-muted-foreground'
+                <div className='min-w-0 flex-1'>
+                  <div className='flex items-center gap-1.5'>
+                    <code
+                      className={cn(
+                        'font-mono text-sm font-semibold tabular-nums transition-colors',
+                        isSelected ? 'text-foreground' : 'text-muted-foreground'
+                      )}
+                    >
+                      {pos ?? '—'}
+                    </code>
+                    {isUrgent && (
+                      <AlertCircle className={cn('size-3 shrink-0', expCfg.textColor)} />
                     )}
-                  >
-                    {pos ?? '—'}
-                  </code>
-                  {isUrgent && <AlertCircle className={cn('size-3 shrink-0', expCfg.textColor)} />}
+                  </div>
+                  {tube.box && (
+                    <p className='mt-0.5 truncate text-[11px] text-muted-foreground'>
+                      {tube.box.label}
+                    </p>
+                  )}
                 </div>
-                {tube.box && (
-                  <p className='mt-0.5 truncate text-[11px] text-muted-foreground/50'>
-                    {tube.box.label}
-                  </p>
-                )}
-              </div>
-            </button>
+              </button>
+            </li>
           )
         })}
-      </div>
+      </ul>
     </div>
   )
 }

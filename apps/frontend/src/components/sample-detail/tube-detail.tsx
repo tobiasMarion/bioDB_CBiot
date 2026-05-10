@@ -31,7 +31,7 @@ interface TubeDetailProps {
   otherCells?: Array<{ row: number; col: number }>
 }
 
-function sectionHeader(title: string) {
+function SectionHeader({ title }: { title: string }) {
   return (
     <p className='text-sm font-medium tracking-wide text-muted-foreground uppercase'>{title}</p>
   )
@@ -64,57 +64,75 @@ export function TubeDetail({
     return `${days} ${days === 1 ? 'day' : 'days'} remaining`
   })()
 
+  const tray = (
+    <TubeTray
+      tubes={allTubes}
+      rows={8}
+      cols={12}
+      selectedTubeId={selectedTubeId}
+      onSelect={onTubeSelect}
+      boxLabel={tube.box?.label}
+      otherCells={otherCells}
+    />
+  )
+
   return (
-    <div className='flex flex-col gap-5'>
-      {/* Primary actions — always first, most important */}
-      <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-        <div className='flex flex-wrap items-center gap-2'>
-          <p className='font-mono text-xl font-semibold tracking-tight'>{pos ?? 'Unplaced'}</p>
-          {tube.box && <span className='text-sm text-muted-foreground'>· {tube.box.label}</span>}
-          {isUrgent && (
-            <span className={cn('text-xs font-medium', expCfg.textColor)}>· {expCfg.label}</span>
-          )}
-        </div>
-
-        <div className='flex flex-wrap items-center gap-2'>
-          {/* TODO: implement fractionate — creates an aliquot copy of this tube */}
-          <Button
-            variant='outline'
-            size='sm'
-            className='gap-2'
-            onClick={() => console.log('fractionate', tube.id)}
-          >
-            <Scissors className='size-3.5' />
-            Fractionate
-          </Button>
-          {/* TODO: implement removal — records experiment usage */}
-          <Button
-            variant='outline'
-            size='sm'
-            className='gap-2'
-            onClick={() => console.log('remove for experiment', tube.id)}
-          >
-            <FlaskConical className='size-3.5' />
-            Remove for Experiment
-          </Button>
-          {/* TODO: implement deletion — archives tube with mandatory reason */}
-          <DeleteTubeDialog onDelete={reason => console.log('delete tube', tube.id, reason)} />
-        </div>
-      </div>
-
-      <Separator className='opacity-30' />
-
-      {/* Unified tube record ("ficha do tubo") beside tray */}
-      <div className='flex flex-col gap-5 lg:flex-row lg:items-start'>
-        <Card className='min-w-0 flex-1 border bg-card'>
-          <CardContent className='p-0'>
-            {/* Expiration */}
+    <Card className='min-w-0 border overflow-visible'>
+      <CardContent className='p-0'>
+        <div className='flex flex-col lg:flex-row'>
+          <div className='min-w-0 flex-1'>
             <div className='px-5 py-4'>
-              {sectionHeader('Expiration')}
+              <p className='font-mono text-xl font-semibold tracking-tight'>{pos ?? 'Unplaced'}</p>
+              <div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5'>
+                {tube.box && (
+                  <span className='text-sm text-muted-foreground'>{tube.box.label}</span>
+                )}
+                {isUrgent && (
+                  <span className={cn('text-xs font-medium', expCfg.textColor)}>
+                    · {expCfg.label}
+                  </span>
+                )}
+              </div>
+              <div className='mt-3 flex flex-wrap items-center gap-2'>
+                {/* TODO: implement fractionate — creates an aliquot copy of this tube */}
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='gap-2'
+                  onClick={() => console.log('fractionate', tube.id)}
+                >
+                  <Scissors className='size-3.5' />
+                  Fractionate
+                </Button>
+                {/* TODO: implement removal — records experiment usage */}
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='gap-2'
+                  onClick={() => console.log('remove for experiment', tube.id)}
+                >
+                  <FlaskConical className='size-3.5' />
+                  Remove for Experiment
+                </Button>
+                {/* TODO: implement deletion — archives tube with mandatory reason */}
+                <DeleteTubeDialog
+                  onDelete={reason => console.log('delete tube', tube.id, reason)}
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className='px-5 py-4 lg:hidden'>{tray}</div>
+
+            <Separator className='lg:hidden' />
+
+            <div className='px-5 py-4'>
+              <SectionHeader title='Expiration' />
               <div className='mt-2'>
                 {tube.expirationDate ? (
                   <div className='flex items-baseline gap-2'>
-                    <span className={cn('text-sm font-medium', expCfg.textColor)}>
+                    <span className={cn('text-sm font-semibold', expCfg.textColor)}>
                       {new Date(tube.expirationDate).toLocaleDateString('pt-BR', {
                         day: '2-digit',
                         month: 'long',
@@ -129,30 +147,28 @@ export function TubeDetail({
                     )}
                   </div>
                 ) : (
-                  <p className='text-sm text-muted-foreground/50'>No expiration date set.</p>
+                  <p className='text-sm text-muted-foreground'>No expiration date set.</p>
                 )}
               </div>
             </div>
 
             <Separator />
 
-            {/* Location */}
             <div className='px-5 py-4'>
-              {sectionHeader('Location')}
+              <SectionHeader title='Location' />
               <div className='mt-3'>
                 {tube.box && pos ? (
-                  <div className='space-y-2'>
-                    <div className='flex items-center gap-2'>
-                      <Thermometer className='size-3.5 shrink-0 text-muted-foreground/40' />
-                      <p className='text-sm'>
-                        <span className='font-medium'>{tube.box.freezer.name}</span>
-                        <span className='mx-1.5 text-muted-foreground/30'>·</span>
-                        <span className='text-xs text-muted-foreground'>
+                  <div className='space-y-2.5'>
+                    <div className='flex items-start gap-2.5'>
+                      <Thermometer className='mt-0.5 size-3.5 shrink-0 text-muted-foreground/40' />
+                      <div className='min-w-0'>
+                        <p className='text-sm text-foreground'>{tube.box.freezer.name}</p>
+                        <p className='text-xs text-muted-foreground'>
                           {tube.box.freezer.locationDescription}
-                        </span>
-                      </p>
+                        </p>
+                      </div>
                     </div>
-                    <div className='flex items-center gap-2'>
+                    <div className='flex items-center gap-2.5'>
                       <Package className='size-3.5 shrink-0 text-muted-foreground/40' />
                       <p className='text-sm text-muted-foreground'>
                         {tube.box.label}
@@ -172,7 +188,6 @@ export function TubeDetail({
 
             <Separator />
 
-            {/* Custom attributes — flat AttributeList renders its own section header */}
             <AttributeList
               title='Custom Attributes'
               attributes={attributes}
@@ -182,38 +197,28 @@ export function TubeDetail({
               onDelete={onAttrDelete}
               createRole='MANAGER'
               deleteRole='MANAGER'
-              layout='grid'
+              layout='stack'
               flat
             />
 
             <Separator />
 
-            {/* Observations */}
             <div className='px-5 py-4'>
-              {sectionHeader('Observations')}
+              <SectionHeader title='Observations' />
               <Textarea
                 value={notes}
                 onChange={e => onNotesChange(e.target.value)}
                 placeholder='Notes, handling events, or observations for this tube…'
-                className='mt-3 min-h-20 resize-none border-muted-foreground/20 bg-transparent text-sm focus-visible:border-muted-foreground/40'
+                className='mt-3 min-h-20 resize-none border-border bg-transparent text-sm focus-visible:border-muted-foreground'
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Tray — natural size, no card wrapper */}
-        <div className='shrink-0'>
-          <TubeTray
-            tubes={allTubes}
-            rows={8}
-            cols={12}
-            selectedTubeId={selectedTubeId}
-            onSelect={onTubeSelect}
-            boxLabel={tube.box?.label}
-            otherCells={otherCells}
-          />
+          <div className='hidden shrink-0 border-l border-border lg:block'>
+            <div className='sticky top-6 p-5'>{tray}</div>
+          </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

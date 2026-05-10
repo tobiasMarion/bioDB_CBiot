@@ -123,7 +123,7 @@ export function AttributeField({
             {displayValue !== null ? (
               <span className={attribute.type === 'number' ? 'font-mono' : ''}>{displayValue}</span>
             ) : (
-              <span className='italic text-muted-foreground/40'>—</span>
+              <span className='italic text-muted-foreground'>—</span>
             )}
           </button>
         )}

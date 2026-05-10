@@ -47,7 +47,7 @@ export function TubeTray({
             Tray View
           </p>
           {boxLabel && (
-            <p className='mt-0.5 font-mono text-[11px] text-muted-foreground/50'>{boxLabel}</p>
+            <p className='mt-0.5 font-mono text-[11px] text-muted-foreground'>{boxLabel}</p>
           )}
         </div>
 
@@ -58,7 +58,7 @@ export function TubeTray({
               {colLabels.map(col => (
                 <div
                   key={col}
-                  className='flex w-6 shrink-0 items-center justify-center text-[9px] font-medium text-muted-foreground/40'
+                  className='flex w-6 shrink-0 items-center justify-center text-[9px] font-medium text-muted-foreground'
                 >
                   {col}
                 </div>
@@ -69,7 +69,7 @@ export function TubeTray({
               const r = rowIdx + 1
               return (
                 <div key={rowLabel} className='flex items-center gap-[3px]'>
-                  <div className='flex w-4 shrink-0 items-center justify-center text-[9px] font-medium text-muted-foreground/40'>
+                  <div className='flex w-4 shrink-0 items-center justify-center text-[9px] font-medium text-muted-foreground'>
                     {rowLabel}
                   </div>
 
@@ -98,10 +98,9 @@ export function TubeTray({
                       <button
                         type='button'
                         className={cn(
-                          'relative flex w-6 shrink-0 items-center justify-center rounded-[2px] border transition-all duration-150',
+                          'aspect-square w-6 shrink-0 rounded-[2px] border transition-all duration-150',
                           cellClass
                         )}
-                        style={{ aspectRatio: '1' }}
                         onClick={() => {
                           if (tube && onSelect) onSelect(tube.id)
                         }}
@@ -135,7 +134,7 @@ export function TubeTray({
           {legend.map(item => (
             <div key={item.label} className='flex items-center gap-1.5'>
               <span className={cn('size-2 rounded-sm border', item.className)} />
-              <span className='text-[10px] text-muted-foreground/60'>{item.label}</span>
+              <span className='text-[10px] text-muted-foreground'>{item.label}</span>
             </div>
           ))}
         </div>

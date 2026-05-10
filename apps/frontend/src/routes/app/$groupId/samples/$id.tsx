@@ -1,4 +1,5 @@
 import type { Attribute, Role } from '@/components/attributes/types'
+import { CreateTubeDialog } from '@/components/sample-detail/create-tube-dialog'
 import { EmptyTubeState } from '@/components/sample-detail/empty-tube-state'
 import { SampleCard } from '@/components/sample-detail/sample-card'
 import { SampleCardSkeleton } from '@/components/sample-detail/sample-card-skeleton'
@@ -132,14 +133,18 @@ function RouteComponent() {
           />
         ) : null}
 
-        <div className='rounded-xl border border-border/50 bg-muted/20 p-5 lg:p-6'>
-          <div className='mb-5 flex items-center gap-2'>
-            <p className='text-[10px] font-medium tracking-widest text-muted-foreground/60 uppercase'>
-              Tubes
-            </p>
-            <span className='flex h-4 min-w-4 items-center justify-center rounded-full bg-muted px-1 text-[10px] font-medium tabular-nums text-muted-foreground'>
-              {tubes.length}
-            </span>
+        <div className='rounded-xl border border-border bg-muted/40 p-5 lg:p-6'>
+          <div className='mb-5 flex items-center justify-between gap-2'>
+            <div className='flex items-center gap-2'>
+              <p className='text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
+                Tubes
+              </p>
+              <span className='flex h-4 min-w-4 items-center justify-center rounded-full bg-muted px-1 text-[10px] font-medium tabular-nums text-muted-foreground'>
+                {tubes.length}
+              </span>
+            </div>
+            {/* TODO: replace console.log with createTube(sample.id, data) when endpoint exists */}
+            <CreateTubeDialog onSubmit={data => console.log('create tube', data)} />
           </div>
 
           <div className='grid grid-cols-1 gap-5 lg:grid-cols-[220px_1fr]'>

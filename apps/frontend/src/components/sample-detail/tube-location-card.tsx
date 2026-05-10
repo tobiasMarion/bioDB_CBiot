@@ -43,7 +43,7 @@ export function TubeLocationCard({ tube }: TubeLocationCardProps) {
             <div className='flex items-end gap-4 text-right'>
               {showExpiration && tube.expirationDate && (
                 <div>
-                  <p className='text-[10px] font-medium tracking-widest text-muted-foreground/40 uppercase'>
+                  <p className='text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
                     Expires
                   </p>
                   <p className={cn('text-xs font-medium', expCfg.textColor)}>
@@ -56,7 +56,7 @@ export function TubeLocationCard({ tube }: TubeLocationCardProps) {
                 </div>
               )}
               <div>
-                <p className='text-[10px] font-medium tracking-widest text-muted-foreground/40 uppercase'>
+                <p className='text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
                   Position
                 </p>
                 <p className='font-mono text-2xl font-bold tracking-tight text-foreground'>{pos}</p>
