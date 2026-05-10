@@ -14,6 +14,7 @@ import { getSamples } from '@/lib/api/get-samples'
 import type { Sample } from '@/lib/api/get-samples'
 import { getSamplesTypes } from '@/lib/api/get-samples-types'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { Plus, Share2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SamplesActions } from './samples-actions'
@@ -98,10 +99,6 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
 
   function isSharedSample(sample: Sample) {
     return sample.group.id !== groupId
-  }
-
-  const handleView = (sample: Sample) => {
-    console.log('View sample:', sample.id)
   }
 
   const handleShare = (sample: Sample) => {
@@ -192,26 +189,27 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
                         </TooltipProvider>
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant='ghost'
-                          onClick={() => handleView(sample)}
-                          className='flex gap-2 items-center'
-                        >
-                          {sample.name}
-                          {isSharedSample(sample) && (
-                            <TooltipProvider>
-                              <Tooltip delayDuration={300}>
-                                <TooltipTrigger asChild>
-                                  <span className='flex items-center justify-center p-1 -m-1'>
-                                    <Share2 className='size-4 text-muted-foreground' />
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side='top'>
-                                  <p>Owned by: {sample.group.name}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
+                        <Button variant='ghost' className='flex gap-2 items-center justify-start' asChild>
+                          <Link
+                            to='/app/$groupId/samples/$id'
+                            params={{ groupId, id: sample.id }}
+                          >
+                            {sample.name}
+                            {isSharedSample(sample) && (
+                              <TooltipProvider>
+                                <Tooltip delayDuration={300}>
+                                  <TooltipTrigger asChild>
+                                    <span className='flex items-center justify-center p-1 -m-1'>
+                                      <Share2 className='size-4 text-muted-foreground' />
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side='top'>
+                                    <p>Owned by: {sample.group.name}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </Link>
                         </Button>
                       </TableCell>
                       <TableCell className='text-right font-mono text-sm'>
@@ -233,8 +231,9 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
                       </TableCell>
                       <TableCell className='text-right'>
                         <SamplesActions
+                          groupId={groupId}
+                          sampleId={sample.id}
                           disableShare={isSharedSample(sample)}
-                          onView={() => handleView(sample)}
                           onShare={() => handleShare(sample)}
                         />
                       </TableCell>
