@@ -148,3 +148,4 @@ generated/
 #Claude
 CLAUDE.md
 .claude/
+.mcp.json

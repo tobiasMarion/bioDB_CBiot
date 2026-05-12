@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { getGroups } from '@/lib/api/get-groups'
-import { authStore } from '@/lib/auth/store' //
+import { authStore } from '@/lib/auth/store'
 import { useQuery } from '@tanstack/react-query'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { Plus, ShieldAlert, Users } from 'lucide-react'
@@ -10,6 +11,7 @@ export const Route = createFileRoute('/app/')({
 })
 
 function AppIndex() {
+  usePageTitle('Home')
   const user = authStore.getUser()
   const isAdmin = user?.isAdmin ?? false
 

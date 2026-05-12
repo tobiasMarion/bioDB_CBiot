@@ -72,9 +72,7 @@ export function AttributeField({
       className='group grid items-center gap-x-4 rounded-md px-3 py-1.5 transition-colors duration-150 hover:bg-muted/40'
       style={{ gridTemplateColumns: `${labelCols} 1fr auto` }}
     >
-      <p className='select-none truncate text-xs font-medium tracking-wide text-muted-foreground uppercase'>
-        {attribute.label}
-      </p>
+      <p className='select-none truncate text-xs text-muted-foreground'>{attribute.label}</p>
 
       <div className='min-w-0'>
         {attribute.type === 'boolean' ? (

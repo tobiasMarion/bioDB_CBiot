@@ -1,18 +1,23 @@
 import type { Attribute, Role } from '@/components/attributes/types'
 import { CreateTubeDialog } from '@/components/sample-detail/create-tube-dialog'
 import { EmptyTubeState } from '@/components/sample-detail/empty-tube-state'
+import type { ReturnPosition } from '@/components/sample-detail/return-to-freezer/return-to-freezer-dialog'
 import { SampleCard } from '@/components/sample-detail/sample-card'
 import { SampleCardSkeleton } from '@/components/sample-detail/sample-card-skeleton'
-import { TubeDetail } from '@/components/sample-detail/tube-detail'
+import { TubeDetail } from '@/components/sample-detail/tube-detail/tube-detail'
 import {
+  type CheckoutInfo,
   MOCK_OTHER_CELLS,
   MOCK_TUBES,
   type Tube,
   type TubeAttribute,
+  type TubeStatus,
   positionLabel
-} from '@/components/tube-data'
-import { TubeSelector } from '@/components/tube-selector'
+} from '@/components/tube/tube-data'
+import { TubeSelector } from '@/components/tube/tube-selector'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -20,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { usePageTitle } from '@/hooks/use-page-title'
 import type { SampleDetail } from '@/lib/api/get-sample'
 import { useQuery } from '@tanstack/react-query'
 import { Link, createFileRoute, useParams } from '@tanstack/react-router'
@@ -31,6 +37,7 @@ export const Route = createFileRoute('/app/$groupId/samples/$id')({
 })
 
 const CURRENT_USER_ROLE: Role = 'MANAGER'
+const CURRENT_USER = { id: 'user-001', name: 'Dr. Ana Souza' }
 
 // TODO: replace with getSample(id) when GET /samples/:id endpoint exists
 function mockSampleDetail(id: string, groupId: string): SampleDetail {
@@ -84,10 +91,36 @@ function RouteComponent() {
     queryFn: () => new Promise<Tube[]>(resolve => setTimeout(() => resolve(MOCK_TUBES), 800))
   })
 
+  usePageTitle(sample?.name)
+
   const [selectedTubeId, setSelectedTubeId] = useState<string | null>(null)
-  const selectedTube = tubes.find(t => t.id === selectedTubeId) ?? null
+
+  const [tubeStatusOverrides, setTubeStatusOverrides] = useState<
+    Record<string, { status: TubeStatus; checkedOut: CheckoutInfo | null }>
+  >({})
+
+  const displayTubes = tubes.map(t => ({ ...t, ...(tubeStatusOverrides[t.id] ?? {}) }))
+  const selectedTube = displayTubes.find(t => t.id === selectedTubeId) ?? null
   const toggleTube = (tubeId: string) =>
     setSelectedTubeId(prev => (prev === tubeId ? null : tubeId))
+
+  function handleCheckout(tubeId: string) {
+    setTubeStatusOverrides(prev => ({
+      ...prev,
+      [tubeId]: {
+        status: 'checked_out',
+        checkedOut: { by: CURRENT_USER, at: new Date().toISOString() }
+      }
+    }))
+  }
+
+  function handleCheckin(tubeId: string, position: ReturnPosition) {
+    console.log('return to freezer', tubeId, position)
+    setTubeStatusOverrides(prev => ({
+      ...prev,
+      [tubeId]: { status: 'in_storage', checkedOut: null }
+    }))
+  }
 
   const [tubeAttrsMap, setTubeAttrsMap] = useState<Record<string, Attribute[]>>({})
 
@@ -133,87 +166,87 @@ function RouteComponent() {
           />
         ) : null}
 
-        <div className='rounded-xl border border-border bg-muted/40 p-5 lg:p-6'>
-          <div className='mb-5 flex items-center justify-between gap-2'>
+        <Card>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0'>
             <div className='flex items-center gap-2'>
-              <p className='text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
-                Tubes
-              </p>
-              <span className='flex h-4 min-w-4 items-center justify-center rounded-full bg-muted px-1 text-[10px] font-medium tabular-nums text-muted-foreground'>
+              <CardTitle className='text-base'>Tubes</CardTitle>
+              <Badge variant='secondary' className='tabular-nums'>
                 {tubes.length}
-              </span>
+              </Badge>
             </div>
             {/* TODO: replace console.log with createTube(sample.id, data) when endpoint exists */}
             <CreateTubeDialog onSubmit={data => console.log('create tube', data)} />
-          </div>
-
-          <div className='grid grid-cols-1 gap-5 lg:grid-cols-[220px_1fr]'>
-            <div className='lg:sticky lg:top-6 lg:self-start'>
-              <div className='lg:hidden'>
-                <Select
-                  value={selectedTubeId ?? ''}
-                  onValueChange={v => setSelectedTubeId(prev => (prev === v ? null : v))}
-                >
-                  <SelectTrigger className='w-full bg-card'>
-                    <SelectValue placeholder='Select a tube…' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tubes.map(tube => (
-                      <SelectItem key={tube.id} value={tube.id}>
-                        <span className='font-mono'>
-                          {positionLabel(tube.row, tube.column) ?? 'Unplaced'}
-                        </span>
-                        {tube.box && (
-                          <span className='ml-2 text-xs text-muted-foreground'>
-                            {tube.box.label}
+          </CardHeader>
+          <CardContent>
+            <div className='grid grid-cols-1 gap-5 lg:grid-cols-[220px_1fr]'>
+              <div className='lg:sticky lg:top-6 lg:self-start'>
+                <div className='lg:hidden'>
+                  <Select
+                    value={selectedTubeId ?? ''}
+                    onValueChange={v => setSelectedTubeId(prev => (prev === v ? null : v))}
+                  >
+                    <SelectTrigger className='w-full bg-card'>
+                      <SelectValue placeholder='Select a tube…' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {displayTubes.map(tube => (
+                        <SelectItem key={tube.id} value={tube.id}>
+                          <span className='font-mono'>
+                            {positionLabel(tube.row, tube.column) ?? 'Unplaced'}
                           </span>
-                        )}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                          {tube.box && (
+                            <span className='ml-2 text-xs text-muted-foreground'>
+                              {tube.box.label}
+                            </span>
+                          )}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className='hidden lg:block'>
+                  <TubeSelector
+                    tubes={displayTubes}
+                    selectedId={selectedTubeId}
+                    onSelect={t => toggleTube(t.id)}
+                  />
+                </div>
               </div>
-              <div className='hidden lg:block'>
-                <TubeSelector
-                  tubes={tubes}
-                  selectedId={selectedTubeId}
-                  onSelect={t => toggleTube(t.id)}
-                />
-              </div>
-            </div>
 
-            {selectedTube ? (
-              <TubeDetail
-                tube={selectedTube}
-                allTubes={tubes}
-                selectedTubeId={selectedTubeId ?? ''}
-                userRole={CURRENT_USER_ROLE}
-                attributes={getAttrsForTube(selectedTube).filter(a => a.key !== 'notes')}
-                notes={String(
-                  getAttrsForTube(selectedTube).find(a => a.key === 'notes')?.value ?? ''
-                )}
-                onAttrChange={(key, value) => updateAttr(selectedTube.id, key, value)}
-                onAttrAdd={attr =>
-                  setTubeAttrsMap(prev => ({
-                    ...prev,
-                    [selectedTube.id]: [...getAttrsForTube(selectedTube), attr]
-                  }))
-                }
-                onAttrDelete={key =>
-                  setTubeAttrsMap(prev => ({
-                    ...prev,
-                    [selectedTube.id]: getAttrsForTube(selectedTube).filter(a => a.key !== key)
-                  }))
-                }
-                onTubeSelect={toggleTube}
-                onNotesChange={v => updateAttr(selectedTube.id, 'notes', v)}
-                otherCells={MOCK_OTHER_CELLS}
-              />
-            ) : (
-              <EmptyTubeState />
-            )}
-          </div>
-        </div>
+              {selectedTube ? (
+                <TubeDetail
+                  tube={selectedTube}
+                  allTubes={displayTubes}
+                  userRole={CURRENT_USER_ROLE}
+                  currentUserId={CURRENT_USER.id}
+                  attributes={getAttrsForTube(selectedTube).filter(a => a.key !== 'notes')}
+                  notes={String(
+                    getAttrsForTube(selectedTube).find(a => a.key === 'notes')?.value ?? ''
+                  )}
+                  onAttrChange={(key, value) => updateAttr(selectedTube.id, key, value)}
+                  onAttrAdd={attr =>
+                    setTubeAttrsMap(prev => ({
+                      ...prev,
+                      [selectedTube.id]: [...getAttrsForTube(selectedTube), attr]
+                    }))
+                  }
+                  onAttrDelete={key =>
+                    setTubeAttrsMap(prev => ({
+                      ...prev,
+                      [selectedTube.id]: getAttrsForTube(selectedTube).filter(a => a.key !== key)
+                    }))
+                  }
+                  onNotesChange={v => updateAttr(selectedTube.id, 'notes', v)}
+                  onCheckout={() => handleCheckout(selectedTube.id)}
+                  onCheckin={pos => handleCheckin(selectedTube.id, pos)}
+                  otherCells={MOCK_OTHER_CELLS}
+                />
+              ) : (
+                <EmptyTubeState />
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

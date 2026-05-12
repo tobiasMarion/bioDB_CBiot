@@ -36,9 +36,8 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
   return (
     <Card className='relative overflow-hidden border bg-linear-to-br from-slate-50 via-white to-cyan-50/30 dark:bg-none dark:bg-background'>
       <div className='absolute inset-0 z-0 bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.12),transparent_55%)] dark:bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.05),transparent_55%)]' />
-
-      <CardContent className='relative z-10 px-8 py-8 lg:px-10'>
-        <div className='flex items-start justify-between gap-8'>
+      <CardContent className='relative z-10 px-6 py-6 sm:px-8 sm:py-8 lg:px-10'>
+        <div className='flex flex-col-reverse gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-8'>
           <div className='min-w-0 flex-1 space-y-5'>
             <p className='text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
               {sample.group.name}
@@ -46,7 +45,7 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
 
             <EditableName value={name} onChange={setName} canEdit={canEdit} />
 
-            <div className='flex flex-wrap items-center gap-2'>
+            <div className='flex flex-wrap items-center gap-x-2 gap-y-1.5'>
               <EditableTypeBadge value={type} onChange={setType} canEdit={canEdit} />
               <TooltipProvider>
                 <Tooltip>
@@ -60,13 +59,13 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <Separator orientation='vertical' className='h-3 opacity-40' />
+              <span className='hidden text-muted-foreground/30 sm:inline'>·</span>
               <span className='text-xs text-muted-foreground'>
                 By <span className='font-medium text-foreground'>{sample.creator.name}</span>
                 {' · '}
                 {sample.group.name}
               </span>
-              <Separator orientation='vertical' className='h-3 opacity-40' />
+              <span className='hidden text-muted-foreground/30 sm:inline'>·</span>
               <span className='text-xs text-muted-foreground'>
                 {new Date(sample.createdAt).toLocaleDateString('pt-BR', {
                   day: '2-digit',
@@ -76,7 +75,7 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
               </span>
             </div>
 
-            <div className='grid grid-cols-1 gap-x-12 gap-y-3 md:grid-cols-2'>
+            <div className='grid grid-cols-1 gap-x-12 gap-y-3 sm:grid-cols-2'>
               <div>
                 <p className='mb-1 text-[10px] font-medium tracking-widest text-muted-foreground uppercase'>
                   Origin Organism

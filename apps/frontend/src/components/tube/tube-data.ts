@@ -21,6 +21,13 @@ export interface TubeBox {
   }
 }
 
+export type TubeStatus = 'in_storage' | 'checked_out' | 'unplaced'
+
+export interface CheckoutInfo {
+  by: { id: string; name: string }
+  at: string
+}
+
 export interface Tube {
   id: string
   sampleId: string
@@ -29,6 +36,8 @@ export interface Tube {
   row: number | null
   column: number | null
   box: TubeBox | null
+  status: TubeStatus
+  checkedOut: CheckoutInfo | null
   attributes: TubeAttribute[]
 }
 
@@ -91,6 +100,7 @@ export interface TrayCell {
   tubeId?: string
   isCurrentSample: boolean
   isOtherSample: boolean
+  isCheckedOut: boolean
 }
 
 export function buildTrayMatrix(
@@ -112,7 +122,8 @@ export function buildTrayMatrix(
         col: c,
         tubeId: tube?.id,
         isCurrentSample: !!tube,
-        isOtherSample: !tube && otherSet.has(key)
+        isOtherSample: !tube && otherSet.has(key),
+        isCheckedOut: !!tube && tube.status === 'checked_out'
       })
     }
   }
@@ -142,22 +153,61 @@ const MOCK_BOX: TubeBox = {
 
 function makeTube(
   id: string,
-  row: number,
-  col: number,
-  exp: string,
-  attrs: Omit<TubeAttribute, 'id'>[]
+  row: number | null,
+  col: number | null,
+  exp: string | null,
+  attrs: Omit<TubeAttribute, 'id'>[],
+  status: TubeStatus = 'in_storage',
+  checkedOut: CheckoutInfo | null = null
 ): Tube {
   return {
     id,
     sampleId: 'sample-mock',
     expirationDate: exp,
-    boxId: MOCK_BOX.id,
+    boxId: row !== null ? MOCK_BOX.id : null,
     row,
     column: col,
-    box: MOCK_BOX,
+    box: row !== null ? MOCK_BOX : null,
+    status,
+    checkedOut,
     attributes: attrs.map((a, i) => ({ ...a, id: `${id}-attr-${i}` }))
   }
 }
+
+export interface MockFreezerBox {
+  id: string
+  label: string
+}
+
+export interface MockFreezer {
+  id: string
+  name: string
+  locationDescription: string
+  boxes: MockFreezerBox[]
+}
+
+// TODO: remove when freezers endpoint exists
+export const MOCK_FREEZERS: MockFreezer[] = [
+  {
+    id: 'freezer-001',
+    name: 'Haier Biomedical DW-86L',
+    locationDescription: 'Prédio A, 3º andar, sala 304',
+    boxes: [
+      { id: 'box-001', label: 'BOX-2024-0038' },
+      { id: 'box-002', label: 'BOX-2024-0039' },
+      { id: 'box-003', label: 'BOX-2024-0040' }
+    ]
+  },
+  {
+    id: 'freezer-002',
+    name: 'Eppendorf CryoCube F740',
+    locationDescription: 'Prédio B, 2º andar, sala 210',
+    boxes: [
+      { id: 'box-004', label: 'BOX-2024-0041' },
+      { id: 'box-005', label: 'BOX-2024-0042' }
+    ]
+  }
+]
 
 // TODO: remove when GET /samples/:id/tubes endpoint is available
 export const MOCK_TUBES: Tube[] = [
@@ -182,20 +232,36 @@ export const MOCK_TUBES: Tube[] = [
     attr('freeze_cycles', 'Freeze Cycles', '0', 'number', 'LEADER'),
     attr('authorized_by', 'Authorized By', 'Dr. Ana Souza', 'string', 'LEADER')
   ]),
-  makeTube('tube-4', 2, 2, '2026-05-20T00:00:00Z', [
-    attr('notes', 'Observations', 'Used for PCR on 2024-09-01', 'string', 'RESEARCHER'),
-    attr('volume_ul', 'Volume (µL)', '50', 'number', 'RESEARCHER'),
-    attr('concentration', 'Concentration (ng/µL)', '0.741', 'number', 'RESEARCHER'),
-    attr('freeze_cycles', 'Freeze Cycles', '3', 'number', 'LEADER'),
-    attr('authorized_by', 'Authorized By', 'Dr. Carlos Lima', 'string', 'LEADER')
-  ]),
-  makeTube('tube-5', 3, 3, '2025-12-01T00:00:00Z', [
-    attr('notes', 'Observations', 'Reserved for sequencing batch 12', 'string', 'RESEARCHER'),
-    attr('volume_ul', 'Volume (µL)', '250', 'number', 'RESEARCHER'),
-    attr('concentration', 'Concentration (ng/µL)', '1.055', 'number', 'RESEARCHER'),
-    attr('batch_code', 'Batch Code', 'SEQ-BATCH-12', 'string', 'LEADER'),
-    attr('freeze_cycles', 'Freeze Cycles', '0', 'number', 'LEADER')
-  ]),
+  makeTube(
+    'tube-4',
+    2,
+    2,
+    '2026-05-20T00:00:00Z',
+    [
+      attr('notes', 'Observations', 'Used for PCR on 2024-09-01', 'string', 'RESEARCHER'),
+      attr('volume_ul', 'Volume (µL)', '50', 'number', 'RESEARCHER'),
+      attr('concentration', 'Concentration (ng/µL)', '0.741', 'number', 'RESEARCHER'),
+      attr('freeze_cycles', 'Freeze Cycles', '3', 'number', 'LEADER'),
+      attr('authorized_by', 'Authorized By', 'Dr. Carlos Lima', 'string', 'LEADER')
+    ],
+    'checked_out',
+    { by: { id: 'user-002', name: 'Dr. Carlos Lima' }, at: '2026-05-10T08:00:00Z' }
+  ),
+  makeTube(
+    'tube-5',
+    3,
+    3,
+    '2025-12-01T00:00:00Z',
+    [
+      attr('notes', 'Observations', 'Reserved for sequencing batch 12', 'string', 'RESEARCHER'),
+      attr('volume_ul', 'Volume (µL)', '250', 'number', 'RESEARCHER'),
+      attr('concentration', 'Concentration (ng/µL)', '1.055', 'number', 'RESEARCHER'),
+      attr('batch_code', 'Batch Code', 'SEQ-BATCH-12', 'string', 'LEADER'),
+      attr('freeze_cycles', 'Freeze Cycles', '0', 'number', 'LEADER')
+    ],
+    'checked_out',
+    { by: { id: 'user-001', name: 'Dr. Ana Souza' }, at: '2026-05-10T09:25:00Z' }
+  ),
   makeTube('tube-6', 3, 4, '2026-08-16T00:00:00Z', [
     attr('notes', 'Observations', '', 'string', 'RESEARCHER'),
     attr('volume_ul', 'Volume (µL)', '230', 'number', 'RESEARCHER'),
@@ -215,7 +281,18 @@ export const MOCK_TUBES: Tube[] = [
     attr('concentration', 'Concentration (ng/µL)', '1.088', 'number', 'RESEARCHER'),
     attr('freeze_cycles', 'Freeze Cycles', '4', 'number', 'LEADER'),
     attr('authorized_by', 'Authorized By', 'Dr. Carlos Lima', 'string', 'LEADER')
-  ])
+  ]),
+  makeTube(
+    'tube-9',
+    null,
+    null,
+    '2027-02-01T00:00:00Z',
+    [
+      attr('notes', 'Observations', 'New aliquot — needs to be placed in storage.', 'string', 'RESEARCHER'),
+      attr('volume_ul', 'Volume (µL)', '300', 'number', 'RESEARCHER')
+    ],
+    'unplaced'
+  )
 ]
 
 // TODO: remove when box occupancy is returned by the API

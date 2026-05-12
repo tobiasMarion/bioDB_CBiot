@@ -1,6 +1,7 @@
 import { HeroSamplesCard } from '@/components/hero-sample-card'
 import { SamplesTable } from '@/components/samples-table'
 import { StatCard } from '@/components/stats-cards'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { getGroupDetails } from '@/lib/api/get-group-details'
 import { getSamplesStats } from '@/lib/api/get-samples-stats'
 import { useQuery } from '@tanstack/react-query'
@@ -18,6 +19,8 @@ function RouteComponent() {
     queryKey: ['group', groupId],
     queryFn: () => getGroupDetails(groupId)
   })
+
+  usePageTitle(group ? `Samples — ${group.name}` : 'Samples')
 
   const { data: stats } = useQuery({
     queryKey: ['samples-stats', groupId],

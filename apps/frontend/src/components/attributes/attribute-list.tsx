@@ -33,7 +33,7 @@ export function AttributeList({
 
   const header = (
     <div className='flex items-center justify-between px-5 py-3'>
-      <p className='text-sm font-medium tracking-wide text-muted-foreground uppercase'>{title}</p>
+      <p className='text-sm font-medium'>{title}</p>
       {canCreate && onAdd && <AddAttributePopover onAdd={onAdd} />}
     </div>
   )
