@@ -15,6 +15,7 @@ import { AddAttributeDTO } from './dto/AddAttribute'
 import { CheckinTubeDTO } from './dto/CheckinTube'
 import { CreateTubeDTO } from './dto/CreateTube'
 import { UpdateAttributeDTO } from './dto/UpdateAttribute'
+import { UpdateTubeDTO } from './dto/UpdateTube'
 import { TubesService } from './tubes.service'
 
 @ApiTags('Tubes')
@@ -72,6 +73,21 @@ export class TubesController {
     @CurrentUser() user: User
   ) {
     return this.tubesService.checkin(id, body, user)
+  }
+
+  @Patch('tubes/:id')
+  @Auth()
+  @ApiOperation({ summary: 'Update tube fields (notes)' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
+  @ApiForbiddenResponse({ description: 'Insufficient permissions' })
+  @ApiNotFoundResponse({ description: 'Tube not found' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  async update(
+    @Param('id') id: string,
+    @Body() body: UpdateTubeDTO,
+    @CurrentUser() user: User
+  ) {
+    return this.tubesService.update(id, body, user)
   }
 
   @Delete('tubes/:id')

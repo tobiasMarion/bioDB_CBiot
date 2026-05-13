@@ -6,6 +6,7 @@ export interface SampleDetail {
   type: string
   originOrganism: string
   sourceLab: string
+  observations: string
   groupId: string
   group: { id: string; name: string }
   createdBy: string

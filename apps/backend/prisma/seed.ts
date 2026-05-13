@@ -151,12 +151,13 @@ async function main() {
     }
   })
 
-  // Tube 1 — in_storage, with a full set of attributes (all 4 types, all 3 roles)
+  // Tube 1 — in_storage, full attribute set (all 4 types, all 3 roles)
   const tube1 = await prisma.tube.create({
     data: {
       sampleId: mainSample.id,
       createdBy: tobias.id,
       expirationDate: new Date('2026-08-14'),
+      notes: '',
       boxId: box1.id,
       row: 1,
       column: 1
@@ -164,62 +165,12 @@ async function main() {
   })
   await prisma.tubeAttribute.createMany({
     data: [
-      {
-        tubeId: tube1.id,
-        key: 'volume_ul',
-        value: '250',
-        type: 'number',
-        minRequiredRoleToEdit: GroupRole.RESEARCHER,
-        createdBy: tobias.id
-      },
-      {
-        tubeId: tube1.id,
-        key: 'concentration',
-        value: '1.024',
-        type: 'number',
-        minRequiredRoleToEdit: GroupRole.RESEARCHER,
-        createdBy: tobias.id
-      },
-      {
-        tubeId: tube1.id,
-        key: 'extraction_date',
-        value: '2024-08-14',
-        type: 'date',
-        minRequiredRoleToEdit: GroupRole.RESEARCHER,
-        createdBy: tobias.id
-      },
-      {
-        tubeId: tube1.id,
-        key: 'qc_passed',
-        value: 'true',
-        type: 'boolean',
-        minRequiredRoleToEdit: GroupRole.MANAGER,
-        createdBy: lucas.id
-      },
-      {
-        tubeId: tube1.id,
-        key: 'freeze_cycles',
-        value: '0',
-        type: 'number',
-        minRequiredRoleToEdit: GroupRole.MANAGER,
-        createdBy: lucas.id
-      },
-      {
-        tubeId: tube1.id,
-        key: 'authorized_by',
-        value: 'Dr. Ana Souza',
-        type: 'string',
-        minRequiredRoleToEdit: GroupRole.LEADER,
-        createdBy: tobias.id
-      },
-      {
-        tubeId: tube1.id,
-        key: 'notes',
-        value: '',
-        type: 'string',
-        minRequiredRoleToEdit: GroupRole.RESEARCHER,
-        createdBy: tobias.id
-      }
+      { tubeId: tube1.id, key: 'volume_ul', value: '250', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id },
+      { tubeId: tube1.id, key: 'concentration', value: '1.024', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id },
+      { tubeId: tube1.id, key: 'extraction_date', value: '2024-08-14', type: 'date', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id },
+      { tubeId: tube1.id, key: 'qc_passed', value: 'true', type: 'boolean', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id },
+      { tubeId: tube1.id, key: 'freeze_cycles', value: '0', type: 'number', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id },
+      { tubeId: tube1.id, key: 'authorized_by', value: 'Dr. Ana Souza', type: 'string', minRequiredRoleToEdit: GroupRole.LEADER, createdBy: tobias.id }
     ]
   })
 
@@ -229,30 +180,14 @@ async function main() {
       sampleId: mainSample.id,
       createdBy: tobias.id,
       expirationDate: new Date('2026-06-01'),
+      notes: 'Slightly turbid — monitor on next use',
       boxId: box1.id,
       row: 1,
       column: 2
     }
   })
-  await prisma.tubeAttribute.createMany({
-    data: [
-      {
-        tubeId: tube2.id,
-        key: 'volume_ul',
-        value: '180',
-        type: 'number',
-        minRequiredRoleToEdit: GroupRole.RESEARCHER,
-        createdBy: tobias.id
-      },
-      {
-        tubeId: tube2.id,
-        key: 'notes',
-        value: 'Slightly turbid — monitor on next use',
-        type: 'string',
-        minRequiredRoleToEdit: GroupRole.RESEARCHER,
-        createdBy: jonas.id
-      }
-    ]
+  await prisma.tubeAttribute.create({
+    data: { tubeId: tube2.id, key: 'volume_ul', value: '180', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id }
   })
 
   // Tube 3 — checked_out by lucas (MANAGER)
@@ -261,9 +196,7 @@ async function main() {
       sampleId: mainSample.id,
       createdBy: tobias.id,
       expirationDate: new Date('2026-12-01'),
-      boxId: null,
-      row: null,
-      column: null,
+      notes: 'Reserved for sequencing batch 12',
       checkedOutBy: lucas.id,
       checkedOutAt: new Date('2026-05-10T09:00:00Z')
     }
@@ -280,30 +213,8 @@ async function main() {
   })
   await prisma.tubeAttribute.createMany({
     data: [
-      {
-        tubeId: tube3.id,
-        key: 'batch_code',
-        value: 'SEQ-BATCH-12',
-        type: 'string',
-        minRequiredRoleToEdit: GroupRole.MANAGER,
-        createdBy: lucas.id
-      },
-      {
-        tubeId: tube3.id,
-        key: 'volume_ul',
-        value: '250',
-        type: 'number',
-        minRequiredRoleToEdit: GroupRole.RESEARCHER,
-        createdBy: tobias.id
-      },
-      {
-        tubeId: tube3.id,
-        key: 'notes',
-        value: 'Reserved for sequencing batch 12',
-        type: 'string',
-        minRequiredRoleToEdit: GroupRole.RESEARCHER,
-        createdBy: tobias.id
-      }
+      { tubeId: tube3.id, key: 'batch_code', value: 'SEQ-BATCH-12', type: 'string', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id },
+      { tubeId: tube3.id, key: 'volume_ul', value: '250', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id }
     ]
   })
 
@@ -313,51 +224,26 @@ async function main() {
       sampleId: mainSample.id,
       createdBy: tobias.id,
       expirationDate: new Date('2024-03-01'),
+      notes: 'Expired — quarantined 2024-03-05',
       boxId: box1.id,
       row: 2,
       column: 1
     }
   })
-  await prisma.tubeAttribute.createMany({
-    data: [
-      {
-        tubeId: tube4.id,
-        key: 'notes',
-        value: 'Expired — quarantined 2024-03-05',
-        type: 'string',
-        minRequiredRoleToEdit: GroupRole.RESEARCHER,
-        createdBy: jonas.id
-      },
-      {
-        tubeId: tube4.id,
-        key: 'freeze_cycles',
-        value: '4',
-        type: 'number',
-        minRequiredRoleToEdit: GroupRole.MANAGER,
-        createdBy: lucas.id
-      }
-    ]
+  await prisma.tubeAttribute.create({
+    data: { tubeId: tube4.id, key: 'freeze_cycles', value: '4', type: 'number', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id }
   })
 
   // Tube 5 — unplaced (no box assigned yet)
-  const tube5 = await prisma.tube.create({
+  await prisma.tube.create({
     data: {
       sampleId: mainSample.id,
       createdBy: jonas.id,
       expirationDate: new Date('2027-02-01'),
+      notes: 'New aliquot — needs to be placed in storage.',
       boxId: null,
       row: null,
       column: null
-    }
-  })
-  await prisma.tubeAttribute.create({
-    data: {
-      tubeId: tube5.id,
-      key: 'notes',
-      value: 'New aliquot — needs to be placed in storage.',
-      type: 'string',
-      minRequiredRoleToEdit: GroupRole.RESEARCHER,
-      createdBy: jonas.id
     }
   })
 
@@ -367,6 +253,7 @@ async function main() {
       sampleId: mainSample.id,
       createdBy: tobias.id,
       expirationDate: null,
+      notes: '',
       boxId: box1.id,
       row: 2,
       column: 2

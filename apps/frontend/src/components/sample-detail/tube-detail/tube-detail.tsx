@@ -1,5 +1,6 @@
 import { AttributeList } from '@/components/attributes/attribute-list'
 import type { Attribute, Role } from '@/components/attributes/types'
+import type { ReturnPosition } from '@/components/sample-detail/return-to-freezer/return-to-freezer-dialog'
 import {
   EXPIRATION_CONFIG,
   type Tube,
@@ -13,41 +14,47 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { getBoxOccupancy } from '@/lib/api/get-box-occupancy'
 import { cn } from '@/lib/utils'
-import type { ReturnPosition } from '../return-to-freezer/return-to-freezer-dialog'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { TubeDetailActions } from './tube-detail-actions'
 import { TubeDetailHeader } from './tube-detail-header'
 
 interface TubeDetailProps {
   tube: Tube
   allTubes: Tube[]
+  groupId: string
   userRole: Role
   currentUserId: string
   attributes: Attribute[]
   notes: string
+  isPending?: boolean
   onAttrChange: (key: string, value: Attribute['value']) => void
   onAttrAdd: (attr: Attribute) => void
   onAttrDelete: (key: string) => void
   onNotesChange: (v: string) => void
   onCheckout?: () => void
   onCheckin?: (position: ReturnPosition) => void
-  otherCells?: Array<{ row: number; col: number }>
+  onDelete?: (reason: string) => void
 }
 
 export function TubeDetail({
   tube,
   allTubes,
+  groupId,
   userRole,
   currentUserId,
   attributes,
   notes,
+  isPending = false,
   onAttrChange,
   onAttrAdd,
   onAttrDelete,
   onNotesChange,
   onCheckout,
   onCheckin,
-  otherCells = []
+  onDelete
 }: TubeDetailProps) {
   const pos = positionLabel(tube.row, tube.column)
   const expStatus = expirationStatus(tube.expirationDate)
@@ -66,6 +73,15 @@ export function TubeDetail({
     return `${days} ${days === 1 ? 'day' : 'days'} remaining`
   })()
 
+  const { data: otherCells = [] } = useQuery({
+    queryKey: ['box-occupancy', tube.boxId, tube.sampleId],
+    queryFn: () => getBoxOccupancy(tube.boxId!, tube.sampleId),
+    enabled: !!tube.boxId
+  })
+
+  const [notesDraft, setNotesDraft] = useState(notes)
+  useEffect(() => { setNotesDraft(notes) }, [notes])
+
   return (
     <Card className='min-w-0 overflow-visible'>
       <CardContent className='p-0'>
@@ -83,11 +99,13 @@ export function TubeDetail({
           <TubeDetailActions
             tube={tube}
             allTubes={allTubes}
+            groupId={groupId}
             isCheckedOutByMe={isCheckedOutByMe}
             canAct={canAct}
-            otherCells={otherCells}
+            isPending={isPending}
             onCheckout={onCheckout}
             onCheckin={onCheckin}
+            onDelete={onDelete}
           />
         </div>
 
@@ -159,8 +177,11 @@ export function TubeDetail({
               <div className='px-5 py-4'>
                 <p className='text-sm font-medium'>Observations</p>
                 <Textarea
-                  value={notes}
-                  onChange={e => onNotesChange(e.target.value)}
+                  value={notesDraft}
+                  onChange={e => setNotesDraft(e.target.value)}
+                  onBlur={() => {
+                    if (notesDraft !== notes) onNotesChange(notesDraft)
+                  }}
                   placeholder='Notes, handling events, or observations for this tube…'
                   className='mt-2 min-h-20 resize-none bg-transparent text-sm focus-visible:border-muted-foreground'
                 />
@@ -176,8 +197,8 @@ export function TubeDetail({
               onChange={onAttrChange}
               onAdd={onAttrAdd}
               onDelete={onAttrDelete}
-              createRole='MANAGER'
-              deleteRole='MANAGER'
+              createRole='RESEARCHER'
+              deleteRole='RESEARCHER'
               layout='stack'
               flat
             />

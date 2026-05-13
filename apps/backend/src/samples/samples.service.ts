@@ -14,6 +14,7 @@ const sampleSelect = {
   type: true,
   originOrganism: true,
   sourceLab: true,
+  observations: true,
   groupId: true,
   group: {
     select: { id: true, name: true }
@@ -277,7 +278,8 @@ export class SamplesService {
             name: data.name,
             type: data.type,
             originOrganism: data.originOrganism,
-            sourceLab: data.sourceLab
+            sourceLab: data.sourceLab,
+            observations: data.observations
           },
           select: sampleSelect
         })

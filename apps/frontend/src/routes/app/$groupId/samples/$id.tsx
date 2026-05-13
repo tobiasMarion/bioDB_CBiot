@@ -6,12 +6,8 @@ import { SampleCard } from '@/components/sample-detail/sample-card'
 import { SampleCardSkeleton } from '@/components/sample-detail/sample-card-skeleton'
 import { TubeDetail } from '@/components/sample-detail/tube-detail/tube-detail'
 import {
-  type CheckoutInfo,
-  MOCK_OTHER_CELLS,
-  MOCK_TUBES,
   type Tube,
   type TubeAttribute,
-  type TubeStatus,
   positionLabel
 } from '@/components/tube/tube-data'
 import { TubeSelector } from '@/components/tube/tube-selector'
@@ -26,36 +22,30 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { usePageTitle } from '@/hooks/use-page-title'
-import type { SampleDetail } from '@/lib/api/get-sample'
-import { useQuery } from '@tanstack/react-query'
-import { Link, createFileRoute, useParams } from '@tanstack/react-router'
+import { getApiErrorMessage } from '@/lib/api/api-error'
+import { archiveSample } from '@/lib/api/archive-sample'
+import type { AddTubeAttributePayload } from '@/lib/api/add-tube-attribute'
+import { addTubeAttribute } from '@/lib/api/add-tube-attribute'
+import { checkinTube } from '@/lib/api/checkin-tube'
+import { checkoutTube } from '@/lib/api/checkout-tube'
+import { createTube } from '@/lib/api/create-tube'
+import { deleteTube } from '@/lib/api/delete-tube'
+import { deleteTubeAttribute } from '@/lib/api/delete-tube-attribute'
+import { getSample } from '@/lib/api/get-sample'
+import { getSampleTubes } from '@/lib/api/get-sample-tubes'
+import { getGroupMembers } from '@/lib/api/get-group-members'
+import { updateTube } from '@/lib/api/update-tube'
+import { updateTubeAttribute } from '@/lib/api/update-tube-attribute'
+import { authStore } from '@/lib/auth/store'
+import { queryClient } from '@/lib/api/query-client'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { Link, createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 
 export const Route = createFileRoute('/app/$groupId/samples/$id')({
   component: RouteComponent
 })
-
-const CURRENT_USER_ROLE: Role = 'MANAGER'
-const CURRENT_USER = { id: 'user-001', name: 'Dr. Ana Souza' }
-
-// TODO: replace with getSample(id) when GET /samples/:id endpoint exists
-function mockSampleDetail(id: string, groupId: string): SampleDetail {
-  return {
-    id,
-    name: 'RNA-seq Extract #42',
-    type: 'RNA',
-    originOrganism: 'Mus musculus',
-    sourceLab: 'Genomics Lab B',
-    groupId,
-    group: { id: groupId, name: 'Biotechnology Center' },
-    createdBy: 'user-001',
-    creator: { id: 'user-001', name: 'Dr. Ana Souza', email: 'ana.souza@ufrgs.br' },
-    createdAt: '2024-08-14T09:22:00Z',
-    updatedAt: '2024-08-14T09:22:00Z',
-    amountOfTubes: MOCK_TUBES.length
-  }
-}
 
 function toAttribute(attr: TubeAttribute): Attribute {
   const value =
@@ -66,78 +56,165 @@ function toAttribute(attr: TubeAttribute): Attribute {
         : attr.value
   return {
     key: attr.key,
-    label: attr.label,
+    label: attr.label ?? attr.key,
     value,
     type: attr.type,
     minRole: attr.minRequiredRoleToEdit
   }
 }
 
+function serializeAttrValue(value: Attribute['value']): string {
+  if (value === null || value === undefined) return ''
+  return String(value)
+}
+
 function RouteComponent() {
   const { groupId, id } = useParams({ from: '/app/$groupId/samples/$id' })
+  const navigate = useNavigate()
+  const user = authStore.getUser()
+
+  const [selectedTubeId, setSelectedTubeId] = useState<string | null>(null)
+  const [tubeError, setTubeError] = useState<string | null>(null)
+  const [attrError, setAttrError] = useState<string | null>(null)
 
   const { data: sample, isLoading } = useQuery({
     queryKey: ['sample', id],
-    // TODO: replace with getSample(id)
-    queryFn: () =>
-      new Promise<SampleDetail>(resolve =>
-        setTimeout(() => resolve(mockSampleDetail(id, groupId)), 600)
-      )
+    queryFn: () => getSample(id)
   })
 
-  // TODO: replace with getSampleTubes(id) when endpoint exists
   const { data: tubes = [] } = useQuery({
     queryKey: ['sample-tubes', id],
-    queryFn: () => new Promise<Tube[]>(resolve => setTimeout(() => resolve(MOCK_TUBES), 800))
+    queryFn: () => getSampleTubes(id),
+    enabled: !!id
+  })
+
+  const { data: members = [] } = useQuery({
+    queryKey: ['group-members', groupId],
+    queryFn: () => getGroupMembers(groupId),
+    enabled: !user?.isAdmin
   })
 
   usePageTitle(sample?.name)
 
-  const [selectedTubeId, setSelectedTubeId] = useState<string | null>(null)
+  const currentMember = members.find(m => m.user.id === user?.id && !m.isArchived)
+  const userRole: Role = user?.isAdmin ? 'LEADER' : currentMember?.role ?? 'RESEARCHER'
 
-  const [tubeStatusOverrides, setTubeStatusOverrides] = useState<
-    Record<string, { status: TubeStatus; checkedOut: CheckoutInfo | null }>
-  >({})
+  const sampleQueryKeys = [
+    ['sample', id],
+    ['sample-tubes', id],
+    ['samples', groupId]
+  ]
 
-  const displayTubes = tubes.map(t => ({ ...t, ...(tubeStatusOverrides[t.id] ?? {}) }))
-  const selectedTube = displayTubes.find(t => t.id === selectedTubeId) ?? null
+  const invalidateSample = () =>
+    Promise.all(sampleQueryKeys.map(key => queryClient.invalidateQueries({ queryKey: key })))
+
+  const checkoutMutation = useMutation({
+    mutationFn: (tubeId: string) => checkoutTube(tubeId),
+    onSuccess: () => {
+      setTubeError(null)
+      queryClient.invalidateQueries({ queryKey: ['sample-tubes', id] })
+    },
+    onError: async err => setTubeError(await getApiErrorMessage(err))
+  })
+
+  const checkinMutation = useMutation({
+    mutationFn: ({ tubeId, position }: { tubeId: string; position: ReturnPosition }) =>
+      checkinTube(tubeId, {
+        boxId: position.boxId,
+        row: position.row,
+        col: position.col,
+        notes: position.experimentNotes || undefined
+      }),
+    onSuccess: () => {
+      setTubeError(null)
+      queryClient.invalidateQueries({ queryKey: ['sample-tubes', id] })
+      queryClient.invalidateQueries({ queryKey: ['box-occupancy'] })
+    },
+    onError: async err => setTubeError(await getApiErrorMessage(err))
+  })
+
+  const createTubeMutation = useMutation({
+    mutationFn: (data: { expirationDate: string | null }) =>
+      createTube(id, { expirationDate: data.expirationDate ?? undefined }),
+    onSuccess: () => {
+      setTubeError(null)
+      invalidateSample()
+    },
+    onError: async err => setTubeError(await getApiErrorMessage(err))
+  })
+
+  const deleteTubeMutation = useMutation({
+    mutationFn: (tubeId: string) => deleteTube(tubeId),
+    onSuccess: () => {
+      setTubeError(null)
+      setSelectedTubeId(null)
+      invalidateSample()
+    },
+    onError: async err => setTubeError(await getApiErrorMessage(err))
+  })
+
+  const archiveSampleMutation = useMutation({
+    mutationFn: () => archiveSample(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['samples', groupId] })
+      navigate({ to: '/app/$groupId/samples', params: { groupId } })
+    },
+    onError: async err => setTubeError(await getApiErrorMessage(err))
+  })
+
+  const addAttrMutation = useMutation({
+    mutationFn: ({ tubeId, payload }: { tubeId: string; payload: AddTubeAttributePayload }) =>
+      addTubeAttribute(tubeId, payload),
+    onSuccess: () => {
+      setAttrError(null)
+      queryClient.invalidateQueries({ queryKey: ['sample-tubes', id] })
+    },
+    onError: async err => setAttrError(await getApiErrorMessage(err))
+  })
+
+  const updateTubeMutation = useMutation({
+    mutationFn: ({ tubeId, data }: { tubeId: string; data: { notes: string } }) =>
+      updateTube(tubeId, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sample-tubes', id] }),
+    onError: async err => setAttrError(await getApiErrorMessage(err))
+  })
+
+  const updateAttrMutation = useMutation({
+    mutationFn: ({ tubeId, key, value }: { tubeId: string; key: string; value: string }) =>
+      updateTubeAttribute(tubeId, key, value),
+    onSuccess: () => {
+      setAttrError(null)
+      queryClient.invalidateQueries({ queryKey: ['sample-tubes', id] })
+    },
+    onError: async err => setAttrError(await getApiErrorMessage(err))
+  })
+
+  const deleteAttrMutation = useMutation({
+    mutationFn: ({ tubeId, key }: { tubeId: string; key: string }) =>
+      deleteTubeAttribute(tubeId, key),
+    onSuccess: () => {
+      setAttrError(null)
+      queryClient.invalidateQueries({ queryKey: ['sample-tubes', id] })
+    },
+    onError: async err => setAttrError(await getApiErrorMessage(err))
+  })
+
+  const selectedTube = tubes.find(t => t.id === selectedTubeId) ?? null
   const toggleTube = (tubeId: string) =>
     setSelectedTubeId(prev => (prev === tubeId ? null : tubeId))
 
-  function handleCheckout(tubeId: string) {
-    setTubeStatusOverrides(prev => ({
-      ...prev,
-      [tubeId]: {
-        status: 'checked_out',
-        checkedOut: { by: CURRENT_USER, at: new Date().toISOString() }
-      }
-    }))
-  }
-
-  function handleCheckin(tubeId: string, position: ReturnPosition) {
-    console.log('return to freezer', tubeId, position)
-    setTubeStatusOverrides(prev => ({
-      ...prev,
-      [tubeId]: { status: 'in_storage', checkedOut: null }
-    }))
-  }
-
-  const [tubeAttrsMap, setTubeAttrsMap] = useState<Record<string, Attribute[]>>({})
-
-  function getAttrsForTube(tube: Tube): Attribute[] {
-    return tubeAttrsMap[tube.id] ?? tube.attributes.map(toAttribute)
-  }
-
-  function updateAttr(tubeId: string, key: string, value: Attribute['value']) {
-    setTubeAttrsMap(prev => {
-      const current =
-        prev[tubeId] ?? (tubes.find(t => t.id === tubeId)?.attributes ?? []).map(toAttribute)
-      return { ...prev, [tubeId]: current.map(a => (a.key === key ? { ...a, value } : a)) }
-    })
-  }
+  const isTubePending =
+    checkoutMutation.isPending ||
+    checkinMutation.isPending ||
+    deleteTubeMutation.isPending
 
   const isOwner = sample ? sample.groupId === groupId : false
-  const canDelete = CURRENT_USER_ROLE === 'MANAGER' || CURRENT_USER_ROLE === 'LEADER'
+  const canEdit = true
+  const canDelete = userRole === 'MANAGER' || userRole === 'LEADER'
+
+  function getAttrsForTube(tube: Tube): Attribute[] {
+    return tube.attributes.map(toAttribute)
+  }
 
   return (
     <div className='min-h-screen bg-background text-foreground'>
@@ -159,12 +236,18 @@ function RouteComponent() {
         ) : sample ? (
           <SampleCard
             sample={sample}
-            canEdit
+            canEdit={canEdit}
             canDelete={canDelete}
             isOwner={isOwner}
-            onDelete={() => console.log('archive', id)}
+            onDelete={() => archiveSampleMutation.mutate()}
           />
         ) : null}
+
+        {tubeError && (
+          <p className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+            {tubeError}
+          </p>
+        )}
 
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0'>
@@ -174,8 +257,9 @@ function RouteComponent() {
                 {tubes.length}
               </Badge>
             </div>
-            {/* TODO: replace console.log with createTube(sample.id, data) when endpoint exists */}
-            <CreateTubeDialog onSubmit={data => console.log('create tube', data)} />
+            <CreateTubeDialog
+              onSubmit={data => createTubeMutation.mutate(data)}
+            />
           </CardHeader>
           <CardContent>
             <div className='grid grid-cols-1 gap-5 lg:grid-cols-[220px_1fr]'>
@@ -189,7 +273,7 @@ function RouteComponent() {
                       <SelectValue placeholder='Select a tube…' />
                     </SelectTrigger>
                     <SelectContent>
-                      {displayTubes.map(tube => (
+                      {tubes.map(tube => (
                         <SelectItem key={tube.id} value={tube.id}>
                           <span className='font-mono'>
                             {positionLabel(tube.row, tube.column) ?? 'Unplaced'}
@@ -206,7 +290,7 @@ function RouteComponent() {
                 </div>
                 <div className='hidden lg:block'>
                   <TubeSelector
-                    tubes={displayTubes}
+                    tubes={tubes}
                     selectedId={selectedTubeId}
                     onSelect={t => toggleTube(t.id)}
                   />
@@ -216,35 +300,53 @@ function RouteComponent() {
               {selectedTube ? (
                 <TubeDetail
                   tube={selectedTube}
-                  allTubes={displayTubes}
-                  userRole={CURRENT_USER_ROLE}
-                  currentUserId={CURRENT_USER.id}
-                  attributes={getAttrsForTube(selectedTube).filter(a => a.key !== 'notes')}
-                  notes={String(
-                    getAttrsForTube(selectedTube).find(a => a.key === 'notes')?.value ?? ''
-                  )}
-                  onAttrChange={(key, value) => updateAttr(selectedTube.id, key, value)}
+                  allTubes={tubes}
+                  groupId={groupId}
+                  userRole={userRole}
+                  currentUserId={user?.id ?? ''}
+                  attributes={getAttrsForTube(selectedTube)}
+                  notes={selectedTube.notes}
+                  isPending={isTubePending}
+                  onAttrChange={(key, value) =>
+                    updateAttrMutation.mutate({
+                      tubeId: selectedTube.id,
+                      key,
+                      value: serializeAttrValue(value)
+                    })
+                  }
                   onAttrAdd={attr =>
-                    setTubeAttrsMap(prev => ({
-                      ...prev,
-                      [selectedTube.id]: [...getAttrsForTube(selectedTube), attr]
-                    }))
+                    addAttrMutation.mutate({
+                      tubeId: selectedTube.id,
+                      payload: {
+                        key: attr.key,
+                        value: serializeAttrValue(attr.value),
+                        type: attr.type,
+                        minRequiredRoleToEdit: attr.minRole
+                      }
+                    })
                   }
                   onAttrDelete={key =>
-                    setTubeAttrsMap(prev => ({
-                      ...prev,
-                      [selectedTube.id]: getAttrsForTube(selectedTube).filter(a => a.key !== key)
-                    }))
+                    deleteAttrMutation.mutate({ tubeId: selectedTube.id, key })
                   }
-                  onNotesChange={v => updateAttr(selectedTube.id, 'notes', v)}
-                  onCheckout={() => handleCheckout(selectedTube.id)}
-                  onCheckin={pos => handleCheckin(selectedTube.id, pos)}
-                  otherCells={MOCK_OTHER_CELLS}
+                  onNotesChange={v =>
+                    updateTubeMutation.mutate({ tubeId: selectedTube.id, data: { notes: v } })
+                  }
+                  onCheckout={() => checkoutMutation.mutate(selectedTube.id)}
+                  onCheckin={pos =>
+                    checkinMutation.mutate({ tubeId: selectedTube.id, position: pos })
+                  }
+                  onDelete={_reason => deleteTubeMutation.mutate(selectedTube.id)}
                 />
               ) : (
                 <EmptyTubeState />
               )}
             </div>
+
+            {attrError && (
+              <p className='mt-3 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+                {attrError}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

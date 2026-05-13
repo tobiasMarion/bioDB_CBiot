@@ -1,4 +1,4 @@
-import { MOCK_FREEZERS, type MockFreezer } from '@/components/tube/tube-data'
+import type { FreezerWithBoxes } from '@/lib/api/get-group-freezers'
 import {
   Select,
   SelectContent,
@@ -10,20 +10,22 @@ import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 
 interface ReturnToFreezerControlsProps {
+  freezers: FreezerWithBoxes[]
+  currentFreezer: FreezerWithBoxes | null
   selectedFreezerId: string | null
   selectedBoxId: string | null
   experimentNotes: string
-  currentFreezer: MockFreezer | null
   onFreezerChange: (id: string) => void
   onBoxChange: (id: string) => void
   onNotesChange: (notes: string) => void
 }
 
 export function ReturnToFreezerControls({
+  freezers,
+  currentFreezer,
   selectedFreezerId,
   selectedBoxId,
   experimentNotes,
-  currentFreezer,
   onFreezerChange,
   onBoxChange,
   onNotesChange
@@ -37,7 +39,7 @@ export function ReturnToFreezerControls({
             <SelectValue placeholder='Select a freezer…' />
           </SelectTrigger>
           <SelectContent>
-            {MOCK_FREEZERS.map(f => (
+            {freezers.map(f => (
               <SelectItem key={f.id} value={f.id}>
                 <span className='block'>{f.name}</span>
                 <span className='block text-xs text-muted-foreground'>

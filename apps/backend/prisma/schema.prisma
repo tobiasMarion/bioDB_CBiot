@@ -140,6 +140,7 @@ model Sample {
   type           String
   originOrganism String
   sourceLab      String
+  observations   String    @default("")
   groupId        String
   createdBy      String
 
@@ -168,6 +169,7 @@ model Tube {
   row    Int?
   column Int?
 
+  notes        String    @default("")
   checkedOutBy String?
   checkedOutAt DateTime?
 

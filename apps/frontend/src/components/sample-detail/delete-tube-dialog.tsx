@@ -14,9 +14,10 @@ import { useState } from 'react'
 
 interface DeleteTubeDialogProps {
   onDelete: (reason: string) => void
+  isPending?: boolean
 }
 
-export function DeleteTubeDialog({ onDelete }: DeleteTubeDialogProps) {
+export function DeleteTubeDialog({ onDelete, isPending = false }: DeleteTubeDialogProps) {
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState('')
 
@@ -56,7 +57,11 @@ export function DeleteTubeDialog({ onDelete }: DeleteTubeDialogProps) {
           <Button variant='outline' onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button variant='destructive' disabled={!reason.trim()} onClick={handleDelete}>
+          <Button
+            variant='destructive'
+            disabled={!reason.trim() || isPending}
+            onClick={handleDelete}
+          >
             Delete tube
           </Button>
         </DialogFooter>

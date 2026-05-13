@@ -31,20 +31,14 @@ interface AddAttributePopoverProps {
 export function AddAttributePopover({ onAdd }: AddAttributePopoverProps) {
   const [open, setOpen] = useState(false)
   const [label, setLabel] = useState('')
-  const [key, setKey] = useState('')
   const [type, setType] = useState<AttributeType>('string')
   const [initialValue, setInitialValue] = useState<Attribute['value']>('')
   const [minRole, setMinRole] = useState<Role>('RESEARCHER')
 
-  const handleLabelChange = (v: string) => {
-    setLabel(v)
-    setKey(
-      v
-        .toLowerCase()
-        .replace(/\s+/g, '_')
-        .replace(/[^a-z0-9_]/g, '')
-    )
-  }
+  const key = label
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_]/g, '')
 
   const handleTypeChange = (v: AttributeType) => {
     setType(v)
@@ -59,9 +53,8 @@ export function AddAttributePopover({ onAdd }: AddAttributePopoverProps) {
 
   const handleAdd = () => {
     if (!label.trim() || !key.trim()) return
-    onAdd({ key: key.trim(), label: label.trim(), type, minRole, value: initialValue })
+    onAdd({ key, label: label.trim(), type, minRole, value: initialValue })
     setLabel('')
-    setKey('')
     setType('string')
     setInitialValue('')
     setMinRole('RESEARCHER')
@@ -80,7 +73,7 @@ export function AddAttributePopover({ onAdd }: AddAttributePopoverProps) {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className='w-80 p-0' align='end'>
+      <PopoverContent className='w-72 p-0' align='end'>
         <div className='border-b px-4 py-3'>
           <p className='text-sm font-semibold tracking-tight'>New attribute</p>
           <p className='mt-0.5 text-xs text-muted-foreground'>
@@ -89,25 +82,14 @@ export function AddAttributePopover({ onAdd }: AddAttributePopoverProps) {
         </div>
 
         <div className='space-y-4 p-4'>
-          <div className='space-y-3'>
-            <div className='space-y-1.5'>
-              <Label className='text-xs text-muted-foreground'>Label</Label>
-              <Input
-                value={label}
-                onChange={e => handleLabelChange(e.target.value)}
-                placeholder='e.g. Volume (µL)'
-                className='h-8 text-sm'
-              />
-            </div>
-            <div className='space-y-1.5'>
-              <Label className='text-xs text-muted-foreground'>Key</Label>
-              <Input
-                value={key}
-                onChange={e => setKey(e.target.value)}
-                placeholder='volume_ul'
-                className='h-8 font-mono text-xs'
-              />
-            </div>
+          <div className='space-y-1.5'>
+            <Label className='text-xs text-muted-foreground'>Label</Label>
+            <Input
+              value={label}
+              onChange={e => setLabel(e.target.value)}
+              placeholder='e.g. Volume (µL)'
+              className='h-8 text-sm'
+            />
           </div>
 
           <Separator />

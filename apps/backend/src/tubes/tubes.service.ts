@@ -13,11 +13,13 @@ import { AddAttributeDTO } from './dto/AddAttribute'
 import { CheckinTubeDTO } from './dto/CheckinTube'
 import { CreateTubeDTO } from './dto/CreateTube'
 import { UpdateAttributeDTO } from './dto/UpdateAttribute'
+import { UpdateTubeDTO } from './dto/UpdateTube'
 
 const tubeSelect = {
   id: true,
   sampleId: true,
   expirationDate: true,
+  notes: true,
   boxId: true,
   row: true,
   column: true,
@@ -123,6 +125,19 @@ export class TubesService {
       })
 
       return newTube
+    })
+
+    return formatTube(tube)
+  }
+
+  async update(tubeId: string, data: UpdateTubeDTO, user: User) {
+    const groupId = await this.getTubeGroupId(tubeId)
+    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
+
+    const tube = await this.prisma.tube.update({
+      where: { id: tubeId, isArchived: false },
+      data: { notes: data.notes },
+      select: tubeSelect
     })
 
     return formatTube(tube)

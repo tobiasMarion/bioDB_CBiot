@@ -1,4 +1,5 @@
-import { MOCK_FREEZERS, type Tube, positionLabel } from '@/components/tube/tube-data'
+import type { Tube } from '@/components/tube/tube-data'
+import { positionLabel } from '@/components/tube/tube-data'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -8,7 +9,10 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { ArrowDownToLine } from 'lucide-react'
+import { getBoxOccupancy } from '@/lib/api/get-box-occupancy'
+import { getGroupFreezers } from '@/lib/api/get-group-freezers'
+import { useQuery } from '@tanstack/react-query'
+import { ArrowDownToLine, Package } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ReturnPositionGrid } from './return-position-grid'
 import { ReturnToFreezerControls } from './return-to-freezer-controls'
@@ -24,14 +28,16 @@ export interface ReturnPosition {
 interface ReturnToFreezerDialogProps {
   tube: Tube
   allTubes: Tube[]
-  otherCells: Array<{ row: number; col: number }>
+  groupId: string
+  variant?: 'return' | 'place'
   onConfirm: (position: ReturnPosition) => void
 }
 
 export function ReturnToFreezerDialog({
   tube,
   allTubes,
-  otherCells,
+  groupId,
+  variant = 'return',
   onConfirm
 }: ReturnToFreezerDialogProps) {
   const [open, setOpen] = useState(false)
@@ -48,6 +54,18 @@ export function ReturnToFreezerDialog({
   )
   const [experimentNotes, setExperimentNotes] = useState('')
 
+  const { data: freezers = [] } = useQuery({
+    queryKey: ['group-freezers', groupId],
+    queryFn: () => getGroupFreezers(groupId),
+    enabled: open
+  })
+
+  const { data: otherCells = [] } = useQuery({
+    queryKey: ['box-occupancy', selectedBoxId, tube.sampleId],
+    queryFn: () => getBoxOccupancy(selectedBoxId!, tube.sampleId),
+    enabled: open && !!selectedBoxId
+  })
+
   useEffect(() => {
     if (open) {
       setSelectedFreezerId(originalFreezerId)
@@ -57,12 +75,12 @@ export function ReturnToFreezerDialog({
     }
   }, [open, originalFreezerId, originalBoxId, suggestedCell])
 
-  const currentFreezer = MOCK_FREEZERS.find(f => f.id === selectedFreezerId) ?? null
+  const currentFreezer = freezers.find(f => f.id === selectedFreezerId) ?? null
   const currentBox = currentFreezer?.boxes.find(b => b.id === selectedBoxId) ?? null
 
   function handleFreezerChange(freezerId: string) {
     setSelectedFreezerId(freezerId)
-    const firstBox = MOCK_FREEZERS.find(f => f.id === freezerId)?.boxes[0] ?? null
+    const firstBox = freezers.find(f => f.id === freezerId)?.boxes[0] ?? null
     setSelectedBoxId(firstBox?.id ?? null)
     setSelectedCell(null)
   }
@@ -94,24 +112,31 @@ export function ReturnToFreezerDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant='outline' size='sm' className='gap-2'>
-          <ArrowDownToLine className='size-3.5' />
-          Return to Freezer
+          {variant === 'place' ? (
+            <Package className='size-3.5' />
+          ) : (
+            <ArrowDownToLine className='size-3.5' />
+          )}
+          {variant === 'place' ? 'Place in Storage' : 'Return to Freezer'}
         </Button>
       </DialogTrigger>
 
       <DialogContent className='flex w-215 sm:max-w-none flex-col gap-0 p-0'>
         <DialogHeader className='px-6 pt-5 pb-4'>
-          <DialogTitle>Return Tube to Freezer</DialogTitle>
+          <DialogTitle>
+            {variant === 'place' ? 'Place Tube in Storage' : 'Return Tube to Freezer'}
+          </DialogTitle>
         </DialogHeader>
 
         <Separator />
 
         <div className='flex min-h-0 flex-1'>
           <ReturnToFreezerControls
+            freezers={freezers}
+            currentFreezer={currentFreezer}
             selectedFreezerId={selectedFreezerId}
             selectedBoxId={selectedBoxId}
             experimentNotes={experimentNotes}
-            currentFreezer={currentFreezer}
             onFreezerChange={handleFreezerChange}
             onBoxChange={handleBoxChange}
             onNotesChange={setExperimentNotes}
@@ -121,7 +146,7 @@ export function ReturnToFreezerDialog({
             {selectedBoxId ? (
               <ReturnPositionGrid
                 tubesInBox={tubesInBox}
-                otherCells={isOriginalBox ? otherCells : []}
+                otherCells={otherCells}
                 selectedCell={selectedCell}
                 onCellSelect={setSelectedCell}
                 suggestedCell={isOriginalBox ? suggestedCell : null}
