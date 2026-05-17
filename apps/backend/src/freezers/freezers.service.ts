@@ -100,6 +100,41 @@ export class FreezersService {
     }
   }
 
+  async findAllWithBoxes(groupId: string, user: User) {
+    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
+
+    return this.prisma.freezer.findMany({
+      where: { isArchived: false },
+      select: {
+        id: true,
+        name: true,
+        locationDescription: true,
+        boxes: {
+          where: { isArchived: false },
+          select: { id: true, label: true },
+          orderBy: { label: 'asc' }
+        }
+      },
+      orderBy: { name: 'asc' }
+    })
+  }
+
+  async getBoxOccupancy(boxId: string, excludeSampleId?: string) {
+    const tubes = await this.prisma.tube.findMany({
+      where: {
+        boxId,
+        isArchived: false,
+        checkedOutAt: null,
+        ...(excludeSampleId ? { sampleId: { not: excludeSampleId } } : {})
+      },
+      select: { row: true, column: true }
+    })
+
+    return tubes
+      .filter(t => t.row !== null && t.column !== null)
+      .map(t => ({ row: t.row as number, col: t.column as number }))
+  }
+
   async update(id: string, data: UpdateFreezerDTO, user: User) {
     await this.auth.assert({ user, permission: 'UPDATE_FREEZER' })
 

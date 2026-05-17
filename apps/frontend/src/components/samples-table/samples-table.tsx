@@ -1,6 +1,4 @@
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -9,14 +7,13 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { getSamples } from '@/lib/api/get-samples'
-import type { Sample } from '@/lib/api/get-samples'
 import { getSamplesTypes } from '@/lib/api/get-samples-types'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Share2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { SamplesActions } from './samples-actions'
+import { SampleRow } from './sample-row'
+import { SamplesTableSkeleton } from './samples-table-skeleton'
 import { SamplesPagination } from './samples-pagination'
 import { SamplesToolbar } from './samples-toolbar'
 
@@ -67,7 +64,6 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
   const samples = data?.samples ?? []
   const totalItems = data?.total ?? 0
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE)
-
   const hasActiveFilters = !!search || typeFilter.length > 0
 
   const handleSearchChange = (value: string) => {
@@ -94,18 +90,6 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
       setSortOrder('asc')
     }
     setCurrentPage(1)
-  }
-
-  function isSharedSample(sample: Sample) {
-    return sample.group.id !== groupId
-  }
-
-  const handleView = (sample: Sample) => {
-    console.log('View sample:', sample.id)
-  }
-
-  const handleShare = (sample: Sample) => {
-    console.log('Share sample:', sample.id)
   }
 
   return (
@@ -135,22 +119,7 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
       </div>
 
       {isLoading ? (
-        <div className='rounded-md border'>
-          <div className='border-b'>
-            <div className='grid grid-cols-8 gap-4 p-4'>
-              {[...Array(8)].map((_, i) => (
-                <Skeleton key={i} className='h-4' />
-              ))}
-            </div>
-          </div>
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className='grid grid-cols-8 gap-4 p-4 border-t'>
-              {[...Array(8)].map((_, j) => (
-                <Skeleton key={j} className='h-4' />
-              ))}
-            </div>
-          ))}
-        </div>
+        <SamplesTableSkeleton />
       ) : (
         <>
           <div className='rounded-md border'>
@@ -176,69 +145,12 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
                   </TableRow>
                 ) : (
                   samples.map(sample => (
-                    <TableRow key={sample.id}>
-                      <TableCell>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <code className='text-xs text-muted-foreground truncate max-w-20 block'>
-                                {sample.id.slice(0, 8)}
-                              </code>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className='font-mono text-xs'>{sample.id}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant='ghost'
-                          onClick={() => handleView(sample)}
-                          className='flex gap-2 items-center'
-                        >
-                          {sample.name}
-                          {isSharedSample(sample) && (
-                            <TooltipProvider>
-                              <Tooltip delayDuration={300}>
-                                <TooltipTrigger asChild>
-                                  <span className='flex items-center justify-center p-1 -m-1'>
-                                    <Share2 className='size-4 text-muted-foreground' />
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side='top'>
-                                  <p>Owned by: {sample.group.name}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
-                        </Button>
-                      </TableCell>
-                      <TableCell className='text-right font-mono text-sm'>
-                        {sample.amountOfTubes}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant='outline' className='text-muted-foreground'>
-                          {sample.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className='text-muted-foreground'>
-                        {sample.sourceLab || '-'}
-                      </TableCell>
-                      <TableCell className='text-muted-foreground'>
-                        {sample.originOrganism || '-'}
-                      </TableCell>
-                      <TableCell className='text-muted-foreground text-sm'>
-                        {new Date(sample.createdAt).toLocaleDateString('pt-BR')}
-                      </TableCell>
-                      <TableCell className='text-right'>
-                        <SamplesActions
-                          disableShare={isSharedSample(sample)}
-                          onView={() => handleView(sample)}
-                          onShare={() => handleShare(sample)}
-                        />
-                      </TableCell>
-                    </TableRow>
+                    <SampleRow
+                      key={sample.id}
+                      sample={sample}
+                      groupId={groupId}
+                      onShare={() => console.log('Share sample:', sample.id)}
+                    />
                   ))
                 )}
               </TableBody>

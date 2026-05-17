@@ -32,8 +32,11 @@ export const Route = createFileRoute('/app')({
 
     if (location.pathname === '/app' || location.pathname === '/app/') {
       const lastGroupId = localStorage.getItem('lastAccessedGroup')
+
       if (lastGroupId) {
-        throw redirect({ to: `/app/${lastGroupId}/samples` })
+        throw redirect({
+          to: `/app/${lastGroupId}/samples`
+        })
       }
     }
   },
@@ -43,9 +46,8 @@ export const Route = createFileRoute('/app')({
 function AppLayout() {
   const user = authStore.getUser()
 
-  if (!user) return null
-
   const params = useParams({ strict: false })
+
   const groupId = typeof params.groupId === 'string' ? params.groupId : undefined
 
   const { data: group } = useQuery({
@@ -60,13 +62,17 @@ function AppLayout() {
     enabled: Boolean(groupId)
   })
 
+  if (!user) {
+    return null
+  }
+
   return (
     <TooltipProvider delayDuration={0}>
       <SidebarProvider>
         <AppSidebar />
 
-        <SidebarInset>
-          <header className='group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 mb-4 flex h-16 w-full shrink-0 items-center justify-between gap-2 border-b pr-4 transition-[width,height] ease-linear'>
+        <SidebarInset className='flex h-screen flex-col overflow-hidden'>
+          <header className='group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sticky top-0 z-50 flex h-16 w-full shrink-0 items-center justify-between border-b bg-background pr-4 backdrop-blur'>
             <div className='flex items-center gap-2 px-4'>
               <SidebarTrigger className='-ml-1' />
 
@@ -102,7 +108,7 @@ function AppLayout() {
             </div>
           </header>
 
-          <main className='flex flex-1 flex-col gap-4 p-4 pt-0'>
+          <main className='flex-1 overflow-auto p-4'>
             <Outlet />
           </main>
         </SidebarInset>

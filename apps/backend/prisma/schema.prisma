@@ -71,7 +71,8 @@ model User {
   invitesReceived GroupInvite[] @relation("InviteReceiver")
 
   samplesCreated Sample[]
-  tubesCreated   Tube[]
+  tubesCreated    Tube[] @relation("TubeCreator")
+  tubesCheckedOut Tube[] @relation("TubeCheckedOut")
 
   freezersCreated Freezer[]
   boxesCreated    Box[]
@@ -139,6 +140,7 @@ model Sample {
   type           String
   originOrganism String
   sourceLab      String
+  observations   String    @default("")
   groupId        String
   createdBy      String
 
@@ -158,14 +160,18 @@ model Sample {
 }
 
 model Tube {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
   sampleId       String
   createdBy      String
-  expirationDate DateTime
+  expirationDate DateTime?
 
   boxId  String?
   row    Int?
   column Int?
+
+  notes        String    @default("")
+  checkedOutBy String?
+  checkedOutAt DateTime?
 
   isArchived Boolean   @default(false)
   archivedAt DateTime?
@@ -173,9 +179,10 @@ model Tube {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sample  Sample @relation(fields: [sampleId], references: [id])
-  creator User   @relation(fields: [createdBy], references: [id])
-  box     Box?   @relation(fields: [boxId], references: [id])
+  sample         Sample @relation(fields: [sampleId], references: [id])
+  creator        User   @relation("TubeCreator", fields: [createdBy], references: [id])
+  checkedOutUser User?  @relation("TubeCheckedOut", fields: [checkedOutBy], references: [id])
+  box            Box?   @relation(fields: [boxId], references: [id])
 
   events     TubeEvent[]
   attributes TubeAttribute[]
@@ -270,16 +277,19 @@ model SampleShare {
 }
 
 model TubeAttribute {
-  id        String @id @default(uuid())
-  tubeId    String
-  key       String
-  value     String
-  createdBy String
+  id                    String    @id @default(uuid())
+  tubeId                String
+  key                   String
+  value                 String
+  type                  String
+  createdBy             String
+  minRequiredRoleToEdit GroupRole
 
   isArchived Boolean   @default(false)
   archivedAt DateTime?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tube Tube @relation(fields: [tubeId], references: [id])
   user User @relation(fields: [createdBy], references: [id])

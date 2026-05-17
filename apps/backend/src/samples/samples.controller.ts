@@ -72,6 +72,16 @@ export class SamplesController {
     return this.samplesService.create(createSampleDto, groupId, user)
   }
 
+  @Get('samples/:id')
+  @Auth()
+  @ApiOperation({ summary: 'Get sample by ID' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
+  @ApiForbiddenResponse({ description: 'Insufficient permissions' })
+  @ApiNotFoundResponse({ description: 'Sample not found' })
+  async findById(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.samplesService.findById(id, user)
+  }
+
   @Get('groups/:groupId/samples')
   @Auth()
   @ApiOperation({

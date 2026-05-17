@@ -1,5 +1,6 @@
 import loginImage from '@/assets/login.jpg'
 import { LoginForm } from '@/components/login-form'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { bootstrapAuth } from '@/lib/auth/bootstrap-auth'
 import { authStore } from '@/lib/auth/store'
 import { createFileRoute, redirect } from '@tanstack/react-router'
@@ -16,6 +17,7 @@ export const Route = createFileRoute('/_auth/login')({
 })
 
 function LoginPage() {
+  usePageTitle('Login')
   const search = Route.useSearch()
 
   return (

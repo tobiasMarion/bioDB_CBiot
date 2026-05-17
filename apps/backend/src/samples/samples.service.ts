@@ -14,6 +14,7 @@ const sampleSelect = {
   type: true,
   originOrganism: true,
   sourceLab: true,
+  observations: true,
   groupId: true,
   group: {
     select: { id: true, name: true }
@@ -82,6 +83,20 @@ export class SamplesService {
       }
       throw new InternalServerErrorException('Error creating sample')
     }
+  }
+
+  async findById(id: string, user: User) {
+    const sample = await this.prisma.sample.findUnique({
+      where: { id, isArchived: false },
+      select: { ...sampleSelect, _count: { select: { tubes: { where: { isArchived: false } } } } }
+    })
+
+    if (!sample) throw new NotFoundException('Sample not found')
+
+    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId: sample.groupId })
+
+    const { _count, ...rest } = sample
+    return { ...rest, amountOfTubes: _count.tubes }
   }
 
   async findAllByGroup(groupId: string, user: User, params: GetSamplesFilter) {
@@ -263,7 +278,8 @@ export class SamplesService {
             name: data.name,
             type: data.type,
             originOrganism: data.originOrganism,
-            sourceLab: data.sourceLab
+            sourceLab: data.sourceLab,
+            observations: data.observations
           },
           select: sampleSelect
         })

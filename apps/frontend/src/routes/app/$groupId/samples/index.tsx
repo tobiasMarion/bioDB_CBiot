@@ -1,23 +1,26 @@
 import { HeroSamplesCard } from '@/components/hero-sample-card'
 import { SamplesTable } from '@/components/samples-table'
 import { StatCard } from '@/components/stats-cards'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { getGroupDetails } from '@/lib/api/get-group-details'
 import { getSamplesStats } from '@/lib/api/get-samples-stats'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useParams } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/app/$groupId/samples')({
+export const Route = createFileRoute('/app/$groupId/samples/')({
   component: RouteComponent
 })
 
 function RouteComponent() {
-  const params = useParams({ from: '/app/$groupId/samples' })
+  const params = useParams({ from: '/app/$groupId/samples/' })
   const groupId = params.groupId
 
   const { data: group, isLoading: isLoadingGroup } = useQuery({
     queryKey: ['group', groupId],
     queryFn: () => getGroupDetails(groupId)
   })
+
+  usePageTitle(group ? `Samples — ${group.name}` : 'Samples')
 
   const { data: stats } = useQuery({
     queryKey: ['samples-stats', groupId],
