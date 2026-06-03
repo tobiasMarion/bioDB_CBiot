@@ -1,10 +1,9 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { AuthorizationService } from '../auth/authorization.service';
-import { Prisma } from '../common/prisma/generated/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateRoomDTO } from './dto/CreateRoom';
 import { UpdateRoomDTO } from './dto/UpdateRoom';
-import { User } from '../common/prisma/generated/client';
+import type { User } from '../auth/types/user.type'
 import { auditCreate, auditDelete, auditUpdate } from '../auth/audit.utils'
 
 @Injectable()
