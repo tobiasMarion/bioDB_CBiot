@@ -45,7 +45,7 @@ export class RoomsService {
         }
   }
 
-  async findAll(user: User) {
+  async findAllRooms(user: User) {
     try {
       return await this.prisma.room.findMany({
         where: { isArchived: false },
