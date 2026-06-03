@@ -38,6 +38,7 @@ enum AuditEntityType {
   FREEZER
   MEMBERSHIP
   INVITE
+  ROOM
 }
 
 enum AuditAction {
@@ -76,6 +77,7 @@ model User {
 
   freezersCreated Freezer[]
   boxesCreated    Box[]
+  roomsCreated    Room[]
 
   tubeEvents     TubeEvent[]
   tubeAttributes TubeAttribute[]
