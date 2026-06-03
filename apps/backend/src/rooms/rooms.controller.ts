@@ -14,7 +14,7 @@ import { RoomsService } from './rooms.service';
 import { CreateRoomDTO } from './dto/CreateRoom';
 import { UpdateRoomDTO } from './dto/UpdateRoom';
 
-@Controller('rooms')
+@Controller()
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
