@@ -205,6 +205,22 @@ model Freezer {
   boxes   Box[]
 }
 
+model Room {
+  id                  String @id @default(uuid())
+  number              String
+  building            String
+  floor               Int
+  createdBy           String
+
+  isArchived Boolean   @default(false)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator User  @relation(fields: [createdBy], references: [id])
+}
+
 model Box {
   id        String @id @default(uuid())
   freezerId String
