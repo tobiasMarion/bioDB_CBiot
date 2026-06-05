@@ -96,8 +96,7 @@ function RouteComponent() {
             <DialogTitle>Archive room?</DialogTitle>
             <DialogDescription>
               Room <strong>{archivingRoom?.number}</strong> in building{' '}
-              <strong>{archivingRoom?.building}</strong> will be archived. This action can be
-              reversed by an administrator.
+              <strong>{archivingRoom?.building}</strong> will be archived.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
