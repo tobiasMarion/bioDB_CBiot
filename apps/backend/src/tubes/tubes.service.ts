@@ -9,6 +9,7 @@ import { AuthorizationService, ROLE_LEVEL } from '../auth/authorization.service'
 import type { User } from '../auth/types/user.type'
 import { GroupRole } from '../common/prisma/generated/enums'
 import { PrismaService } from '../common/prisma/prisma.service'
+import { TubeExpirationService } from '../notifications/tube-expiration/tube-expiration.service'
 import { AddAttributeDTO } from './dto/AddAttribute'
 import { CheckinTubeDTO } from './dto/CheckinTube'
 import { CreateTubeDTO } from './dto/CreateTube'
@@ -69,7 +70,8 @@ function formatTube(tube: Awaited<ReturnType<TubesService['findRawTube']>>) {
 export class TubesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly auth: AuthorizationService
+    private readonly auth: AuthorizationService,
+    private readonly tubeExpiration: TubeExpirationService
   ) {}
 
   private async findRawTube(id: string) {
@@ -280,6 +282,8 @@ export class TubesService {
 
       return archived
     })
+
+    await this.tubeExpiration.resolveExpirationNotification(tubeId)
 
     return formatTube(tube)
   }

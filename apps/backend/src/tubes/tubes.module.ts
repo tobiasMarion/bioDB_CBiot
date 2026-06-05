@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common'
 import { AuthModule } from '../auth/auth.module'
 import { PrismaModule } from '../common/prisma/prisma.module'
+import { TubeExpirationModule } from '../notifications/tube-expiration/tube-expiration.module'
 import { TubesController } from './tubes.controller'
 import { TubesService } from './tubes.service'
 
 @Module({
-  imports: [PrismaModule, AuthModule],
+  imports: [PrismaModule, AuthModule, TubeExpirationModule],
   controllers: [TubesController],
   providers: [TubesService]
 })
