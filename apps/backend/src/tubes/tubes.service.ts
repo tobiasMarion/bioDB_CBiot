@@ -207,7 +207,9 @@ export class TubesService {
     await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
 
     const current = await this.findRawTube(tubeId)
-    if (!current.checkedOutAt) throw new ConflictException('Tube is not checked out')
+
+    // Reject if already placed in storage — both checked-out and unplaced tubes are acceptable
+    if (current.boxId) throw new ConflictException('Tube is already in storage')
 
     const box = await this.prisma.box.findUnique({
       where: { id: data.boxId, isArchived: false },
