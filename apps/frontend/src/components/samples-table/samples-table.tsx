@@ -13,8 +13,8 @@ import { useQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SampleRow } from './sample-row'
-import { SamplesTableSkeleton } from './samples-table-skeleton'
 import { SamplesPagination } from './samples-pagination'
+import { SamplesTableSkeleton } from './samples-table-skeleton'
 import { SamplesToolbar } from './samples-toolbar'
 
 interface SamplesTableProps {

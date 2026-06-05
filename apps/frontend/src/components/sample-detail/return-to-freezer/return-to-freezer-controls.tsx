@@ -1,4 +1,3 @@
-import type { FreezerWithBoxes } from '@/lib/api/get-group-freezers'
 import {
   Select,
   SelectContent,
@@ -8,6 +7,7 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
+import type { FreezerWithBoxes } from '@/lib/api/get-group-freezers'
 
 interface ReturnToFreezerControlsProps {
   freezers: FreezerWithBoxes[]
@@ -42,9 +42,7 @@ export function ReturnToFreezerControls({
             {freezers.map(f => (
               <SelectItem key={f.id} value={f.id}>
                 <span className='block'>{f.name}</span>
-                <span className='block text-xs text-muted-foreground'>
-                  {f.locationDescription}
-                </span>
+                <span className='block text-xs text-muted-foreground'>{f.locationDescription}</span>
               </SelectItem>
             ))}
           </SelectContent>
@@ -53,11 +51,7 @@ export function ReturnToFreezerControls({
 
       <div className='space-y-1.5'>
         <p className='text-sm font-medium'>Box</p>
-        <Select
-          value={selectedBoxId ?? ''}
-          onValueChange={onBoxChange}
-          disabled={!currentFreezer}
-        >
+        <Select value={selectedBoxId ?? ''} onValueChange={onBoxChange} disabled={!currentFreezer}>
           <SelectTrigger className='w-full font-mono text-sm'>
             <SelectValue placeholder='Select a box…' />
           </SelectTrigger>
@@ -75,8 +69,7 @@ export function ReturnToFreezerControls({
 
       <div className='flex flex-1 flex-col space-y-1.5'>
         <p className='text-sm font-medium'>
-          Experiment Notes{' '}
-          <span className='font-normal text-muted-foreground/60'>(optional)</span>
+          Experiment Notes <span className='font-normal text-muted-foreground/60'>(optional)</span>
         </p>
         <Textarea
           value={experimentNotes}

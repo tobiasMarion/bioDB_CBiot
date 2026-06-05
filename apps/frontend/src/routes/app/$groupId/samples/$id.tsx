@@ -5,11 +5,7 @@ import type { ReturnPosition } from '@/components/sample-detail/return-to-freeze
 import { SampleCard } from '@/components/sample-detail/sample-card'
 import { SampleCardSkeleton } from '@/components/sample-detail/sample-card-skeleton'
 import { TubeDetail } from '@/components/sample-detail/tube-detail/tube-detail'
-import {
-  type Tube,
-  type TubeAttribute,
-  positionLabel
-} from '@/components/tube/tube-data'
+import { type Tube, type TubeAttribute, positionLabel } from '@/components/tube/tube-data'
 import { TubeSelector } from '@/components/tube/tube-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -22,22 +18,22 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { usePageTitle } from '@/hooks/use-page-title'
-import { getApiErrorMessage } from '@/lib/api/api-error'
-import { archiveSample } from '@/lib/api/archive-sample'
 import type { AddTubeAttributePayload } from '@/lib/api/add-tube-attribute'
 import { addTubeAttribute } from '@/lib/api/add-tube-attribute'
+import { getApiErrorMessage } from '@/lib/api/api-error'
+import { archiveSample } from '@/lib/api/archive-sample'
 import { checkinTube } from '@/lib/api/checkin-tube'
 import { checkoutTube } from '@/lib/api/checkout-tube'
 import { createTube } from '@/lib/api/create-tube'
 import { deleteTube } from '@/lib/api/delete-tube'
 import { deleteTubeAttribute } from '@/lib/api/delete-tube-attribute'
+import { getGroupMembers } from '@/lib/api/get-group-members'
 import { getSample } from '@/lib/api/get-sample'
 import { getSampleTubes } from '@/lib/api/get-sample-tubes'
-import { getGroupMembers } from '@/lib/api/get-group-members'
+import { queryClient } from '@/lib/api/query-client'
 import { updateTube } from '@/lib/api/update-tube'
 import { updateTubeAttribute } from '@/lib/api/update-tube-attribute'
 import { authStore } from '@/lib/auth/store'
-import { queryClient } from '@/lib/api/query-client'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link, createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
@@ -97,7 +93,7 @@ function RouteComponent() {
   usePageTitle(sample?.name)
 
   const currentMember = members.find(m => m.user.id === user?.id && !m.isArchived)
-  const userRole: Role = user?.isAdmin ? 'LEADER' : currentMember?.role ?? 'RESEARCHER'
+  const userRole: Role = user?.isAdmin ? 'LEADER' : (currentMember?.role ?? 'RESEARCHER')
 
   const sampleQueryKeys = [
     ['sample', id],
@@ -204,9 +200,7 @@ function RouteComponent() {
     setSelectedTubeId(prev => (prev === tubeId ? null : tubeId))
 
   const isTubePending =
-    checkoutMutation.isPending ||
-    checkinMutation.isPending ||
-    deleteTubeMutation.isPending
+    checkoutMutation.isPending || checkinMutation.isPending || deleteTubeMutation.isPending
 
   const isOwner = sample ? sample.groupId === groupId : false
   const canEdit = true
@@ -257,9 +251,7 @@ function RouteComponent() {
                 {tubes.length}
               </Badge>
             </div>
-            <CreateTubeDialog
-              onSubmit={data => createTubeMutation.mutate(data)}
-            />
+            <CreateTubeDialog onSubmit={data => createTubeMutation.mutate(data)} />
           </CardHeader>
           <CardContent>
             <div className='grid grid-cols-1 gap-5 lg:grid-cols-[220px_1fr]'>
@@ -325,9 +317,7 @@ function RouteComponent() {
                       }
                     })
                   }
-                  onAttrDelete={key =>
-                    deleteAttrMutation.mutate({ tubeId: selectedTube.id, key })
-                  }
+                  onAttrDelete={key => deleteAttrMutation.mutate({ tubeId: selectedTube.id, key })}
                   onNotesChange={v =>
                     updateTubeMutation.mutate({ tubeId: selectedTube.id, data: { notes: v } })
                   }

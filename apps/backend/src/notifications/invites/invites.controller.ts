@@ -21,7 +21,8 @@ export class InvitesController {
   @Auth()
   @ApiOperation({
     summary: 'List pending group invites for the logged-in user',
-    description: 'Returns all pending group membership invites addressed to the authenticated user. Only PENDING invites from non-archived groups are returned.'
+    description:
+      'Returns all pending group membership invites addressed to the authenticated user. Only PENDING invites from non-archived groups are returned.'
   })
   @ApiUnauthorizedResponse({
     description: 'Missing or invalid authentication token.',
@@ -56,18 +57,21 @@ export class InvitesController {
   @Auth()
   @ApiOperation({
     summary: 'Accept a group invite',
-    description: 'Accepts a pending group membership invite. Creates or restores the user\'s membership in the group with the role specified in the invite. Only the invited user can accept their own invite.'
+    description:
+      "Accepts a pending group membership invite. Creates or restores the user's membership in the group with the role specified in the invite. Only the invited user can accept their own invite."
   })
   @ApiUnauthorizedResponse({
     description: 'Missing or invalid authentication token.',
     schema: { example: { statusCode: 401, message: 'Missing Authorization header' } }
   })
   @ApiNotFoundResponse({
-    description: 'Invite not found, already archived, or does not belong to the authenticated user.',
+    description:
+      'Invite not found, already archived, or does not belong to the authenticated user.',
     schema: { example: { statusCode: 404, message: 'Invite not found' } }
   })
   @ApiBadRequestResponse({
-    description: 'Invite is no longer pending (already accepted or rejected), or the target group is archived.',
+    description:
+      'Invite is no longer pending (already accepted or rejected), or the target group is archived.',
     schema: {
       example: { statusCode: 400, message: 'Invite is no longer pending' }
     }
@@ -97,18 +101,21 @@ export class InvitesController {
   @Auth()
   @ApiOperation({
     summary: 'Reject a group invite',
-    description: 'Rejects a pending group membership invite. The invite status is updated to REJECTED and no membership is created. Only the invited user can reject their own invite.'
+    description:
+      'Rejects a pending group membership invite. The invite status is updated to REJECTED and no membership is created. Only the invited user can reject their own invite.'
   })
   @ApiUnauthorizedResponse({
     description: 'Missing or invalid authentication token.',
     schema: { example: { statusCode: 401, message: 'Missing Authorization header' } }
   })
   @ApiNotFoundResponse({
-    description: 'Invite not found, already archived, or does not belong to the authenticated user.',
+    description:
+      'Invite not found, already archived, or does not belong to the authenticated user.',
     schema: { example: { statusCode: 404, message: 'Invite not found' } }
   })
   @ApiBadRequestResponse({
-    description: 'Invite is no longer pending (already accepted or rejected), or the target group is archived.',
+    description:
+      'Invite is no longer pending (already accepted or rejected), or the target group is archived.',
     schema: {
       example: { statusCode: 400, message: 'Invite is no longer pending' }
     }

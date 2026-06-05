@@ -61,9 +61,7 @@ function formatTube(tube: Awaited<ReturnType<TubesService['findRawTube']>>) {
     ...rest,
     status: deriveStatus(tube),
     checkedOut:
-      checkedOutAt && checkedOutUser
-        ? { by: checkedOutUser, at: checkedOutAt.toISOString() }
-        : null
+      checkedOutAt && checkedOutUser ? { by: checkedOutUser, at: checkedOutAt.toISOString() } : null
   }
 }
 
@@ -297,9 +295,7 @@ export class TubesService {
       })
       if (!membership) throw new ForbiddenException('Not a member of this group')
       if (ROLE_LEVEL[membership.role] < ROLE_LEVEL[data.minRequiredRoleToEdit]) {
-        throw new ForbiddenException(
-          'Cannot create an attribute with a role higher than your own'
-        )
+        throw new ForbiddenException('Cannot create an attribute with a role higher than your own')
       }
     }
 

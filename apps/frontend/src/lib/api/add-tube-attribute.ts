@@ -9,7 +9,5 @@ export type AddTubeAttributePayload = {
 }
 
 export function addTubeAttribute(tubeId: string, data: AddTubeAttributePayload) {
-  return apiClient
-    .post(`tubes/${tubeId}/attributes`, { json: data })
-    .json<TubeAttributeResponse>()
+  return apiClient.post(`tubes/${tubeId}/attributes`, { json: data }).json<TubeAttributeResponse>()
 }

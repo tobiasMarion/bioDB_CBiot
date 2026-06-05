@@ -1,6 +1,6 @@
 import {
-  EXPIRATION_CONFIG,
   type CheckoutInfo,
+  EXPIRATION_CONFIG,
   type ExpirationStatus,
   type TubeStatus
 } from '@/components/tube/tube-data'

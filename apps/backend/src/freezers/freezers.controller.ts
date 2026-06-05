@@ -50,10 +50,7 @@ export class FreezersController {
   @ApiResponse({ status: 200, description: 'Freezers with boxes returned' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Not a member of this group' })
-  async getFreezersForGroup(
-    @Param('groupId') groupId: string,
-    @CurrentUser() user: User
-  ) {
+  async getFreezersForGroup(@Param('groupId') groupId: string, @CurrentUser() user: User) {
     return this.freezersService.findAllWithBoxes(groupId, user)
   }
 

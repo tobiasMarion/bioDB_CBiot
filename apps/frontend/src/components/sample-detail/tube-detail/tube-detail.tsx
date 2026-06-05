@@ -80,7 +80,9 @@ export function TubeDetail({
   })
 
   const [notesDraft, setNotesDraft] = useState(notes)
-  useEffect(() => { setNotesDraft(notes) }, [notes])
+  useEffect(() => {
+    setNotesDraft(notes)
+  }, [notes])
 
   return (
     <Card className='min-w-0 overflow-visible'>

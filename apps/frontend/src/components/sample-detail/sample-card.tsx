@@ -68,14 +68,20 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
 
             <EditableName
               value={name}
-              onChange={v => { setName(v); save({ name: v }) }}
+              onChange={v => {
+                setName(v)
+                save({ name: v })
+              }}
               canEdit={canEdit}
             />
 
             <div className='flex flex-wrap items-center gap-x-2 gap-y-1.5'>
               <EditableTypeBadge
                 value={type}
-                onChange={v => { setType(v); save({ type: v }) }}
+                onChange={v => {
+                  setType(v)
+                  save({ type: v })
+                }}
                 canEdit={canEdit}
               />
               <TooltipProvider>
@@ -113,7 +119,10 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
                 </p>
                 <InlineField
                   value={originOrganism}
-                  onChange={v => { setOriginOrganism(v); save({ originOrganism: v }) }}
+                  onChange={v => {
+                    setOriginOrganism(v)
+                    save({ originOrganism: v })
+                  }}
                   canEdit={canEdit}
                   placeholder='Not specified'
                 />
@@ -124,7 +133,10 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
                 </p>
                 <InlineField
                   value={sourceLab}
-                  onChange={v => { setSourceLab(v); save({ sourceLab: v }) }}
+                  onChange={v => {
+                    setSourceLab(v)
+                    save({ sourceLab: v })
+                  }}
                   canEdit={canEdit}
                   placeholder='Not specified'
                 />

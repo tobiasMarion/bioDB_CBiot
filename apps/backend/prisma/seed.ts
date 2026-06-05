@@ -165,12 +165,54 @@ async function main() {
   })
   await prisma.tubeAttribute.createMany({
     data: [
-      { tubeId: tube1.id, key: 'volume_ul', value: '250', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id },
-      { tubeId: tube1.id, key: 'concentration', value: '1.024', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id },
-      { tubeId: tube1.id, key: 'extraction_date', value: '2024-08-14', type: 'date', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id },
-      { tubeId: tube1.id, key: 'qc_passed', value: 'true', type: 'boolean', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id },
-      { tubeId: tube1.id, key: 'freeze_cycles', value: '0', type: 'number', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id },
-      { tubeId: tube1.id, key: 'authorized_by', value: 'Dr. Ana Souza', type: 'string', minRequiredRoleToEdit: GroupRole.LEADER, createdBy: tobias.id }
+      {
+        tubeId: tube1.id,
+        key: 'volume_ul',
+        value: '250',
+        type: 'number',
+        minRequiredRoleToEdit: GroupRole.RESEARCHER,
+        createdBy: tobias.id
+      },
+      {
+        tubeId: tube1.id,
+        key: 'concentration',
+        value: '1.024',
+        type: 'number',
+        minRequiredRoleToEdit: GroupRole.RESEARCHER,
+        createdBy: tobias.id
+      },
+      {
+        tubeId: tube1.id,
+        key: 'extraction_date',
+        value: '2024-08-14',
+        type: 'date',
+        minRequiredRoleToEdit: GroupRole.RESEARCHER,
+        createdBy: tobias.id
+      },
+      {
+        tubeId: tube1.id,
+        key: 'qc_passed',
+        value: 'true',
+        type: 'boolean',
+        minRequiredRoleToEdit: GroupRole.MANAGER,
+        createdBy: lucas.id
+      },
+      {
+        tubeId: tube1.id,
+        key: 'freeze_cycles',
+        value: '0',
+        type: 'number',
+        minRequiredRoleToEdit: GroupRole.MANAGER,
+        createdBy: lucas.id
+      },
+      {
+        tubeId: tube1.id,
+        key: 'authorized_by',
+        value: 'Dr. Ana Souza',
+        type: 'string',
+        minRequiredRoleToEdit: GroupRole.LEADER,
+        createdBy: tobias.id
+      }
     ]
   })
 
@@ -187,7 +229,14 @@ async function main() {
     }
   })
   await prisma.tubeAttribute.create({
-    data: { tubeId: tube2.id, key: 'volume_ul', value: '180', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id }
+    data: {
+      tubeId: tube2.id,
+      key: 'volume_ul',
+      value: '180',
+      type: 'number',
+      minRequiredRoleToEdit: GroupRole.RESEARCHER,
+      createdBy: tobias.id
+    }
   })
 
   // Tube 3 — checked_out by lucas (MANAGER)
@@ -213,8 +262,22 @@ async function main() {
   })
   await prisma.tubeAttribute.createMany({
     data: [
-      { tubeId: tube3.id, key: 'batch_code', value: 'SEQ-BATCH-12', type: 'string', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id },
-      { tubeId: tube3.id, key: 'volume_ul', value: '250', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id }
+      {
+        tubeId: tube3.id,
+        key: 'batch_code',
+        value: 'SEQ-BATCH-12',
+        type: 'string',
+        minRequiredRoleToEdit: GroupRole.MANAGER,
+        createdBy: lucas.id
+      },
+      {
+        tubeId: tube3.id,
+        key: 'volume_ul',
+        value: '250',
+        type: 'number',
+        minRequiredRoleToEdit: GroupRole.RESEARCHER,
+        createdBy: tobias.id
+      }
     ]
   })
 
@@ -231,7 +294,14 @@ async function main() {
     }
   })
   await prisma.tubeAttribute.create({
-    data: { tubeId: tube4.id, key: 'freeze_cycles', value: '4', type: 'number', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id }
+    data: {
+      tubeId: tube4.id,
+      key: 'freeze_cycles',
+      value: '4',
+      type: 'number',
+      minRequiredRoleToEdit: GroupRole.MANAGER,
+      createdBy: lucas.id
+    }
   })
 
   // Tube 5 — unplaced (no box assigned yet)
@@ -277,10 +347,20 @@ async function main() {
   })
 
   const otherPositions = [
-    [1, 4], [1, 6], [2, 4], [2, 7],
-    [3, 1], [3, 7], [4, 3], [5, 2],
-    [5, 5], [6, 1], [6, 8], [7, 4],
-    [8, 2], [8, 9]
+    [1, 4],
+    [1, 6],
+    [2, 4],
+    [2, 7],
+    [3, 1],
+    [3, 7],
+    [4, 3],
+    [5, 2],
+    [5, 5],
+    [6, 1],
+    [6, 8],
+    [7, 4],
+    [8, 2],
+    [8, 9]
   ]
 
   for (const [r, c] of otherPositions) {
@@ -302,8 +382,11 @@ async function main() {
 
   const sampleTypes = ['Genomic DNA', 'Plasmid DNA', 'Total RNA', 'Protein Extract', 'Cell Line']
   const organisms = [
-    'Homo sapiens', 'Mus musculus', 'Escherichia coli',
-    'Saccharomyces cerevisiae', 'Arabidopsis thaliana'
+    'Homo sapiens',
+    'Mus musculus',
+    'Escherichia coli',
+    'Saccharomyces cerevisiae',
+    'Arabidopsis thaliana'
   ]
 
   let row = 1
@@ -335,9 +418,7 @@ async function main() {
         data: {
           sampleId: sample.id,
           createdBy: creator.id,
-          expirationDate: new Date(
-            new Date().setMonth(new Date().getMonth() + 6 + (i % 18))
-          ),
+          expirationDate: new Date(new Date().setMonth(new Date().getMonth() + 6 + (i % 18))),
           boxId: currentBox.id,
           row,
           column: col
@@ -345,8 +426,14 @@ async function main() {
       })
 
       col++
-      if (col > 12) { col = 1; row++ }
-      if (row > 8) { row = 1; boxIndex++ }
+      if (col > 12) {
+        col = 1
+        row++
+      }
+      if (row > 8) {
+        row = 1
+        boxIndex++
+      }
     }
   }
 
@@ -408,7 +495,9 @@ async function main() {
   console.log('')
   console.log('   Main test sample: "RNA-seq Extract #42" in Genomics Lab')
   console.log('   Tube statuses: in_storage (×4), checked_out (×1, by lucas), unplaced (×1)')
-  console.log('   Attribute types: number, string, date, boolean — roles: RESEARCHER, MANAGER, LEADER')
+  console.log(
+    '   Attribute types: number, string, date, boolean — roles: RESEARCHER, MANAGER, LEADER'
+  )
 }
 
 main()
