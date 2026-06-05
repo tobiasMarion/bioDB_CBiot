@@ -50,6 +50,7 @@ enum AuditAction {
   SHARE
 }
 
+
 //
 // MODELS
 //
@@ -83,6 +84,9 @@ model User {
   tubeAttributes TubeAttribute[]
   auditLogs      AuditLog[]
   sampleShares   SampleShare[]
+
+  sampleShareRequests                  SampleShareRequest[]
+  tubeExpirationNotificationRecipients TubeExpirationNotificationRecipient[]
 }
 
 model Group {
@@ -99,6 +103,8 @@ model Group {
   invites     GroupInvite[]
   samples     Sample[]
   shares      SampleShare[]
+
+  sampleShareRequests SampleShareRequest[]
 
   @@index([createdBy])
 }
@@ -158,6 +164,8 @@ model Sample {
   tubes  Tube[]
   shares SampleShare[]
 
+  shareRequests SampleShareRequest[]
+
   @@index([groupId])
 }
 
@@ -167,9 +175,10 @@ model Tube {
   createdBy      String
   expirationDate DateTime?
 
-  boxId  String?
-  row    Int?
-  column Int?
+  boxId                String?
+  row                  Int?
+  column               Int?
+  daysBeforeNotification Int @default(1)
 
   notes        String    @default("")
   checkedOutBy String?
@@ -186,8 +195,9 @@ model Tube {
   checkedOutUser User?  @relation("TubeCheckedOut", fields: [checkedOutBy], references: [id])
   box            Box?   @relation(fields: [boxId], references: [id])
 
-  events     TubeEvent[]
-  attributes TubeAttribute[]
+  events              TubeEvent[]
+  attributes          TubeAttribute[]
+  expirationNotification TubeExpirationNotification?
 
   @@unique([boxId, row, column])
 }
@@ -328,4 +338,47 @@ model AuditLog {
   user User @relation(fields: [performedBy], references: [id])
 
   @@index([entityType, entityId])
+}
+
+model SampleShareRequest {
+  id            String             @id @default(uuid())
+  sampleId      String
+  targetGroupId String
+  permission    SamplePermission
+  requestedBy   String
+  status        InviteStatus @default(PENDING)
+
+  respondedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  isArchived Boolean   @default(false)
+  archivedAt DateTime?
+
+  sample    Sample @relation(fields: [sampleId], references: [id])
+  group     Group  @relation(fields: [targetGroupId], references: [id])
+  requester User   @relation(fields: [requestedBy], references: [id])
+
+  @@unique([sampleId, targetGroupId])
+  @@index([targetGroupId])
+}
+
+model TubeExpirationNotification {
+  id         String    @id @default(uuid())
+  tubeId     String    @unique
+  isResolved Boolean   @default(false)
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  tube       Tube                                  @relation(fields: [tubeId], references: [id])
+  recipients TubeExpirationNotificationRecipient[]
+}
+
+model TubeExpirationNotificationRecipient {
+  notificationId String
+  userId         String
+
+  notification TubeExpirationNotification @relation(fields: [notificationId], references: [id])
+  user         User                       @relation(fields: [userId], references: [id])
+
+  @@id([notificationId, userId])
 }

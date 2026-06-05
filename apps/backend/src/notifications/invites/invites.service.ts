@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import { auditCreate, auditUpdate } from '../auth/audit.utils'
-import type { User } from '../auth/types/user.type'
-import { InviteStatus } from '../common/prisma/generated/enums'
-import { PrismaService } from '../common/prisma/prisma.service'
+import { auditCreate, auditUpdate } from '../../auth/audit.utils'
+import type { User } from '../../auth/types/user.type'
+import { InviteStatus } from '../../common/prisma/generated/enums'
+import { PrismaService } from '../../common/prisma/prisma.service'
 
 @Injectable()
 export class InvitesService {
@@ -67,7 +67,6 @@ export class InvitesService {
         })
       })
 
-      // Upsert membership (in case they were removed previously)
       const membership = await tx.groupMembership.upsert({
         where: {
           userId_groupId: {
