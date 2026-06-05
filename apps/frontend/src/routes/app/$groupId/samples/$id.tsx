@@ -205,6 +205,7 @@ function RouteComponent() {
   const isOwner = sample ? sample.groupId === groupId : false
   const canEdit = true
   const canDelete = userRole === 'MANAGER' || userRole === 'LEADER'
+  const canShare = isOwner && userRole === 'LEADER'
 
   function getAttrsForTube(tube: Tube): Attribute[] {
     return tube.attributes.map(toAttribute)
@@ -233,6 +234,7 @@ function RouteComponent() {
             canEdit={canEdit}
             canDelete={canDelete}
             isOwner={isOwner}
+            canShare={canShare}
             onDelete={() => archiveSampleMutation.mutate()}
           />
         ) : null}

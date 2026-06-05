@@ -25,6 +25,9 @@ async function main() {
   await prisma.auditLog.deleteMany({})
   await prisma.tubeAttribute.deleteMany({})
   await prisma.tubeEvent.deleteMany({})
+  await prisma.tubeExpirationNotificationRecipient.deleteMany({})
+  await prisma.tubeExpirationNotification.deleteMany({})
+  await prisma.sampleShareRequest.deleteMany({})
   await prisma.sampleShare.deleteMany({})
   await prisma.groupInvite.deleteMany({})
   await prisma.groupMembership.deleteMany({})
@@ -157,6 +160,7 @@ async function main() {
       sampleId: mainSample.id,
       createdBy: tobias.id,
       expirationDate: new Date('2026-08-14'),
+      daysBeforeNotification: 30,
       notes: '',
       boxId: box1.id,
       row: 1,
@@ -216,12 +220,13 @@ async function main() {
     ]
   })
 
-  // Tube 2 — in_storage, expiring soon (warning)
+  // Tube 2 — expired (as of seed date), has active expiration notification seeded below
   const tube2 = await prisma.tube.create({
     data: {
       sampleId: mainSample.id,
       createdBy: tobias.id,
       expirationDate: new Date('2026-06-01'),
+      daysBeforeNotification: 7,
       notes: 'Slightly turbid — monitor on next use',
       boxId: box1.id,
       row: 1,
@@ -281,12 +286,13 @@ async function main() {
     ]
   })
 
-  // Tube 4 — expired, in_storage
+  // Tube 4 — long expired, in_storage
   const tube4 = await prisma.tube.create({
     data: {
       sampleId: mainSample.id,
       createdBy: tobias.id,
       expirationDate: new Date('2024-03-01'),
+      daysBeforeNotification: 3,
       notes: 'Expired — quarantined 2024-03-05',
       boxId: box1.id,
       row: 2,
@@ -452,6 +458,38 @@ async function main() {
 
   console.log('✅ 1 Sample share created (mainSample shared to microBio)')
 
+  // ─── Pending share request ───────────────────────────────────────────────────
+  // tobias (LEADER of Genomics Lab) requests to share otherSample with microBio
+  // lucas (LEADER of microBio) will see this as a SAMPLE_SHARE_REQUEST notification
+
+  await prisma.sampleShareRequest.create({
+    data: {
+      sampleId: otherSample.id,
+      targetGroupId: microBio.id,
+      permission: SamplePermission.EDIT,
+      requestedBy: tobias.id
+    }
+  })
+
+  console.log('✅ 1 Pending share request created (otherSample → microBio, EDIT)')
+
+  // ─── Tube expiration notification ────────────────────────────────────────────
+  // tube2 is expired — seed an active notification so the notification bell
+  // shows a TUBE_EXPIRATION item immediately after seeding.
+  // Recipients: tobias (LEADER of genomicsLab + tube creator) + admin (isAdmin)
+
+  const expirationNotif = await prisma.tubeExpirationNotification.create({
+    data: { tubeId: tube2.id }
+  })
+  await prisma.tubeExpirationNotificationRecipient.createMany({
+    data: [
+      { notificationId: expirationNotif.id, userId: tobias.id },
+      { notificationId: expirationNotif.id, userId: admin.id }
+    ]
+  })
+
+  console.log('✅ 1 Tube expiration notification created (tube2, recipients: tobias + admin)')
+
   // ─── Pending invite ──────────────────────────────────────────────────────────
 
   await prisma.groupInvite.create({
@@ -498,6 +536,15 @@ async function main() {
   console.log(
     '   Attribute types: number, string, date, boolean — roles: RESEARCHER, MANAGER, LEADER'
   )
+  console.log('')
+  console.log('   Notifications seeded:')
+  console.log(
+    '   → tobias sees: TUBE_EXPIRATION (tube2) + SAMPLE_SHARE_REQUEST if LEADER of microBio'
+  )
+  console.log(
+    '   → lucas sees: SAMPLE_SHARE_REQUEST (otherSample → microBio, EDIT) as LEADER of microBio'
+  )
+  console.log('   → admin sees: TUBE_EXPIRATION (tube2)')
 }
 
 main()

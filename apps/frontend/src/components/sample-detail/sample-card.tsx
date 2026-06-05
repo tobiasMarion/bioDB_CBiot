@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
@@ -8,22 +7,30 @@ import type { SampleDetail } from '@/lib/api/get-sample'
 import { queryClient } from '@/lib/api/query-client'
 import { updateSample } from '@/lib/api/update-sample'
 import { useMutation } from '@tanstack/react-query'
-import { Share2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { DeleteSampleDialog } from './delete-sample-dialog'
 import { EditableName } from './editable-name'
 import { EditableTypeBadge } from './editable-type-badge'
 import { InlineField } from './inline-field'
+import { ShareSampleDialog } from './share-sample-dialog'
 
 interface SampleCardProps {
   sample: SampleDetail
   canEdit: boolean
   canDelete: boolean
   isOwner: boolean
+  canShare: boolean
   onDelete: () => void
 }
 
-export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: SampleCardProps) {
+export function SampleCard({
+  sample,
+  canEdit,
+  canDelete,
+  isOwner,
+  canShare,
+  onDelete
+}: SampleCardProps) {
   const [name, setName] = useState(sample.name)
   const [type, setType] = useState(sample.type)
   const [originOrganism, setOriginOrganism] = useState(sample.originOrganism)
@@ -153,15 +160,8 @@ export function SampleCard({ sample, canEdit, canDelete, isOwner, onDelete }: Sa
             </div>
             <div className='flex items-center gap-1'>
               {canDelete && <DeleteSampleDialog sampleName={name} onDelete={onDelete} />}
-              {isOwner && (
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  className='h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground'
-                >
-                  <Share2 className='size-3' />
-                  Share
-                </Button>
+              {canShare && (
+                <ShareSampleDialog sampleId={sample.id} currentGroupId={sample.groupId} />
               )}
             </div>
           </div>
