@@ -250,9 +250,10 @@ function ShareRequestItem({
       <div className='flex gap-2.5 flex-1 min-w-0'>
         <FlaskConical className='size-4 text-muted-foreground shrink-0 mt-0.5' />
         <p className='text-sm text-muted-foreground leading-snug'>
-          <span className='font-medium text-foreground'>{notification.requestingGroupName}</span> is
-          requesting <span className='font-medium text-foreground'>{permissionLabel}</span> access
-          to <span className='font-medium text-foreground'>{notification.sampleName}</span>.
+          <span className='font-medium text-foreground'>{notification.offeringGroupName}</span> is
+          offering <span className='font-medium text-foreground'>{permissionLabel}</span> access to{' '}
+          <span className='font-medium text-foreground'>{notification.sampleName}</span>. Accepting
+          makes your group co-responsible for this sample.
         </p>
       </div>
       <AcceptRejectButtons

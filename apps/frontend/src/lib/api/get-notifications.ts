@@ -19,9 +19,9 @@ export type SampleShareRequestNotification = {
   sampleId: string
   sampleName: string
   permission: SamplePermission
-  requestingGroupId: string
-  requestingGroupName: string
-  requesterName: string
+  offeringGroupId: string
+  offeringGroupName: string
+  offeredByName: string
   createdAt: string
 }
 

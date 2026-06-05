@@ -49,9 +49,9 @@ Each notification includes a \`type\` discriminator field so the client can rend
           sampleId: 'aabbccdd-1234-5678-abcd-ef1234567890',
           sampleName: 'RNA-seq Extract #42',
           permission: 'VIEW',
-          requestingGroupId: '550e8400-e29b-41d4-a716-446655440001',
-          requestingGroupName: 'Microbiology Lab',
-          requesterName: 'Lucas Silva',
+          offeringGroupId: '550e8400-e29b-41d4-a716-446655440000',
+          offeringGroupName: 'Genomics Lab',
+          offeredByName: 'Tobias Marion',
           createdAt: '2026-06-02T14:30:00.000Z'
         },
         {

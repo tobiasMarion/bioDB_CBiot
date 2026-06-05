@@ -70,8 +70,13 @@ export class NotificationsService {
         sample: { isArchived: false }
       },
       include: {
-        sample: { select: { id: true, name: true } },
-        group: { select: { id: true, name: true } },
+        sample: {
+          select: {
+            id: true,
+            name: true,
+            group: { select: { id: true, name: true } }
+          }
+        },
         requester: { select: { name: true } }
       }
     })
@@ -82,9 +87,9 @@ export class NotificationsService {
       sampleId: req.sample.id,
       sampleName: req.sample.name,
       permission: req.permission,
-      requestingGroupId: req.group.id,
-      requestingGroupName: req.group.name,
-      requesterName: req.requester.name,
+      offeringGroupId: req.sample.group.id,
+      offeringGroupName: req.sample.group.name,
+      offeredByName: req.requester.name,
       createdAt: req.createdAt
     }))
   }
