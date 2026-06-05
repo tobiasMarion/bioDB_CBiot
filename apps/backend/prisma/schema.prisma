@@ -48,6 +48,7 @@ enum AuditAction {
   MOVE
   HANDLE
   SHARE
+  NOTIFY
 }
 
 
@@ -82,7 +83,7 @@ model User {
 
   tubeEvents     TubeEvent[]
   tubeAttributes TubeAttribute[]
-  auditLogs      AuditLog[]
+  auditLogs      AuditLog[]      @relation("AuditLogUser")
   sampleShares   SampleShare[]
 
   sampleShareRequests                  SampleShareRequest[]
@@ -329,13 +330,13 @@ model AuditLog {
   id          String          @id @default(uuid())
   entityType  AuditEntityType
   entityId    String
-  performedBy String
+  performedBy String?
   action      AuditAction
   changes     Json
 
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [performedBy], references: [id])
+  user User? @relation("AuditLogUser", fields: [performedBy], references: [id])
 
   @@index([entityType, entityId])
 }

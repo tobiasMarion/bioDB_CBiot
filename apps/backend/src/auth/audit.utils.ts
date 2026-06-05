@@ -8,14 +8,14 @@ type ComparableRecord = Record<string, unknown>
 type BaseAuditParams = {
   entityType: AuditEntityType
   entityId: string
-  performedBy: string
+  performedBy: string | null
   ignoredFields?: readonly string[]
 }
 
 type AuditPayload = {
   entityType: AuditEntityType
   entityId: string
-  performedBy: string
+  performedBy: string | null
   action: AuditAction
   changes: Prisma.InputJsonValue
 }
@@ -38,7 +38,6 @@ function buildSnapshot<T extends ComparableRecord>(
 
   for (const key of Object.keys(data)) {
     if (ignoredFields.includes(key)) continue
-
     snapshot[key] = toJsonValue(data[key])
   }
 
@@ -117,5 +116,23 @@ export function auditDelete<T extends ComparableRecord>(
     performedBy: params.performedBy,
     action: AuditAction.ARCHIVE,
     changes: buildSnapshot(params.previous, ignoredFields)
+  }
+}
+
+export function auditNotify(
+  params: Omit<BaseAuditParams, 'performedBy'> & {
+    message: string
+    recipientIds: string[]
+  }
+): AuditPayload {
+  return {
+    entityType: params.entityType,
+    entityId: params.entityId,
+    performedBy: null,
+    action: AuditAction.NOTIFY,
+    changes: {
+      message: params.message,
+      notifiedUserIds: params.recipientIds
+    }
   }
 }
