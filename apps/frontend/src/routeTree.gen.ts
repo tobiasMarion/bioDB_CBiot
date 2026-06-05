@@ -16,6 +16,7 @@ import { Route as AuthLogoutRouteImport } from './routes/_auth/logout'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppGroupIdRouteRouteImport } from './routes/app/$groupId/route'
 import { Route as AppGroupIdMembersRouteImport } from './routes/app/$groupId/members'
+import { Route as AppAdminRoomsIndexRouteImport } from './routes/app/admin/rooms/index'
 import { Route as AppGroupIdSamplesIndexRouteImport } from './routes/app/$groupId/samples/index'
 import { Route as AppGroupIdSamplesIdRouteImport } from './routes/app/$groupId/samples/$id'
 
@@ -54,6 +55,11 @@ const AppGroupIdMembersRoute = AppGroupIdMembersRouteImport.update({
   path: '/members',
   getParentRoute: () => AppGroupIdRouteRoute,
 } as any)
+const AppAdminRoomsIndexRoute = AppAdminRoomsIndexRouteImport.update({
+  id: '/admin/rooms/',
+  path: '/admin/rooms/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppGroupIdSamplesIndexRoute = AppGroupIdSamplesIndexRouteImport.update({
   id: '/samples/',
   path: '/samples/',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
   '/app/$groupId/samples/': typeof AppGroupIdSamplesIndexRoute
+  '/app/admin/rooms/': typeof AppAdminRoomsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
   '/app/$groupId/samples': typeof AppGroupIdSamplesIndexRoute
+  '/app/admin/rooms': typeof AppAdminRoomsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
   '/app/$groupId/samples/': typeof AppGroupIdSamplesIndexRoute
+  '/app/admin/rooms/': typeof AppAdminRoomsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/app/$groupId/members'
     | '/app/$groupId/samples/$id'
     | '/app/$groupId/samples/'
+    | '/app/admin/rooms/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/app/$groupId/members'
     | '/app/$groupId/samples/$id'
     | '/app/$groupId/samples'
+    | '/app/admin/rooms'
   id:
     | '__root__'
     | '/'
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/app/$groupId/members'
     | '/app/$groupId/samples/$id'
     | '/app/$groupId/samples/'
+    | '/app/admin/rooms/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -191,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGroupIdMembersRouteImport
       parentRoute: typeof AppGroupIdRouteRoute
     }
+    '/app/admin/rooms/': {
+      id: '/app/admin/rooms/'
+      path: '/admin/rooms'
+      fullPath: '/app/admin/rooms/'
+      preLoaderRoute: typeof AppAdminRoomsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/$groupId/samples/': {
       id: '/app/$groupId/samples/'
       path: '/samples'
@@ -227,11 +246,13 @@ const AppGroupIdRouteRouteWithChildren = AppGroupIdRouteRoute._addFileChildren(
 interface AppRouteRouteChildren {
   AppGroupIdRouteRoute: typeof AppGroupIdRouteRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
+  AppAdminRoomsIndexRoute: typeof AppAdminRoomsIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppGroupIdRouteRoute: AppGroupIdRouteRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
+  AppAdminRoomsIndexRoute: AppAdminRoomsIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
