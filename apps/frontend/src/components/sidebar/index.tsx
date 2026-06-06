@@ -26,6 +26,7 @@ export function AppSidebar() {
 
   const isAdmin = user?.isAdmin ?? false
   const hasGroups = groups.length > 0
+  const activeGroupId = groupId || localStorage.getItem('lastAccessedGroup') || groups[0]?.id
 
   return (
     <Sidebar collapsible='icon'>
@@ -34,21 +35,21 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {hasGroups && groupId && (
+        {hasGroups && activeGroupId && (
           <NavMain
             title='Current Group'
             items={[
               {
                 title: 'Samples',
-                url: `/app/${groupId}/samples`,
+                url: `/app/${activeGroupId}/samples`,
                 icon: FlaskConical,
                 isActive: true,
                 items: [
-                  { title: 'All Samples', url: `/app/${groupId}/samples` },
-                  { title: 'Add New', url: `/app/${groupId}/samples/new` }
+                  { title: 'All Samples', url: `/app/${activeGroupId}/samples` },
+                  { title: 'Add New', url: `/app/${activeGroupId}/samples/new` }
                 ]
               },
-              { title: 'Members', url: `/app/${groupId}/members`, icon: Users }
+              { title: 'Members', url: `/app/${activeGroupId}/members`, icon: Users }
             ]}
           />
         )}
@@ -63,7 +64,7 @@ export function AppSidebar() {
                 icon: Snowflake,
                 items: [
                   { title: 'Manage Freezers', url: '/app/admin/freezers' },
-                  { title: 'Position Map', url: '/app/admin/map' }
+                  { title: 'Manage Rooms', url: '/app/admin/rooms/' }
                 ]
               },
               { title: 'Audit Logs', url: '/app/admin/audit', icon: ShieldCheck }
