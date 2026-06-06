@@ -7,9 +7,10 @@ import { InvitesModule } from './invites/invites.module'
 import { SamplesModule } from './samples/samples.module'
 import { TubesModule } from './tubes/tubes.module'
 import { RoomsModule } from './rooms/rooms.module'
+import { AuditModule } from './audit/audit.module'
 
 @Module({
-  imports: [PrismaModule, GroupsModule, FreezersModule, AuthModule, InvitesModule, SamplesModule, TubesModule, RoomsModule],
+  imports: [PrismaModule, GroupsModule, FreezersModule, AuthModule, InvitesModule, SamplesModule, TubesModule, RoomsModule, AuditModule],
   controllers: [],
   providers: []
 })
