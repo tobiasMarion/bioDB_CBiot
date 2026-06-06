@@ -43,7 +43,7 @@ export function ReturnToFreezerControls({
               <SelectItem key={f.id} value={f.id}>
                 <span className='block'>{f.name}</span>
                 <span className='block text-xs text-muted-foreground'>
-                  {f.locationDescription}
+                  Room {f.room.number}, Building {f.room.building} — Floor {f.room.floor}
                 </span>
               </SelectItem>
             ))}
