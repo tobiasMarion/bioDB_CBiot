@@ -9,6 +9,7 @@ import {
   SidebarHeader,
   SidebarRail
 } from '@/components/ui/sidebar'
+import { getGroupMembers } from '@/lib/api/get-group-members'
 import { getGroups } from '@/lib/api/get-groups'
 import { authStore } from '@/lib/auth/store'
 import { GroupSwitcher } from './group-switcher'
@@ -51,7 +52,9 @@ export function AppSidebar() {
                 ]
               },
               { title: 'Members', url: `/app/${activeGroupId}/members`, icon: Users },
-              { title: 'Audit Logs', url: `/app/${activeGroupId}/audit`, icon: ClipboardList }
+              ...(canViewGroupAudit
+                ? [{ title: 'Audit Logs', url: `/app/${activeGroupId}/audit`, icon: ClipboardList }]
+                : [])
             ]}
           />
         )}

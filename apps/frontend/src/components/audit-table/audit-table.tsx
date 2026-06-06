@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/table'
 import { getAuditLogs, type AuditAction, type AuditEntityType } from '@/lib/api/get-audit-logs'
 import { getGroupAuditLogs } from '@/lib/api/get-group-audit-logs'
+import type { User } from '@/lib/api/types/user'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { AuditPagination } from './audit-pagination'
@@ -30,6 +31,7 @@ export function AuditTable({ groupId }: AuditTableProps) {
   const [action, setAction] = useState<AuditAction | undefined>()
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
@@ -47,6 +49,7 @@ export function AuditTable({ groupId }: AuditTableProps) {
     search: debouncedSearch || undefined,
     entityType,
     action,
+    performedBy: selectedUser?.id,
     from: fromISO,
     to: toISO,
     page: currentPage,
@@ -63,7 +66,7 @@ export function AuditTable({ groupId }: AuditTableProps) {
   const totalItems = data?.total ?? 0
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE)
 
-  const hasActiveFilters = !!search || !!entityType || !!action || !!fromDate || !!toDate
+  const hasActiveFilters = !!search || !!entityType || !!action || !!fromDate || !!toDate || !!selectedUser
 
   const handleSearchChange = (value: string) => {
     setSearch(value)
@@ -96,6 +99,7 @@ export function AuditTable({ groupId }: AuditTableProps) {
     setAction(undefined)
     setFromDate('')
     setToDate('')
+    setSelectedUser(null)
     setCurrentPage(1)
   }
 
@@ -124,6 +128,8 @@ export function AuditTable({ groupId }: AuditTableProps) {
         onFromDateChange={handleFromDateChange}
         toDate={toDate}
         onToDateChange={handleToDateChange}
+        selectedUser={selectedUser}
+        onUserSelect={user => { setSelectedUser(user); setCurrentPage(1) }}
         hasActiveFilters={hasActiveFilters}
         onClearFilters={handleClearFilters}
         availableEntityTypes={groupId ? GROUP_ENTITY_TYPES : undefined}
