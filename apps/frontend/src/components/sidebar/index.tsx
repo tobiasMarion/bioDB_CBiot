@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
-import { FlaskConical, ShieldCheck, Snowflake, Users } from 'lucide-react'
+import { ClipboardList, FlaskConical, ShieldCheck, Snowflake, Users } from 'lucide-react'
 
 import {
   Sidebar,
@@ -26,6 +26,8 @@ export function AppSidebar() {
 
   const isAdmin = user?.isAdmin ?? false
   const hasGroups = groups.length > 0
+  // Em rotas admin, groupId não está na URL — usa o último grupo acessado como fallback
+  const activeGroupId = groupId ?? localStorage.getItem('lastAccessedGroup') ?? undefined
 
   return (
     <Sidebar collapsible='icon'>
@@ -34,21 +36,22 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {hasGroups && groupId && (
+        {hasGroups && activeGroupId && (
           <NavMain
             title='Current Group'
             items={[
               {
                 title: 'Samples',
-                url: `/app/${groupId}/samples`,
+                url: `/app/${activeGroupId}/samples`,
                 icon: FlaskConical,
                 isActive: true,
                 items: [
-                  { title: 'All Samples', url: `/app/${groupId}/samples` },
-                  { title: 'Add New', url: `/app/${groupId}/samples/new` }
+                  { title: 'All Samples', url: `/app/${activeGroupId}/samples` },
+                  { title: 'Add New', url: `/app/${activeGroupId}/samples/new` }
                 ]
               },
-              { title: 'Members', url: `/app/${groupId}/members`, icon: Users }
+              { title: 'Members', url: `/app/${activeGroupId}/members`, icon: Users },
+              { title: 'Audit Logs', url: `/app/${activeGroupId}/audit`, icon: ClipboardList }
             ]}
           />
         )}

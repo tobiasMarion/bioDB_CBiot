@@ -102,17 +102,33 @@ export class AuditService {
   private async resolveSearchIds(search: string, groupId?: string): Promise<string[]> {
     const samples = await this.prisma.sample.findMany({
       where: {
-        name: { contains: search, mode: 'insensitive' },
-        ...(groupId ? { groupId } : {}),  // spread condicional: só adiciona groupId se fornecido
+        AND: [
+          // Busca por nome OU por prefixo de ID
+          {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { id: { startsWith: search } },
+            ],
+          },
+          // No contexto de grupo, inclui samples do próprio grupo E samples compartilhados com ele
+          ...(groupId
+            ? [{
+                OR: [
+                  { groupId },
+                  { shares: { some: { targetGroupId: groupId, isArchived: false } } },
+                ],
+              }]
+            : []),
+        ],
       },
       select: {
         id: true,
-        tubes: { select: { id: true } },  // inclui os tubes de cada sample
+        tubes: { select: { id: true } },
       },
     })
 
     const sampleIds = samples.map(s => s.id)
-    const tubeIds = samples.flatMap(s => s.tubes.map(t => t.id))  // flatMap "achata" o array de arrays
+    const tubeIds = samples.flatMap(s => s.tubes.map(t => t.id))
     return [...sampleIds, ...tubeIds]
   }
 
