@@ -81,7 +81,7 @@ export function AuditToolbar({
     <div className='flex flex-col gap-2'>
       {/* Linha 1: busca + entidade + ação + usuário + limpar */}
       <div className='flex flex-wrap gap-2'>
-        <div className='relative flex-1 min-w-48'>
+        <div className='relative flex-[2] min-w-48'>
           <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
           <Input
             placeholder='Search by name or ID...'
@@ -127,7 +127,7 @@ export function AuditToolbar({
             <Button
               type='button'
               variant='outline'
-              className='h-9 w-44 justify-between font-normal px-3'
+              className='h-9 w-56 justify-between font-normal px-3'
             >
               <span className='truncate text-sm'>
                 {selectedUser ? selectedUser.name : 'All users'}
