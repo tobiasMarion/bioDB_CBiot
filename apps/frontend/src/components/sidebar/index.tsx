@@ -28,7 +28,7 @@ export function AppSidebar() {
   const isAdmin = user?.isAdmin ?? false
   const hasGroups = groups.length > 0
   // Em rotas admin, groupId não está na URL — usa o último grupo acessado como fallback
-  const activeGroupId = groupId ?? localStorage.getItem('lastAccessedGroup') ?? undefined
+  const activeGroupId = groupId || localStorage.getItem('lastAccessedGroup') || groups[0]?.id
 
   const { data: members = [] } = useQuery({
     queryKey: ['group-members', activeGroupId],
@@ -79,7 +79,7 @@ export function AppSidebar() {
                 icon: Snowflake,
                 items: [
                   { title: 'Manage Freezers', url: '/app/admin/freezers' },
-                  { title: 'Position Map', url: '/app/admin/map' }
+                  { title: 'Manage Rooms', url: '/app/admin/rooms/' }
                 ]
               },
               { title: 'Admin Audit Logs', url: '/app/admin/audit', icon: ShieldCheck }
