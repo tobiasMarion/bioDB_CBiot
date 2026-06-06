@@ -30,6 +30,16 @@ export function AppSidebar() {
   // Em rotas admin, groupId não está na URL — usa o último grupo acessado como fallback
   const activeGroupId = groupId ?? localStorage.getItem('lastAccessedGroup') ?? undefined
 
+  const { data: members = [] } = useQuery({
+    queryKey: ['group-members', activeGroupId],
+    queryFn: () => getGroupMembers(activeGroupId!),
+    enabled: !!activeGroupId && !isAdmin  // admin não precisa verificar o cargo
+  })
+
+  // Admin sempre pode ver; não-admin precisa ser LEADER no grupo
+  const canViewGroupAudit =
+    isAdmin || members.some(m => m.userId === user?.id && m.role === 'LEADER' && !m.isArchived)
+
   return (
     <Sidebar collapsible='icon'>
       <SidebarHeader>
@@ -72,7 +82,7 @@ export function AppSidebar() {
                   { title: 'Position Map', url: '/app/admin/map' }
                 ]
               },
-              { title: 'Audit Logs', url: '/app/admin/audit', icon: ShieldCheck }
+              { title: 'Admin Audit Logs', url: '/app/admin/audit', icon: ShieldCheck }
             ]}
           />
         )}

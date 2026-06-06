@@ -32,18 +32,18 @@ export function ChangesDisplay({ action, changes }: ChangesDisplayProps) {
   // UPDATE: mostra campos com diff from → to
   if (action === 'UPDATE') {
     return (
-      <div className='flex flex-col gap-1'>
+      <div className='flex flex-col gap-1 min-w-0'>
         {entries.map(([key, value]) => (
-          <div key={key} className='flex items-baseline gap-2 text-sm font-mono'>
+          <div key={key} className='flex items-baseline gap-2 text-sm font-mono min-w-0'>
             <span className='text-muted-foreground min-w-32 shrink-0'>{key}</span>
             {isDiff(value) ? (
-              <span className='flex flex-wrap items-center gap-1.5 break-all'>
+              <span className='flex flex-wrap items-center gap-1.5 min-w-0 break-all'>
                 <span className='text-destructive line-through'>{formatValue(value.from)}</span>
                 <span className='text-muted-foreground'>→</span>
                 <span className='text-green-600 dark:text-green-400'>{formatValue(value.to)}</span>
               </span>
             ) : (
-              <span className='break-all'>{formatValue(value)}</span>
+              <span className='break-all min-w-0'>{formatValue(value)}</span>
             )}
           </div>
         ))}
@@ -53,11 +53,11 @@ export function ChangesDisplay({ action, changes }: ChangesDisplayProps) {
 
   // CREATE / ARCHIVE / outros: snapshot simples de key-value
   return (
-    <div className='flex flex-col gap-1'>
+    <div className='flex flex-col gap-1 min-w-0'>
       {entries.map(([key, value]) => (
-        <div key={key} className='flex items-baseline gap-2 text-sm font-mono'>
+        <div key={key} className='flex items-baseline gap-2 text-sm font-mono min-w-0'>
           <span className='text-muted-foreground min-w-32 shrink-0'>{key}</span>
-          <span className='break-all'>{formatValue(value)}</span>
+          <span className='break-all min-w-0'>{formatValue(value)}</span>
         </div>
       ))}
     </div>

@@ -26,8 +26,6 @@ export function AuditPagination({
   const startItem = (currentPage - 1) * itemsPerPage + 1
   const endItem = Math.min(currentPage * itemsPerPage, totalItems)
 
-  if (totalPages <= 1) return null
-
   const renderPageNumbers = () => {
     const items: React.ReactNode[] = []
     const maxVisible = 7
@@ -88,25 +86,27 @@ export function AuditPagination({
       <div className='text-sm text-muted-foreground whitespace-nowrap shrink-0'>
         Showing {startItem}–{endItem} of {totalItems} results
       </div>
-      <Pagination className='mx-0 w-auto flex-1 justify-end'>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() => onPageChange(currentPage - 1)}
-              aria-disabled={currentPage === 1}
-              className={currentPage === 1 ? 'pointer-events-none opacity-50' : undefined}
-            />
-          </PaginationItem>
-          {renderPageNumbers()}
-          <PaginationItem>
-            <PaginationNext
-              onClick={() => onPageChange(currentPage + 1)}
-              aria-disabled={currentPage === totalPages}
-              className={currentPage === totalPages ? 'pointer-events-none opacity-50' : undefined}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      {totalPages > 1 && (
+        <Pagination className='mx-0 w-auto flex-1 justify-end'>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => onPageChange(currentPage - 1)}
+                aria-disabled={currentPage === 1}
+                className={currentPage === 1 ? 'pointer-events-none opacity-50' : undefined}
+              />
+            </PaginationItem>
+            {renderPageNumbers()}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => onPageChange(currentPage + 1)}
+                aria-disabled={currentPage === totalPages}
+                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : undefined}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   )
 }

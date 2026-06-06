@@ -21,7 +21,7 @@ interface AuditTableProps {
   groupId?: string
 }
 
-const ITEMS_PER_PAGE = 50
+const ITEMS_PER_PAGE = 20
 const SEARCH_DEBOUNCE_MS = 300
 
 export function AuditTable({ groupId }: AuditTableProps) {
@@ -143,7 +143,7 @@ export function AuditTable({ groupId }: AuditTableProps) {
               <TableHead className='w-40'>Entity</TableHead>
               <TableHead className='w-28'>Action</TableHead>
               <TableHead>User</TableHead>
-              <TableHead className='w-12 text-right'>Changes</TableHead>
+              <TableHead className='w-24 text-center'>Changes</TableHead>
             </TableRow>
           </TableHeader>
 

@@ -75,7 +75,7 @@ export function AuditRow({ log, isExpanded, onToggle }: AuditRowProps) {
         </TableCell>
 
         {/* Botão expand/collapse */}
-        <TableCell className='text-right'>
+        <TableCell className='text-center'>
           <Button variant='ghost' size='sm' onClick={onToggle} className='h-7 w-7 p-0'>
             {isExpanded ? (
               <ChevronDown className='size-4' />
@@ -89,10 +89,8 @@ export function AuditRow({ log, isExpanded, onToggle }: AuditRowProps) {
       {/* Linha expandida com changes */}
       {isExpanded && (
         <TableRow>
-          <TableCell colSpan={5} className='bg-muted/30 pb-4 pt-2 px-6 max-w-0'>
-            <div className='overflow-hidden'>
-              <ChangesDisplay action={log.action} changes={log.changes} />
-            </div>
+          <TableCell colSpan={5} className='bg-muted/30 pb-4 pt-2 px-6 whitespace-normal break-all'>
+            <ChangesDisplay action={log.action} changes={log.changes} />
           </TableCell>
         </TableRow>
       )}
