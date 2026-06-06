@@ -150,7 +150,8 @@ export class FreezersService {
     try {
       const updatedFreezer = await this.prisma.freezer.update({
         where: { id },
-        data: data
+        data: data,
+        include: { room: true }
       })
 
       await this.prisma.auditLog.create({
