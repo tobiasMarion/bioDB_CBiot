@@ -41,13 +41,29 @@ export class AuditService {
         entityId: groupId,
       }),
       [AuditEntityType.SAMPLE]: async () => {
-        const rows = await this.prisma.sample.findMany({ where: { groupId }, select: { id: true } })
+        const rows = await this.prisma.sample.findMany({
+          where: {
+            OR: [
+              { groupId },
+              { shares: { some: { targetGroupId: groupId, isArchived: false } } },
+            ],
+          },
+          select: { id: true },
+        })
         return { entityType: AuditEntityType.SAMPLE, entityId: { in: rows.map(r => r.id) } }
       },
       [AuditEntityType.TUBE]: async () => {
-        // Tube não tem groupId direto — precisa navegar pela relação sample.groupId
+        // Tube não tem groupId direto — navega pela relação com sample,
+        // incluindo samples compartilhados com o grupo
         const rows = await this.prisma.tube.findMany({
-          where: { sample: { groupId } },
+          where: {
+            sample: {
+              OR: [
+                { groupId },
+                { shares: { some: { targetGroupId: groupId, isArchived: false } } },
+              ],
+            },
+          },
           select: { id: true },
         })
         return { entityType: AuditEntityType.TUBE, entityId: { in: rows.map(r => r.id) } }
