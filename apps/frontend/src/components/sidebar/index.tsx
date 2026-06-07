@@ -27,16 +27,14 @@ export function AppSidebar() {
 
   const isAdmin = user?.isAdmin ?? false
   const hasGroups = groups.length > 0
-  // Em rotas admin, groupId não está na URL — usa o último grupo acessado como fallback
   const activeGroupId = groupId || localStorage.getItem('lastAccessedGroup') || groups[0]?.id
 
   const { data: members = [] } = useQuery({
     queryKey: ['group-members', activeGroupId],
     queryFn: () => getGroupMembers(activeGroupId!),
-    enabled: !!activeGroupId && !isAdmin  // admin não precisa verificar o cargo
+    enabled: !!activeGroupId && !isAdmin  
   })
 
-  // Admin sempre pode ver; não-admin precisa ser LEADER no grupo
   const canViewGroupAudit =
     isAdmin || members.some(m => m.userId === user?.id && m.role === 'LEADER' && !m.isArchived)
 

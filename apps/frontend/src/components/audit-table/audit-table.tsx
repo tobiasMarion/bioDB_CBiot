@@ -17,7 +17,6 @@ import { AuditTableSkeleton } from './audit-table-skeleton'
 import { AuditToolbar, GROUP_ENTITY_TYPES } from './audit-toolbar'
 
 interface AuditTableProps {
-  // Se fornecido, usa o endpoint de grupo; caso contrário usa o endpoint admin
   groupId?: string
 }
 
@@ -41,7 +40,6 @@ export function AuditTable({ groupId }: AuditTableProps) {
     return () => clearTimeout(timer)
   }, [search])
 
-  // Converte a string YYYY-MM-DD do input de data para ISO completo
   const fromISO = fromDate ? `${fromDate}T00:00:00.000Z` : undefined
   const toISO = toDate ? `${toDate}T23:59:59.999Z` : undefined
 

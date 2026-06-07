@@ -14,10 +14,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AuthLogoutRouteImport } from './routes/_auth/logout'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppAdminRouteRouteImport } from './routes/app/admin/route'
 import { Route as AppGroupIdRouteRouteImport } from './routes/app/$groupId/route'
 import { Route as AppGroupIdMembersRouteImport } from './routes/app/$groupId/members'
 import { Route as AppAdminRoomsIndexRouteImport } from './routes/app/admin/rooms/index'
+import { Route as AppAdminAuditIndexRouteImport } from './routes/app/admin/audit/index'
 import { Route as AppGroupIdSamplesIndexRouteImport } from './routes/app/$groupId/samples/index'
+import { Route as AppGroupIdAuditIndexRouteImport } from './routes/app/$groupId/audit/index'
 import { Route as AppGroupIdSamplesIdRouteImport } from './routes/app/$groupId/samples/$id'
 
 const AppRouteRoute = AppRouteRouteImport.update({
@@ -45,6 +48,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppAdminRouteRoute = AppAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppGroupIdRouteRoute = AppGroupIdRouteRouteImport.update({
   id: '/$groupId',
   path: '/$groupId',
@@ -56,13 +64,23 @@ const AppGroupIdMembersRoute = AppGroupIdMembersRouteImport.update({
   getParentRoute: () => AppGroupIdRouteRoute,
 } as any)
 const AppAdminRoomsIndexRoute = AppAdminRoomsIndexRouteImport.update({
-  id: '/admin/rooms/',
-  path: '/admin/rooms/',
-  getParentRoute: () => AppRouteRoute,
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => AppAdminRouteRoute,
+} as any)
+const AppAdminAuditIndexRoute = AppAdminAuditIndexRouteImport.update({
+  id: '/audit/',
+  path: '/audit/',
+  getParentRoute: () => AppAdminRouteRoute,
 } as any)
 const AppGroupIdSamplesIndexRoute = AppGroupIdSamplesIndexRouteImport.update({
   id: '/samples/',
   path: '/samples/',
+  getParentRoute: () => AppGroupIdRouteRoute,
+} as any)
+const AppGroupIdAuditIndexRoute = AppGroupIdAuditIndexRouteImport.update({
+  id: '/audit/',
+  path: '/audit/',
   getParentRoute: () => AppGroupIdRouteRoute,
 } as any)
 const AppGroupIdSamplesIdRoute = AppGroupIdSamplesIdRouteImport.update({
@@ -75,23 +93,29 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/app/$groupId': typeof AppGroupIdRouteRouteWithChildren
+  '/app/admin': typeof AppAdminRouteRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/logout': typeof AuthLogoutRoute
   '/app/': typeof AppIndexRoute
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
+  '/app/$groupId/audit/': typeof AppGroupIdAuditIndexRoute
   '/app/$groupId/samples/': typeof AppGroupIdSamplesIndexRoute
+  '/app/admin/audit/': typeof AppAdminAuditIndexRoute
   '/app/admin/rooms/': typeof AppAdminRoomsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app/$groupId': typeof AppGroupIdRouteRouteWithChildren
+  '/app/admin': typeof AppAdminRouteRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/logout': typeof AuthLogoutRoute
   '/app': typeof AppIndexRoute
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
+  '/app/$groupId/audit': typeof AppGroupIdAuditIndexRoute
   '/app/$groupId/samples': typeof AppGroupIdSamplesIndexRoute
+  '/app/admin/audit': typeof AppAdminAuditIndexRoute
   '/app/admin/rooms': typeof AppAdminRoomsIndexRoute
 }
 export interface FileRoutesById {
@@ -99,12 +123,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/app/$groupId': typeof AppGroupIdRouteRouteWithChildren
+  '/app/admin': typeof AppAdminRouteRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/logout': typeof AuthLogoutRoute
   '/app/': typeof AppIndexRoute
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
+  '/app/$groupId/audit/': typeof AppGroupIdAuditIndexRoute
   '/app/$groupId/samples/': typeof AppGroupIdSamplesIndexRoute
+  '/app/admin/audit/': typeof AppAdminAuditIndexRoute
   '/app/admin/rooms/': typeof AppAdminRoomsIndexRoute
 }
 export interface FileRouteTypes {
@@ -113,35 +140,44 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/app/$groupId'
+    | '/app/admin'
     | '/login'
     | '/logout'
     | '/app/'
     | '/app/$groupId/members'
     | '/app/$groupId/samples/$id'
+    | '/app/$groupId/audit/'
     | '/app/$groupId/samples/'
+    | '/app/admin/audit/'
     | '/app/admin/rooms/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/app/$groupId'
+    | '/app/admin'
     | '/login'
     | '/logout'
     | '/app'
     | '/app/$groupId/members'
     | '/app/$groupId/samples/$id'
+    | '/app/$groupId/audit'
     | '/app/$groupId/samples'
+    | '/app/admin/audit'
     | '/app/admin/rooms'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/app/$groupId'
+    | '/app/admin'
     | '/_auth/login'
     | '/_auth/logout'
     | '/app/'
     | '/app/$groupId/members'
     | '/app/$groupId/samples/$id'
+    | '/app/$groupId/audit/'
     | '/app/$groupId/samples/'
+    | '/app/admin/audit/'
     | '/app/admin/rooms/'
   fileRoutesById: FileRoutesById
 }
@@ -189,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/$groupId': {
       id: '/app/$groupId'
       path: '/$groupId'
@@ -205,16 +248,30 @@ declare module '@tanstack/react-router' {
     }
     '/app/admin/rooms/': {
       id: '/app/admin/rooms/'
-      path: '/admin/rooms'
+      path: '/rooms'
       fullPath: '/app/admin/rooms/'
       preLoaderRoute: typeof AppAdminRoomsIndexRouteImport
-      parentRoute: typeof AppRouteRoute
+      parentRoute: typeof AppAdminRouteRoute
+    }
+    '/app/admin/audit/': {
+      id: '/app/admin/audit/'
+      path: '/audit'
+      fullPath: '/app/admin/audit/'
+      preLoaderRoute: typeof AppAdminAuditIndexRouteImport
+      parentRoute: typeof AppAdminRouteRoute
     }
     '/app/$groupId/samples/': {
       id: '/app/$groupId/samples/'
       path: '/samples'
       fullPath: '/app/$groupId/samples/'
       preLoaderRoute: typeof AppGroupIdSamplesIndexRouteImport
+      parentRoute: typeof AppGroupIdRouteRoute
+    }
+    '/app/$groupId/audit/': {
+      id: '/app/$groupId/audit/'
+      path: '/audit'
+      fullPath: '/app/$groupId/audit/'
+      preLoaderRoute: typeof AppGroupIdAuditIndexRouteImport
       parentRoute: typeof AppGroupIdRouteRoute
     }
     '/app/$groupId/samples/$id': {
@@ -230,12 +287,14 @@ declare module '@tanstack/react-router' {
 interface AppGroupIdRouteRouteChildren {
   AppGroupIdMembersRoute: typeof AppGroupIdMembersRoute
   AppGroupIdSamplesIdRoute: typeof AppGroupIdSamplesIdRoute
+  AppGroupIdAuditIndexRoute: typeof AppGroupIdAuditIndexRoute
   AppGroupIdSamplesIndexRoute: typeof AppGroupIdSamplesIndexRoute
 }
 
 const AppGroupIdRouteRouteChildren: AppGroupIdRouteRouteChildren = {
   AppGroupIdMembersRoute: AppGroupIdMembersRoute,
   AppGroupIdSamplesIdRoute: AppGroupIdSamplesIdRoute,
+  AppGroupIdAuditIndexRoute: AppGroupIdAuditIndexRoute,
   AppGroupIdSamplesIndexRoute: AppGroupIdSamplesIndexRoute,
 }
 
@@ -243,16 +302,30 @@ const AppGroupIdRouteRouteWithChildren = AppGroupIdRouteRoute._addFileChildren(
   AppGroupIdRouteRouteChildren,
 )
 
+interface AppAdminRouteRouteChildren {
+  AppAdminAuditIndexRoute: typeof AppAdminAuditIndexRoute
+  AppAdminRoomsIndexRoute: typeof AppAdminRoomsIndexRoute
+}
+
+const AppAdminRouteRouteChildren: AppAdminRouteRouteChildren = {
+  AppAdminAuditIndexRoute: AppAdminAuditIndexRoute,
+  AppAdminRoomsIndexRoute: AppAdminRoomsIndexRoute,
+}
+
+const AppAdminRouteRouteWithChildren = AppAdminRouteRoute._addFileChildren(
+  AppAdminRouteRouteChildren,
+)
+
 interface AppRouteRouteChildren {
   AppGroupIdRouteRoute: typeof AppGroupIdRouteRouteWithChildren
+  AppAdminRouteRoute: typeof AppAdminRouteRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
-  AppAdminRoomsIndexRoute: typeof AppAdminRoomsIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppGroupIdRouteRoute: AppGroupIdRouteRouteWithChildren,
+  AppAdminRouteRoute: AppAdminRouteRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
-  AppAdminRoomsIndexRoute: AppAdminRoomsIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
