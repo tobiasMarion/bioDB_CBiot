@@ -205,7 +205,7 @@ function RouteComponent() {
   const isOwner = sample ? sample.groupId === groupId : false
   const canEdit = true
   const canDelete = userRole === 'MANAGER' || userRole === 'LEADER'
-  const canShare = isOwner && userRole === 'LEADER'
+  const canShare = isOwner && (userRole === 'MANAGER' || userRole === 'LEADER')
 
   function getAttrsForTube(tube: Tube): Attribute[] {
     return tube.attributes.map(toAttribute)

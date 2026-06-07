@@ -26,7 +26,7 @@ export class SampleSharesController {
     summary: 'Request to share a sample with another group',
     description: `Creates a pending share request that notifies all leaders of the target group.
 
-**Authorization:** only the LEADER of the group that owns the sample can initiate this request.
+**Authorization:** only a MANAGER or LEADER of the group that owns the sample can initiate this request.
 
 **Business rules:**
 - The target group must be different from the sample's own group
@@ -38,7 +38,7 @@ export class SampleSharesController {
     schema: { example: { statusCode: 401, message: 'Missing Authorization header' } }
   })
   @ApiForbiddenResponse({
-    description: "The authenticated user is not a LEADER of the sample's group.",
+    description: "The authenticated user is not a MANAGER or LEADER of the sample's group.",
     schema: { example: { statusCode: 403, message: 'Insufficient permissions' } }
   })
   @ApiNotFoundResponse({
