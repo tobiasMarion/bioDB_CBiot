@@ -102,22 +102,26 @@ async function main() {
 
   console.log('✅ 2 Groups + memberships created')
 
+  // ─── Rooms ───────────────────────────────────────────────────────────────────
+
+  const roomA = await prisma.room.create({
+    data: { number: '304', building: 'Prédio A', floor: 3, createdBy: admin.id }
+  })
+
+  const roomB = await prisma.room.create({
+    data: { number: '210', building: 'Prédio B', floor: 2, createdBy: admin.id }
+  })
+
+  console.log('✅ 2 Rooms created')
+
   // ─── Freezers & Boxes ────────────────────────────────────────────────────────
 
   const freezer1 = await prisma.freezer.create({
-    data: {
-      name: 'Haier Biomedical DW-86L',
-      locationDescription: 'Prédio A, 3º andar, sala 304',
-      createdBy: admin.id
-    }
+    data: { name: 'Haier Biomedical DW-86L', roomId: roomA.id, createdBy: admin.id }
   })
 
   const freezer2 = await prisma.freezer.create({
-    data: {
-      name: 'Eppendorf CryoCube F740',
-      locationDescription: 'Prédio B, 2º andar, sala 210',
-      createdBy: admin.id
-    }
+    data: { name: 'Eppendorf CryoCube F740', roomId: roomB.id, createdBy: admin.id }
   })
 
   const box1 = await prisma.box.create({
