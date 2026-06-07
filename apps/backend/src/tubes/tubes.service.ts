@@ -21,6 +21,7 @@ const tubeSelect = {
   id: true,
   sampleId: true,
   expirationDate: true,
+  daysBeforeNotification: true,
   notes: true,
   boxId: true,
   row: true,
@@ -126,7 +127,10 @@ export class TubesService {
         data: {
           sampleId,
           createdBy: user.id,
-          expirationDate: data.expirationDate ? new Date(data.expirationDate) : null
+          expirationDate: data.expirationDate ? new Date(data.expirationDate) : null,
+          ...(data.daysBeforeNotification !== undefined && {
+            daysBeforeNotification: data.daysBeforeNotification
+          })
         },
         select: tubeSelect
       })
@@ -152,7 +156,12 @@ export class TubesService {
 
     const tube = await this.prisma.tube.update({
       where: { id: tubeId, isArchived: false },
-      data: { notes: data.notes },
+      data: {
+        notes: data.notes,
+        ...(data.daysBeforeNotification !== undefined && {
+          daysBeforeNotification: data.daysBeforeNotification
+        })
+      },
       select: tubeSelect
     })
 

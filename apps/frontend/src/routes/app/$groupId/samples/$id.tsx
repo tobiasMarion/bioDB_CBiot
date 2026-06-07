@@ -123,8 +123,11 @@ function RouteComponent() {
   })
 
   const createTubeMutation = useMutation({
-    mutationFn: (data: { expirationDate: string | null }) =>
-      createTube(id, { expirationDate: data.expirationDate ?? undefined }),
+    mutationFn: (data: { expirationDate: string | null; daysBeforeNotification?: number }) =>
+      createTube(id, {
+        expirationDate: data.expirationDate ?? undefined,
+        daysBeforeNotification: data.daysBeforeNotification
+      }),
     onSuccess: () => {
       setTubeError(null)
       invalidateSample()
@@ -162,7 +165,10 @@ function RouteComponent() {
   })
 
   const updateTubeMutation = useMutation({
-    mutationFn: ({ tubeId, data }: { tubeId: string; data: { notes: string } }) =>
+    mutationFn: ({
+      tubeId,
+      data
+    }: { tubeId: string; data: { notes?: string; daysBeforeNotification?: number } }) =>
       updateTube(tubeId, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sample-tubes', id] }),
     onError: async err => setAttrError(await getApiErrorMessage(err))
@@ -315,6 +321,12 @@ function RouteComponent() {
                   onAttrDelete={key => deleteAttrMutation.mutate({ tubeId: selectedTube.id, key })}
                   onNotesChange={v =>
                     updateTubeMutation.mutate({ tubeId: selectedTube.id, data: { notes: v } })
+                  }
+                  onDaysBeforeNotificationChange={v =>
+                    updateTubeMutation.mutate({
+                      tubeId: selectedTube.id,
+                      data: { daysBeforeNotification: v }
+                    })
                   }
                   onCheckout={() => checkoutMutation.mutate(selectedTube.id)}
                   onCheckin={pos =>

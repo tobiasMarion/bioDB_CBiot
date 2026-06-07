@@ -32,6 +32,7 @@ export interface Tube {
   id: string
   sampleId: string
   expirationDate: string | null
+  daysBeforeNotification: number
   notes: string
   boxId: string | null
   row: number | null
