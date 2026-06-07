@@ -33,6 +33,29 @@ export class AuditController {
   })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
   @ApiForbiddenResponse({ description: 'Insufficient permissions. Requires admin.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Audit logs retrieved successfully',
+    schema: {
+      example: {
+        data: [
+          {
+            id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            entityType: 'SAMPLE',
+            entityId: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
+            action: 'UPDATE',
+            changes: { name: { from: 'Sample A', to: 'Sample B' } },
+            performedBy: 'c3d4e5f6-a7b8-9012-cdef-123456789012',
+            createdAt: '2026-06-05T22:15:39.932Z',
+            user: { id: 'c3d4e5f6-a7b8-9012-cdef-123456789012', name: 'João Silva', email: 'joao@example.com' }
+          }
+        ],
+        total: 42,
+        page: 1,
+        pageSize: 50
+      }
+    }
+  })
   @ApiQuery({ name: 'entityType', enum: AuditEntityType, required: false })
   @ApiQuery({ name: 'entityId', required: false, description: 'Exact entity UUID' })
   @ApiQuery({ name: 'action', enum: AuditAction, required: false })
@@ -79,6 +102,29 @@ export class AuditController {
   })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
   @ApiForbiddenResponse({ description: 'Insufficient permissions. Requires LEADER role.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Audit logs retrieved successfully',
+    schema: {
+      example: {
+        data: [
+          {
+            id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            entityType: 'SAMPLE',
+            entityId: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
+            action: 'CREATE',
+            changes: { name: 'Sample A', type: 'DNA', originOrganism: 'Homo sapiens', sourceLab: 'Lab A' },
+            performedBy: 'c3d4e5f6-a7b8-9012-cdef-123456789012',
+            createdAt: '2026-06-05T22:15:39.932Z',
+            user: { id: 'c3d4e5f6-a7b8-9012-cdef-123456789012', name: 'João Silva', email: 'joao@example.com' }
+          }
+        ],
+        total: 15,
+        page: 1,
+        pageSize: 50
+      }
+    }
+  })
   @ApiQuery({ name: 'entityType', enum: AuditEntityType, required: false })
   @ApiQuery({ name: 'entityId', required: false, description: 'Exact entity UUID' })
   @ApiQuery({ name: 'action', enum: AuditAction, required: false })
