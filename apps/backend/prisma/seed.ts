@@ -15,7 +15,10 @@ const prisma = new PrismaClient({
 const AUTH_IDS = {
   admin: '258d8dc916db8cea2cafb6c3cd0cb0246efe061421dbd83ec3a350428cabda4f',
   tobias: '00848df1f16a6a4c2c5be76f1ae5430b5f97b2e3ad2a3ea0f1f31b22292edc66',
-  lucas: '824f829edd83f32987958b29b25891ce5ea9bfae4aea3c784f7e36d8ee068397',
+  felipe: '12d216f5096c445e7248035ac7d85e586c647ce185aca31774ab10088f7ae51f',
+  joao: 'a72badd7bb3fa438d2cb290471dae4ae9c80da96351cc328787468946ade2a88',
+  rafael: '190bc4e3c0b339c01a09ae3eff8ac114d503ad3ac2f27e48c1f59b166b5a0397',
+  pietro: '3b37d283bd01ff1680bd688d748a46ceaea6a25a12f6ef13a159ae6f07c7743c',
   jonas: '4c98bd036d44246f364e95f9762499bffbbcbcae1787743de49b913814d7059d'
 }
 
@@ -32,6 +35,7 @@ async function main() {
   await prisma.sample.deleteMany({})
   await prisma.box.deleteMany({})
   await prisma.freezer.deleteMany({})
+  await prisma.room.deleteMany({})
   await prisma.group.deleteMany({})
   await prisma.user.deleteMany({})
 
@@ -58,11 +62,38 @@ async function main() {
     }
   })
 
-  const lucas = await prisma.user.create({
+  const felipe = await prisma.user.create({
     data: {
-      externalAuthId: AUTH_IDS.lucas,
-      email: 'lucas@example.com',
-      name: 'Lucas Silva',
+      externalAuthId: AUTH_IDS.felipe,
+      email: 'felipe@example.com',
+      name: 'Felipe',
+      isAdmin: false
+    }
+  })
+
+  const joao = await prisma.user.create({
+    data: {
+      externalAuthId: AUTH_IDS.joao,
+      email: 'joao@example.com',
+      name: 'João',
+      isAdmin: false
+    }
+  })
+
+  const rafael = await prisma.user.create({
+    data: {
+      externalAuthId: AUTH_IDS.rafael,
+      email: 'rafael@example.com',
+      name: 'Rafael',
+      isAdmin: false
+    }
+  })
+
+  const pietro = await prisma.user.create({
+    data: {
+      externalAuthId: AUTH_IDS.pietro,
+      email: 'pietro@example.com',
+      name: 'Pietro',
       isAdmin: false
     }
   })
@@ -76,7 +107,7 @@ async function main() {
     }
   })
 
-  console.log('✅ 4 Users created (matching auth-mock credentials)')
+  console.log('✅ 7 Users created (matching auth-mock credentials)')
 
   // ─── Groups ──────────────────────────────────────────────────────────────────
 
@@ -88,16 +119,27 @@ async function main() {
     data: { name: 'Microbiology Team', createdBy: admin.id }
   })
 
-  // Memberships: tobias = LEADER, lucas = MANAGER, jonas = RESEARCHER
-  // This lets us test role-based restrictions on attributes and tube actions.
-  await prisma.groupMembership.createMany({
-    data: [
-      { userId: tobias.id, groupId: genomicsLab.id, role: GroupRole.LEADER },
-      { userId: lucas.id, groupId: genomicsLab.id, role: GroupRole.MANAGER },
-      { userId: jonas.id, groupId: genomicsLab.id, role: GroupRole.RESEARCHER },
-      { userId: lucas.id, groupId: microBio.id, role: GroupRole.LEADER },
-      { userId: jonas.id, groupId: microBio.id, role: GroupRole.RESEARCHER }
-    ]
+  // Memberships: genomicsLab → tobias = LEADER, felipe = MANAGER, joão = RESEARCHER
+  //              microBio   → rafael = LEADER, pietro = RESEARCHER, joão = RESEARCHER (cross-group)
+  // jonas (Jonas Martelo) is intentionally NOT a member yet — he only has a pending invite below.
+  // Created individually (instead of createMany) so we can capture their IDs for audit logs below.
+  const membershipTobiasGenomics = await prisma.groupMembership.create({
+    data: { userId: tobias.id, groupId: genomicsLab.id, role: GroupRole.LEADER }
+  })
+  const membershipFelipeGenomics = await prisma.groupMembership.create({
+    data: { userId: felipe.id, groupId: genomicsLab.id, role: GroupRole.MANAGER }
+  })
+  const membershipJoaoGenomics = await prisma.groupMembership.create({
+    data: { userId: joao.id, groupId: genomicsLab.id, role: GroupRole.RESEARCHER }
+  })
+  const membershipRafaelMicroBio = await prisma.groupMembership.create({
+    data: { userId: rafael.id, groupId: microBio.id, role: GroupRole.LEADER }
+  })
+  const membershipPietroMicroBio = await prisma.groupMembership.create({
+    data: { userId: pietro.id, groupId: microBio.id, role: GroupRole.RESEARCHER }
+  })
+  const membershipJoaoMicroBio = await prisma.groupMembership.create({
+    data: { userId: joao.id, groupId: microBio.id, role: GroupRole.RESEARCHER }
   })
 
   console.log('✅ 2 Groups + memberships created')
@@ -134,10 +176,10 @@ async function main() {
     data: { label: 'BOX-2024-0040', freezerId: freezer1.id, createdBy: tobias.id }
   })
   const box4 = await prisma.box.create({
-    data: { label: 'BOX-2024-0041', freezerId: freezer2.id, createdBy: lucas.id }
+    data: { label: 'BOX-2024-0041', freezerId: freezer2.id, createdBy: rafael.id }
   })
   const box5 = await prisma.box.create({
-    data: { label: 'BOX-2024-0042', freezerId: freezer2.id, createdBy: lucas.id }
+    data: { label: 'BOX-2024-0042', freezerId: freezer2.id, createdBy: rafael.id }
   })
 
   console.log('✅ 2 Freezers + 5 Boxes created')
@@ -169,12 +211,54 @@ async function main() {
   })
   await prisma.tubeAttribute.createMany({
     data: [
-      { tubeId: tube1.id, key: 'volume_ul', value: '250', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id },
-      { tubeId: tube1.id, key: 'concentration', value: '1.024', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id },
-      { tubeId: tube1.id, key: 'extraction_date', value: '2024-08-14', type: 'date', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id },
-      { tubeId: tube1.id, key: 'qc_passed', value: 'true', type: 'boolean', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id },
-      { tubeId: tube1.id, key: 'freeze_cycles', value: '0', type: 'number', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id },
-      { tubeId: tube1.id, key: 'authorized_by', value: 'Dr. Ana Souza', type: 'string', minRequiredRoleToEdit: GroupRole.LEADER, createdBy: tobias.id }
+      {
+        tubeId: tube1.id,
+        key: 'volume_ul',
+        value: '250',
+        type: 'number',
+        minRequiredRoleToEdit: GroupRole.RESEARCHER,
+        createdBy: tobias.id
+      },
+      {
+        tubeId: tube1.id,
+        key: 'concentration',
+        value: '1.024',
+        type: 'number',
+        minRequiredRoleToEdit: GroupRole.RESEARCHER,
+        createdBy: tobias.id
+      },
+      {
+        tubeId: tube1.id,
+        key: 'extraction_date',
+        value: '2024-08-14',
+        type: 'date',
+        minRequiredRoleToEdit: GroupRole.RESEARCHER,
+        createdBy: tobias.id
+      },
+      {
+        tubeId: tube1.id,
+        key: 'qc_passed',
+        value: 'true',
+        type: 'boolean',
+        minRequiredRoleToEdit: GroupRole.MANAGER,
+        createdBy: felipe.id
+      },
+      {
+        tubeId: tube1.id,
+        key: 'freeze_cycles',
+        value: '0',
+        type: 'number',
+        minRequiredRoleToEdit: GroupRole.MANAGER,
+        createdBy: felipe.id
+      },
+      {
+        tubeId: tube1.id,
+        key: 'authorized_by',
+        value: 'Dr. Ana Souza',
+        type: 'string',
+        minRequiredRoleToEdit: GroupRole.LEADER,
+        createdBy: tobias.id
+      }
     ]
   })
 
@@ -191,24 +275,31 @@ async function main() {
     }
   })
   await prisma.tubeAttribute.create({
-    data: { tubeId: tube2.id, key: 'volume_ul', value: '180', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id }
+    data: {
+      tubeId: tube2.id,
+      key: 'volume_ul',
+      value: '180',
+      type: 'number',
+      minRequiredRoleToEdit: GroupRole.RESEARCHER,
+      createdBy: tobias.id
+    }
   })
 
-  // Tube 3 — checked_out by lucas (MANAGER)
+  // Tube 3 — checked_out by felipe (MANAGER)
   const tube3 = await prisma.tube.create({
     data: {
       sampleId: mainSample.id,
       createdBy: tobias.id,
       expirationDate: new Date('2026-12-01'),
       notes: 'Reserved for sequencing batch 12',
-      checkedOutBy: lucas.id,
+      checkedOutBy: felipe.id,
       checkedOutAt: new Date('2026-05-10T09:00:00Z')
     }
   })
   await prisma.tubeEvent.create({
     data: {
       tubeId: tube3.id,
-      performedBy: lucas.id,
+      performedBy: felipe.id,
       fromBoxId: box1.id,
       fromRow: 1,
       fromColumn: 3,
@@ -217,8 +308,22 @@ async function main() {
   })
   await prisma.tubeAttribute.createMany({
     data: [
-      { tubeId: tube3.id, key: 'batch_code', value: 'SEQ-BATCH-12', type: 'string', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id },
-      { tubeId: tube3.id, key: 'volume_ul', value: '250', type: 'number', minRequiredRoleToEdit: GroupRole.RESEARCHER, createdBy: tobias.id }
+      {
+        tubeId: tube3.id,
+        key: 'batch_code',
+        value: 'SEQ-BATCH-12',
+        type: 'string',
+        minRequiredRoleToEdit: GroupRole.MANAGER,
+        createdBy: felipe.id
+      },
+      {
+        tubeId: tube3.id,
+        key: 'volume_ul',
+        value: '250',
+        type: 'number',
+        minRequiredRoleToEdit: GroupRole.RESEARCHER,
+        createdBy: tobias.id
+      }
     ]
   })
 
@@ -235,14 +340,21 @@ async function main() {
     }
   })
   await prisma.tubeAttribute.create({
-    data: { tubeId: tube4.id, key: 'freeze_cycles', value: '4', type: 'number', minRequiredRoleToEdit: GroupRole.MANAGER, createdBy: lucas.id }
+    data: {
+      tubeId: tube4.id,
+      key: 'freeze_cycles',
+      value: '4',
+      type: 'number',
+      minRequiredRoleToEdit: GroupRole.MANAGER,
+      createdBy: felipe.id
+    }
   })
 
   // Tube 5 — unplaced (no box assigned yet)
   await prisma.tube.create({
     data: {
       sampleId: mainSample.id,
-      createdBy: jonas.id,
+      createdBy: joao.id,
       expirationDate: new Date('2027-02-01'),
       notes: 'New aliquot — needs to be placed in storage.',
       boxId: null,
@@ -276,22 +388,32 @@ async function main() {
       originOrganism: 'Homo sapiens',
       sourceLab: 'Internal Lab',
       groupId: genomicsLab.id,
-      createdBy: lucas.id
+      createdBy: felipe.id
     }
   })
 
   const otherPositions = [
-    [1, 4], [1, 6], [2, 4], [2, 7],
-    [3, 1], [3, 7], [4, 3], [5, 2],
-    [5, 5], [6, 1], [6, 8], [7, 4],
-    [8, 2], [8, 9]
+    [1, 4],
+    [1, 6],
+    [2, 4],
+    [2, 7],
+    [3, 1],
+    [3, 7],
+    [4, 3],
+    [5, 2],
+    [5, 5],
+    [6, 1],
+    [6, 8],
+    [7, 4],
+    [8, 2],
+    [8, 9]
   ]
 
   for (const [r, c] of otherPositions) {
     await prisma.tube.create({
       data: {
         sampleId: otherSample.id,
-        createdBy: lucas.id,
+        createdBy: felipe.id,
         expirationDate: new Date('2027-01-01'),
         boxId: box1.id,
         row: r,
@@ -306,8 +428,11 @@ async function main() {
 
   const sampleTypes = ['Genomic DNA', 'Plasmid DNA', 'Total RNA', 'Protein Extract', 'Cell Line']
   const organisms = [
-    'Homo sapiens', 'Mus musculus', 'Escherichia coli',
-    'Saccharomyces cerevisiae', 'Arabidopsis thaliana'
+    'Homo sapiens',
+    'Mus musculus',
+    'Escherichia coli',
+    'Saccharomyces cerevisiae',
+    'Arabidopsis thaliana'
   ]
 
   let row = 1
@@ -317,7 +442,8 @@ async function main() {
 
   for (let i = 1; i <= 20; i++) {
     const group = i % 3 === 0 ? microBio : genomicsLab
-    const creator = [tobias, lucas, jonas][i % 3]
+    const creator =
+      group === microBio ? [rafael, pietro, joao][i % 3] : [tobias, felipe, joao][i % 3]
 
     const sample = await prisma.sample.create({
       data: {
@@ -339,9 +465,7 @@ async function main() {
         data: {
           sampleId: sample.id,
           createdBy: creator.id,
-          expirationDate: new Date(
-            new Date().setMonth(new Date().getMonth() + 6 + (i % 18))
-          ),
+          expirationDate: new Date(new Date().setMonth(new Date().getMonth() + 6 + (i % 18))),
           boxId: currentBox.id,
           row,
           column: col
@@ -349,8 +473,14 @@ async function main() {
       })
 
       col++
-      if (col > 12) { col = 1; row++ }
-      if (row > 8) { row = 1; boxIndex++ }
+      if (col > 12) {
+        col = 1
+        row++
+      }
+      if (row > 8) {
+        row = 1
+        boxIndex++
+      }
     }
   }
 
@@ -358,7 +488,7 @@ async function main() {
 
   // ─── Shared sample ───────────────────────────────────────────────────────────
 
-  await prisma.sampleShare.create({
+  const mainSampleShare = await prisma.sampleShare.create({
     data: {
       sampleId: mainSample.id,
       targetGroupId: microBio.id,
@@ -371,7 +501,7 @@ async function main() {
 
   // ─── Pending invite ──────────────────────────────────────────────────────────
 
-  await prisma.groupInvite.create({
+  const jonasInvite = await prisma.groupInvite.create({
     data: {
       groupId: genomicsLab.id,
       invitedUserId: jonas.id,
@@ -381,38 +511,248 @@ async function main() {
     }
   })
 
-  // ─── Audit log ───────────────────────────────────────────────────────────────
+  // ─── Audit logs ──────────────────────────────────────────────────────────────
+  // Spread across both groups (and admin-only entities) and over the last ~30 days,
+  // so the audit screens can be exercised against group-scoping rules, entity type
+  // filters, action filters, user filters and date-range filters.
+
+  const daysAgo = (n: number) => new Date(Date.now() - n * 24 * 60 * 60 * 1000)
 
   await prisma.auditLog.createMany({
     data: [
+      // ── Groups (visible to LEADER of each group, and to admin) ──
+      {
+        entityType: AuditEntityType.GROUP,
+        entityId: genomicsLab.id,
+        performedBy: admin.id,
+        action: AuditAction.CREATE,
+        changes: { name: 'Genomics Lab' },
+        createdAt: daysAgo(30)
+      },
+      {
+        entityType: AuditEntityType.GROUP,
+        entityId: microBio.id,
+        performedBy: admin.id,
+        action: AuditAction.CREATE,
+        changes: { name: 'Microbiology Team' },
+        createdAt: daysAgo(30)
+      },
+      {
+        entityType: AuditEntityType.GROUP,
+        entityId: genomicsLab.id,
+        performedBy: tobias.id,
+        action: AuditAction.UPDATE,
+        changes: { name: { from: 'Genomics Laboratory', to: 'Genomics Lab' } },
+        createdAt: daysAgo(18)
+      },
+
+      // ── Memberships (visible per-group; only their own group's members) ──
+      {
+        entityType: AuditEntityType.MEMBERSHIP,
+        entityId: membershipTobiasGenomics.id,
+        performedBy: admin.id,
+        action: AuditAction.CREATE,
+        changes: { userId: tobias.id, groupId: genomicsLab.id, role: 'LEADER' },
+        createdAt: daysAgo(29)
+      },
+      {
+        entityType: AuditEntityType.MEMBERSHIP,
+        entityId: membershipJoaoGenomics.id,
+        performedBy: tobias.id,
+        action: AuditAction.CREATE,
+        changes: { userId: joao.id, groupId: genomicsLab.id, role: 'RESEARCHER' },
+        createdAt: daysAgo(27)
+      },
+      {
+        entityType: AuditEntityType.MEMBERSHIP,
+        entityId: membershipFelipeGenomics.id,
+        performedBy: tobias.id,
+        action: AuditAction.UPDATE,
+        changes: { role: { from: 'RESEARCHER', to: 'MANAGER' } },
+        createdAt: daysAgo(20)
+      },
+      {
+        entityType: AuditEntityType.MEMBERSHIP,
+        entityId: membershipRafaelMicroBio.id,
+        performedBy: admin.id,
+        action: AuditAction.CREATE,
+        changes: { userId: rafael.id, groupId: microBio.id, role: 'LEADER' },
+        createdAt: daysAgo(28)
+      },
+      {
+        entityType: AuditEntityType.MEMBERSHIP,
+        entityId: membershipPietroMicroBio.id,
+        performedBy: rafael.id,
+        action: AuditAction.CREATE,
+        changes: { userId: pietro.id, groupId: microBio.id, role: 'RESEARCHER' },
+        createdAt: daysAgo(25)
+      },
+      {
+        entityType: AuditEntityType.MEMBERSHIP,
+        entityId: membershipJoaoMicroBio.id,
+        performedBy: rafael.id,
+        action: AuditAction.CREATE,
+        changes: { userId: joao.id, groupId: microBio.id, role: 'RESEARCHER' },
+        createdAt: daysAgo(24)
+      },
+
+      // ── Invite (genomicsLab only) ──
+      {
+        entityType: AuditEntityType.INVITE,
+        entityId: jonasInvite.id,
+        performedBy: tobias.id,
+        action: AuditAction.CREATE,
+        changes: { invitedUserId: jonas.id, role: 'MANAGER', status: 'PENDING' },
+        createdAt: daysAgo(5)
+      },
+
+      // ── Samples (genomicsLab) ──
       {
         entityType: AuditEntityType.SAMPLE,
         entityId: mainSample.id,
         performedBy: tobias.id,
         action: AuditAction.CREATE,
-        changes: { name: 'RNA-seq Extract #42' }
+        changes: { name: 'RNA-seq Extract #42', type: 'RNA', groupId: genomicsLab.id },
+        createdAt: daysAgo(15)
+      },
+      {
+        entityType: AuditEntityType.SAMPLE,
+        entityId: mainSample.id,
+        performedBy: tobias.id,
+        action: AuditAction.UPDATE,
+        changes: { sourceLab: { from: 'Genomics Lab A', to: 'Genomics Lab B' } },
+        createdAt: daysAgo(9)
+      },
+      {
+        entityType: AuditEntityType.SAMPLE,
+        entityId: otherSample.id,
+        performedBy: felipe.id,
+        action: AuditAction.CREATE,
+        changes: { name: 'Genomic DNA Extract #7', type: 'Genomic DNA', groupId: genomicsLab.id },
+        createdAt: daysAgo(14)
+      },
+
+      // ── Share (visible both to the sharing group and the receiving group) ──
+      {
+        entityType: AuditEntityType.SHARE,
+        entityId: mainSampleShare.id,
+        performedBy: tobias.id,
+        action: AuditAction.SHARE,
+        changes: { sampleId: mainSample.id, targetGroupId: microBio.id, permission: 'VIEW' },
+        createdAt: daysAgo(7)
+      },
+
+      // ── Tubes (genomicsLab, via mainSample) ──
+      {
+        entityType: AuditEntityType.TUBE,
+        entityId: tube1.id,
+        performedBy: tobias.id,
+        action: AuditAction.CREATE,
+        changes: { sampleId: mainSample.id, expirationDate: '2026-08-14' },
+        createdAt: daysAgo(15)
       },
       {
         entityType: AuditEntityType.TUBE,
         entityId: tube3.id,
-        performedBy: lucas.id,
+        performedBy: felipe.id,
+        action: AuditAction.MOVE,
+        changes: { fromBoxId: box1.id, fromRow: 1, fromColumn: 3, toBoxId: null },
+        createdAt: daysAgo(3)
+      },
+      {
+        entityType: AuditEntityType.TUBE,
+        entityId: tube3.id,
+        performedBy: felipe.id,
         action: AuditAction.HANDLE,
-        changes: { status: 'checked_out' }
+        changes: { status: { from: 'in_storage', to: 'checked_out' } },
+        createdAt: daysAgo(3)
+      },
+      {
+        entityType: AuditEntityType.TUBE,
+        entityId: tube4.id,
+        performedBy: joao.id,
+        action: AuditAction.UPDATE,
+        changes: { notes: { from: '', to: 'Expired — quarantined 2024-03-05' } },
+        createdAt: daysAgo(2)
+      },
+
+      // ── Admin-only entities (USER, FREEZER, ROOM) — only visible on /audit-logs ──
+      {
+        entityType: AuditEntityType.USER,
+        entityId: tobias.id,
+        performedBy: admin.id,
+        action: AuditAction.CREATE,
+        changes: { email: 'tobias@example.com', name: 'Tobias Cadoná Marion' },
+        createdAt: daysAgo(31)
+      },
+      {
+        entityType: AuditEntityType.USER,
+        entityId: jonas.id,
+        performedBy: admin.id,
+        action: AuditAction.UPDATE,
+        changes: {
+          isAdmin: { from: false, to: false },
+          name: { from: 'Jonas Marteloni', to: 'Jonas Martelo' }
+        },
+        createdAt: daysAgo(12)
+      },
+      {
+        entityType: AuditEntityType.ROOM,
+        entityId: roomA.id,
+        performedBy: admin.id,
+        action: AuditAction.CREATE,
+        changes: { number: '304', building: 'Prédio A', floor: 3 },
+        createdAt: daysAgo(30)
+      },
+      {
+        entityType: AuditEntityType.ROOM,
+        entityId: roomB.id,
+        performedBy: admin.id,
+        action: AuditAction.CREATE,
+        changes: { number: '210', building: 'Prédio B', floor: 2 },
+        createdAt: daysAgo(30)
+      },
+      {
+        entityType: AuditEntityType.FREEZER,
+        entityId: freezer1.id,
+        performedBy: admin.id,
+        action: AuditAction.CREATE,
+        changes: { name: 'Haier Biomedical DW-86L', roomId: roomA.id },
+        createdAt: daysAgo(30)
+      },
+      {
+        entityType: AuditEntityType.FREEZER,
+        entityId: freezer2.id,
+        performedBy: admin.id,
+        action: AuditAction.UPDATE,
+        changes: { name: { from: 'Eppendorf CryoCube F540', to: 'Eppendorf CryoCube F740' } },
+        createdAt: daysAgo(22)
       }
     ]
   })
 
-  console.log('✅ Audit logs created')
+  console.log(
+    '✅ Audit logs created (24 entries spanning both groups, admin-only entities, and ~30 days)'
+  )
   console.log('')
   console.log('✨ Seed complete! Credentials for login:')
   console.log('   admin@example.com  (password: any)  → admin, no group membership needed')
-  console.log('   tobias@example.com (password: any)  → LEADER  in Genomics Lab')
-  console.log('   lucas@example.com  (password: any)  → MANAGER in Genomics Lab')
-  console.log('   jonas@example.com  (password: any)  → RESEARCHER in Genomics Lab')
+  console.log('   tobias@example.com (password: any)  → LEADER     in Genomics Lab')
+  console.log('   felipe@example.com (password: any)  → MANAGER    in Genomics Lab')
+  console.log(
+    '   joao@example.com   (password: any)  → RESEARCHER in Genomics Lab + Microbiology Team'
+  )
+  console.log('   rafael@example.com (password: any)  → LEADER     in Microbiology Team')
+  console.log('   pietro@example.com (password: any)  → RESEARCHER in Microbiology Team')
+  console.log(
+    '   jonas@example.com  (password: any)  → no group yet, has a pending invite to Genomics Lab (MANAGER)'
+  )
   console.log('')
   console.log('   Main test sample: "RNA-seq Extract #42" in Genomics Lab')
-  console.log('   Tube statuses: in_storage (×4), checked_out (×1, by lucas), unplaced (×1)')
-  console.log('   Attribute types: number, string, date, boolean — roles: RESEARCHER, MANAGER, LEADER')
+  console.log('   Tube statuses: in_storage (×4), checked_out (×1, by felipe), unplaced (×1)')
+  console.log(
+    '   Attribute types: number, string, date, boolean — roles: RESEARCHER, MANAGER, LEADER'
+  )
 }
 
 main()

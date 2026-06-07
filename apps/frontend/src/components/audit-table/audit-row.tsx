@@ -12,13 +12,17 @@ interface AuditRowProps {
   onToggle: () => void
 }
 
+function changedFieldsCount(log: AuditLog): number {
+  return Object.keys(log.changes).length
+}
+
 const ACTION_COLORS: Record<string, string> = {
   CREATE: 'text-green-600 dark:text-green-400 border-green-600/30',
   UPDATE: 'text-blue-600 dark:text-blue-400 border-blue-600/30',
   ARCHIVE: 'text-orange-600 dark:text-orange-400 border-orange-600/30',
   MOVE: 'text-purple-600 dark:text-purple-400 border-purple-600/30',
   HANDLE: 'text-muted-foreground',
-  SHARE: 'text-teal-600 dark:text-teal-400 border-teal-600/30',
+  SHARE: 'text-teal-600 dark:text-teal-400 border-teal-600/30'
 }
 
 export function AuditRow({ log, isExpanded, onToggle }: AuditRowProps) {
@@ -74,14 +78,13 @@ export function AuditRow({ log, isExpanded, onToggle }: AuditRowProps) {
           )}
         </TableCell>
 
-        {/* Botão expand/collapse */}
+        {/* Botão expand/collapse + contador de campos alterados */}
         <TableCell className='text-center'>
-          <Button variant='ghost' size='sm' onClick={onToggle} className='h-7 w-7 p-0'>
-            {isExpanded ? (
-              <ChevronDown className='size-4' />
-            ) : (
-              <ChevronRight className='size-4' />
+          <Button variant='ghost' size='sm' onClick={onToggle} className='h-7 gap-1 px-2'>
+            {changedFieldsCount(log) > 0 && (
+              <span className='text-xs text-muted-foreground'>{changedFieldsCount(log)}</span>
             )}
+            {isExpanded ? <ChevronDown className='size-4' /> : <ChevronRight className='size-4' />}
           </Button>
         </TableCell>
       </TableRow>

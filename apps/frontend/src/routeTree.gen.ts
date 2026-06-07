@@ -16,8 +16,10 @@ import { Route as AuthLogoutRouteImport } from './routes/_auth/logout'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppAdminRouteRouteImport } from './routes/app/admin/route'
 import { Route as AppGroupIdRouteRouteImport } from './routes/app/$groupId/route'
+import { Route as AppGroupIdIndexRouteImport } from './routes/app/$groupId/index'
 import { Route as AppGroupIdMembersRouteImport } from './routes/app/$groupId/members'
 import { Route as AppAdminRoomsIndexRouteImport } from './routes/app/admin/rooms/index'
+import { Route as AppAdminFreezersIndexRouteImport } from './routes/app/admin/freezers/index'
 import { Route as AppAdminAuditIndexRouteImport } from './routes/app/admin/audit/index'
 import { Route as AppGroupIdSamplesIndexRouteImport } from './routes/app/$groupId/samples/index'
 import { Route as AppGroupIdAuditIndexRouteImport } from './routes/app/$groupId/audit/index'
@@ -58,6 +60,11 @@ const AppGroupIdRouteRoute = AppGroupIdRouteRouteImport.update({
   path: '/$groupId',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppGroupIdIndexRoute = AppGroupIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppGroupIdRouteRoute,
+} as any)
 const AppGroupIdMembersRoute = AppGroupIdMembersRouteImport.update({
   id: '/members',
   path: '/members',
@@ -68,15 +75,15 @@ const AppAdminRoomsIndexRoute = AppAdminRoomsIndexRouteImport.update({
   path: '/rooms/',
   getParentRoute: () => AppAdminRouteRoute,
 } as any)
+const AppAdminFreezersIndexRoute = AppAdminFreezersIndexRouteImport.update({
+  id: '/freezers/',
+  path: '/freezers/',
+  getParentRoute: () => AppAdminRouteRoute,
+} as any)
 const AppAdminAuditIndexRoute = AppAdminAuditIndexRouteImport.update({
   id: '/audit/',
   path: '/audit/',
   getParentRoute: () => AppAdminRouteRoute,
-} as any)
-const AppAdminFreezersIndexRoute = AppAdminFreezersIndexRouteImport.update({
-  id: '/admin/freezers/',
-  path: '/admin/freezers/',
-  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppGroupIdSamplesIndexRoute = AppGroupIdSamplesIndexRouteImport.update({
   id: '/samples/',
@@ -103,24 +110,27 @@ export interface FileRoutesByFullPath {
   '/logout': typeof AuthLogoutRoute
   '/app/': typeof AppIndexRoute
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
+  '/app/$groupId/': typeof AppGroupIdIndexRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
   '/app/$groupId/audit/': typeof AppGroupIdAuditIndexRoute
   '/app/$groupId/samples/': typeof AppGroupIdSamplesIndexRoute
   '/app/admin/audit/': typeof AppAdminAuditIndexRoute
+  '/app/admin/freezers/': typeof AppAdminFreezersIndexRoute
   '/app/admin/rooms/': typeof AppAdminRoomsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app/$groupId': typeof AppGroupIdRouteRouteWithChildren
   '/app/admin': typeof AppAdminRouteRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/logout': typeof AuthLogoutRoute
   '/app': typeof AppIndexRoute
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
+  '/app/$groupId': typeof AppGroupIdIndexRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
   '/app/$groupId/audit': typeof AppGroupIdAuditIndexRoute
   '/app/$groupId/samples': typeof AppGroupIdSamplesIndexRoute
   '/app/admin/audit': typeof AppAdminAuditIndexRoute
+  '/app/admin/freezers': typeof AppAdminFreezersIndexRoute
   '/app/admin/rooms': typeof AppAdminRoomsIndexRoute
 }
 export interface FileRoutesById {
@@ -133,10 +143,12 @@ export interface FileRoutesById {
   '/_auth/logout': typeof AuthLogoutRoute
   '/app/': typeof AppIndexRoute
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
+  '/app/$groupId/': typeof AppGroupIdIndexRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
   '/app/$groupId/audit/': typeof AppGroupIdAuditIndexRoute
   '/app/$groupId/samples/': typeof AppGroupIdSamplesIndexRoute
   '/app/admin/audit/': typeof AppAdminAuditIndexRoute
+  '/app/admin/freezers/': typeof AppAdminFreezersIndexRoute
   '/app/admin/rooms/': typeof AppAdminRoomsIndexRoute
 }
 export interface FileRouteTypes {
@@ -150,24 +162,27 @@ export interface FileRouteTypes {
     | '/logout'
     | '/app/'
     | '/app/$groupId/members'
+    | '/app/$groupId/'
     | '/app/$groupId/samples/$id'
     | '/app/$groupId/audit/'
     | '/app/$groupId/samples/'
     | '/app/admin/audit/'
+    | '/app/admin/freezers/'
     | '/app/admin/rooms/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app/$groupId'
     | '/app/admin'
     | '/login'
     | '/logout'
     | '/app'
     | '/app/$groupId/members'
+    | '/app/$groupId'
     | '/app/$groupId/samples/$id'
     | '/app/$groupId/audit'
     | '/app/$groupId/samples'
     | '/app/admin/audit'
+    | '/app/admin/freezers'
     | '/app/admin/rooms'
   id:
     | '__root__'
@@ -179,10 +194,12 @@ export interface FileRouteTypes {
     | '/_auth/logout'
     | '/app/'
     | '/app/$groupId/members'
+    | '/app/$groupId/'
     | '/app/$groupId/samples/$id'
     | '/app/$groupId/audit/'
     | '/app/$groupId/samples/'
     | '/app/admin/audit/'
+    | '/app/admin/freezers/'
     | '/app/admin/rooms/'
   fileRoutesById: FileRoutesById
 }
@@ -244,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGroupIdRouteRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/$groupId/': {
+      id: '/app/$groupId/'
+      path: '/'
+      fullPath: '/app/$groupId/'
+      preLoaderRoute: typeof AppGroupIdIndexRouteImport
+      parentRoute: typeof AppGroupIdRouteRoute
+    }
     '/app/$groupId/members': {
       id: '/app/$groupId/members'
       path: '/members'
@@ -258,19 +282,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRoomsIndexRouteImport
       parentRoute: typeof AppAdminRouteRoute
     }
+    '/app/admin/freezers/': {
+      id: '/app/admin/freezers/'
+      path: '/freezers'
+      fullPath: '/app/admin/freezers/'
+      preLoaderRoute: typeof AppAdminFreezersIndexRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
     '/app/admin/audit/': {
       id: '/app/admin/audit/'
       path: '/audit'
       fullPath: '/app/admin/audit/'
       preLoaderRoute: typeof AppAdminAuditIndexRouteImport
       parentRoute: typeof AppAdminRouteRoute
-    }
-    '/app/admin/freezers/': {
-      id: '/app/admin/freezers/'
-      path: '/admin/freezers'
-      fullPath: '/app/admin/freezers/'
-      preLoaderRoute: typeof AppAdminFreezersIndexRouteImport
-      parentRoute: typeof AppRouteRoute
     }
     '/app/$groupId/samples/': {
       id: '/app/$groupId/samples/'
@@ -298,6 +322,7 @@ declare module '@tanstack/react-router' {
 
 interface AppGroupIdRouteRouteChildren {
   AppGroupIdMembersRoute: typeof AppGroupIdMembersRoute
+  AppGroupIdIndexRoute: typeof AppGroupIdIndexRoute
   AppGroupIdSamplesIdRoute: typeof AppGroupIdSamplesIdRoute
   AppGroupIdAuditIndexRoute: typeof AppGroupIdAuditIndexRoute
   AppGroupIdSamplesIndexRoute: typeof AppGroupIdSamplesIndexRoute
@@ -305,6 +330,7 @@ interface AppGroupIdRouteRouteChildren {
 
 const AppGroupIdRouteRouteChildren: AppGroupIdRouteRouteChildren = {
   AppGroupIdMembersRoute: AppGroupIdMembersRoute,
+  AppGroupIdIndexRoute: AppGroupIdIndexRoute,
   AppGroupIdSamplesIdRoute: AppGroupIdSamplesIdRoute,
   AppGroupIdAuditIndexRoute: AppGroupIdAuditIndexRoute,
   AppGroupIdSamplesIndexRoute: AppGroupIdSamplesIndexRoute,
@@ -316,11 +342,13 @@ const AppGroupIdRouteRouteWithChildren = AppGroupIdRouteRoute._addFileChildren(
 
 interface AppAdminRouteRouteChildren {
   AppAdminAuditIndexRoute: typeof AppAdminAuditIndexRoute
+  AppAdminFreezersIndexRoute: typeof AppAdminFreezersIndexRoute
   AppAdminRoomsIndexRoute: typeof AppAdminRoomsIndexRoute
 }
 
 const AppAdminRouteRouteChildren: AppAdminRouteRouteChildren = {
   AppAdminAuditIndexRoute: AppAdminAuditIndexRoute,
+  AppAdminFreezersIndexRoute: AppAdminFreezersIndexRoute,
   AppAdminRoomsIndexRoute: AppAdminRoomsIndexRoute,
 }
 
