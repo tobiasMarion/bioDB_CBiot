@@ -1,9 +1,10 @@
+import type { Room } from './get-rooms'
 import { apiClient } from './api-client'
 
 export type FreezerWithBoxes = {
   id: string
   name: string
-  locationDescription: string
+  room: Room
   boxes: Array<{ id: string; label: string }>
 }
 

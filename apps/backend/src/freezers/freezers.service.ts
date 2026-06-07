@@ -25,7 +25,8 @@ export class FreezersService {
 
     try {
       const newFreezer = await this.prisma.freezer.create({
-        data: { ...data, createdBy: user.id }
+        data: { ...data, createdBy: user.id },
+        include: { room: true }
       })
 
       await this.prisma.auditLog.create({
@@ -40,6 +41,9 @@ export class FreezersService {
       return newFreezer
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') {
+          throw new NotFoundException('Room not found')
+        }
         throw new ConflictException('Failed to create freezer')
       }
       throw error
@@ -55,8 +59,9 @@ export class FreezersService {
         select: {
           id: true,
           name: true,
-          locationDescription: true,
-          createdBy: true
+          roomId: true,
+          createdBy: true,
+          room: true
         }
       })
     } catch (error) {
@@ -66,7 +71,8 @@ export class FreezersService {
 
   async findFreezerById(id: string, user: User) {
     const freezerById = await this.prisma.freezer.findUnique({
-      where: { id }
+      where: { id },
+      include: { room: true }
     })
 
     if (!freezerById) {
@@ -108,7 +114,7 @@ export class FreezersService {
       select: {
         id: true,
         name: true,
-        locationDescription: true,
+        room: true,
         boxes: {
           where: { isArchived: false },
           select: { id: true, label: true },
@@ -144,7 +150,8 @@ export class FreezersService {
     try {
       const updatedFreezer = await this.prisma.freezer.update({
         where: { id },
-        data: data
+        data: data,
+        include: { room: true }
       })
 
       await this.prisma.auditLog.create({
@@ -159,6 +166,9 @@ export class FreezersService {
 
       return updatedFreezer
     } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new NotFoundException('Room not found')
+      }
       throw new InternalServerErrorException('Failed to update freezer')
     }
   }

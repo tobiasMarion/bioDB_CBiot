@@ -30,7 +30,13 @@ const tubeSelect = {
     select: {
       id: true,
       label: true,
-      freezer: { select: { id: true, name: true, locationDescription: true } }
+      freezer: {
+        select: {
+          id: true,
+          name: true,
+          room: { select: { id: true, number: true, building: true, floor: true } }
+        }
+      }
     }
   },
   attributes: {
