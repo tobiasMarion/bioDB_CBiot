@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { getAuditLogs, type AuditAction, type AuditEntityType } from '@/lib/api/get-audit-logs'
+import { type AuditAction, type AuditEntityType, getAuditLogs } from '@/lib/api/get-audit-logs'
 import { getGroupAuditLogs } from '@/lib/api/get-group-audit-logs'
 import type { User } from '@/lib/api/types/user'
 import { useQuery } from '@tanstack/react-query'
@@ -57,14 +57,15 @@ export function AuditTable({ groupId }: AuditTableProps) {
 
   const { data, isLoading } = useQuery({
     queryKey: ['audit-logs', groupId, params],
-    queryFn: () => groupId ? getGroupAuditLogs(groupId, params) : getAuditLogs(params)
+    queryFn: () => (groupId ? getGroupAuditLogs(groupId, params) : getAuditLogs(params))
   })
 
   const logs = data?.data ?? []
   const totalItems = data?.total ?? 0
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE)
 
-  const hasActiveFilters = !!search || !!entityType || !!action || !!fromDate || !!toDate || !!selectedUser
+  const hasActiveFilters =
+    !!search || !!entityType || !!action || !!fromDate || !!toDate || !!selectedUser
 
   const handleSearchChange = (value: string) => {
     setSearch(value)
@@ -127,7 +128,10 @@ export function AuditTable({ groupId }: AuditTableProps) {
         toDate={toDate}
         onToDateChange={handleToDateChange}
         selectedUser={selectedUser}
-        onUserSelect={user => { setSelectedUser(user); setCurrentPage(1) }}
+        onUserSelect={user => {
+          setSelectedUser(user)
+          setCurrentPage(1)
+        }}
         hasActiveFilters={hasActiveFilters}
         onClearFilters={handleClearFilters}
         availableEntityTypes={groupId ? GROUP_ENTITY_TYPES : undefined}

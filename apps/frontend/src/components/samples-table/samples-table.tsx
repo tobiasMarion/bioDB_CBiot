@@ -1,3 +1,5 @@
+import type { Role } from '@/components/attributes/types'
+import { ShareSampleDialog } from '@/components/sample-detail/share-sample-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -20,14 +22,21 @@ import { SamplesToolbar } from './samples-toolbar'
 
 interface SamplesTableProps {
   groupId: string
+  userRole: Role
   openCreate: boolean
   onOpenChangeCreate: (open: boolean) => void
 }
 
-const ITEMS_PER_PAGE = 10
+export const ITEMS_PER_PAGE = 10
 const SEARCH_DEBOUNCE_MS = 300
 
-export function SamplesTable({ groupId, openCreate, onOpenChangeCreate }: SamplesTableProps) {
+export function SamplesTable({
+  groupId,
+  userRole,
+  openCreate,
+  onOpenChangeCreate
+}: SamplesTableProps) {
+  const [shareSampleId, setShareSampleId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<string[]>([])
@@ -154,7 +163,11 @@ export function SamplesTable({ groupId, openCreate, onOpenChangeCreate }: Sample
                       key={sample.id}
                       sample={sample}
                       groupId={groupId}
-                      onShare={() => console.log('Share sample:', sample.id)}
+                      canShare={
+                        sample.group.id === groupId &&
+                        (userRole === 'MANAGER' || userRole === 'LEADER')
+                      }
+                      onShare={() => setShareSampleId(sample.id)}
                     />
                   ))
                 )}
@@ -170,6 +183,14 @@ export function SamplesTable({ groupId, openCreate, onOpenChangeCreate }: Sample
             onPageChange={setCurrentPage}
           />
         </>
+      )}
+
+      {shareSampleId && (
+        <ShareSampleDialog
+          sampleId={shareSampleId}
+          open
+          onOpenChange={open => !open && setShareSampleId(null)}
+        />
       )}
     </div>
   )

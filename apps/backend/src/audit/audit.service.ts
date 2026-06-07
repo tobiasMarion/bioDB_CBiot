@@ -12,7 +12,7 @@ const GROUP_ENTITY_TYPES = new Set<AuditEntityType>([
   AuditEntityType.GROUP,
   AuditEntityType.SHARE,
   AuditEntityType.MEMBERSHIP,
-  AuditEntityType.INVITE,
+  AuditEntityType.INVITE
 ])
 
 @Injectable()
@@ -30,17 +30,14 @@ export class AuditService {
     const resolvers: Record<AuditEntityType, () => Promise<Prisma.AuditLogWhereInput>> = {
       [AuditEntityType.GROUP]: async () => ({
         entityType: AuditEntityType.GROUP,
-        entityId: groupId,
+        entityId: groupId
       }),
       [AuditEntityType.SAMPLE]: async () => {
         const rows = await this.prisma.sample.findMany({
           where: {
-            OR: [
-              { groupId },
-              { shares: { some: { targetGroupId: groupId, isArchived: false } } },
-            ],
+            OR: [{ groupId }, { shares: { some: { targetGroupId: groupId, isArchived: false } } }]
           },
-          select: { id: true },
+          select: { id: true }
         })
         return { entityType: AuditEntityType.SAMPLE, entityId: { in: rows.map(r => r.id) } }
       },
@@ -49,34 +46,40 @@ export class AuditService {
         const rows = await this.prisma.tube.findMany({
           where: {
             sample: {
-              OR: [
-                { groupId },
-                { shares: { some: { targetGroupId: groupId, isArchived: false } } },
-              ],
-            },
+              OR: [{ groupId }, { shares: { some: { targetGroupId: groupId, isArchived: false } } }]
+            }
           },
-          select: { id: true },
+          select: { id: true }
         })
         return { entityType: AuditEntityType.TUBE, entityId: { in: rows.map(r => r.id) } }
       },
       [AuditEntityType.SHARE]: async () => {
         const rows = await this.prisma.sampleShare.findMany({
           where: { OR: [{ sample: { groupId } }, { targetGroupId: groupId }] },
-          select: { id: true },
+          select: { id: true }
         })
         return { entityType: AuditEntityType.SHARE, entityId: { in: rows.map(r => r.id) } }
       },
       [AuditEntityType.MEMBERSHIP]: async () => {
-        const rows = await this.prisma.groupMembership.findMany({ where: { groupId }, select: { id: true } })
+        const rows = await this.prisma.groupMembership.findMany({
+          where: { groupId },
+          select: { id: true }
+        })
         return { entityType: AuditEntityType.MEMBERSHIP, entityId: { in: rows.map(r => r.id) } }
       },
       [AuditEntityType.INVITE]: async () => {
-        const rows = await this.prisma.groupInvite.findMany({ where: { groupId }, select: { id: true } })
+        const rows = await this.prisma.groupInvite.findMany({
+          where: { groupId },
+          select: { id: true }
+        })
         return { entityType: AuditEntityType.INVITE, entityId: { in: rows.map(r => r.id) } }
       },
       [AuditEntityType.USER]: async () => ({ entityType: AuditEntityType.USER, entityId: '' }),
-      [AuditEntityType.FREEZER]: async () => ({ entityType: AuditEntityType.FREEZER, entityId: '' }),
-      [AuditEntityType.ROOM]: async () => ({ entityType: AuditEntityType.ROOM, entityId: '' }),
+      [AuditEntityType.FREEZER]: async () => ({
+        entityType: AuditEntityType.FREEZER,
+        entityId: ''
+      }),
+      [AuditEntityType.ROOM]: async () => ({ entityType: AuditEntityType.ROOM, entityId: '' })
     }
 
     return Promise.all(types.map(type => resolvers[type]()))
@@ -90,23 +93,25 @@ export class AuditService {
           {
             OR: [
               { name: { contains: search, mode: 'insensitive' } },
-              { id: { startsWith: search } },
-            ],
+              { id: { startsWith: search } }
+            ]
           },
           ...(groupId
-            ? [{
-                OR: [
-                  { groupId },
-                  { shares: { some: { targetGroupId: groupId, isArchived: false } } },
-                ],
-              }]
-            : []),
-        ],
+            ? [
+                {
+                  OR: [
+                    { groupId },
+                    { shares: { some: { targetGroupId: groupId, isArchived: false } } }
+                  ]
+                }
+              ]
+            : [])
+        ]
       },
       select: {
         id: true,
-        tubes: { select: { id: true } },
-      },
+        tubes: { select: { id: true } }
+      }
     })
 
     const sampleIds = samples.map(s => s.id)
@@ -124,8 +129,8 @@ export class AuditService {
       conditions.push({
         createdAt: {
           ...(params.from ? { gte: new Date(params.from) } : {}),
-          ...(params.to ? { lte: new Date(params.to) } : {}),
-        },
+          ...(params.to ? { lte: new Date(params.to) } : {})
+        }
       })
     }
 
@@ -146,10 +151,7 @@ export class AuditService {
     if (params?.search) {
       const ids = await this.resolveSearchIds(params.search)
       conditions.push({
-        OR: [
-          { entityId: { startsWith: params.search } },
-          { entityId: { in: ids } },
-        ],
+        OR: [{ entityId: { startsWith: params.search } }, { entityId: { in: ids } }]
       })
     }
 
@@ -162,9 +164,9 @@ export class AuditService {
           orderBy: { createdAt: params?.sortOrder ?? 'desc' },
           skip: (page - 1) * pageSize,
           take: pageSize,
-          include: { user: { select: { id: true, name: true, email: true } } }, // dados do usuário que fez a ação
+          include: { user: { select: { id: true, name: true, email: true } } } // dados do usuário que fez a ação
         }),
-        this.prisma.auditLog.count({ where }),
+        this.prisma.auditLog.count({ where })
       ])
 
       return { data, total, page, pageSize }
@@ -177,7 +179,9 @@ export class AuditService {
     await this.auth.assert({ user, permission: 'VIEW_GROUP_AUDIT', groupId })
 
     if (params?.entityType && !GROUP_ENTITY_TYPES.has(params.entityType)) {
-      throw new BadRequestException(`Entity type "${params.entityType}" is not available in group audit`)
+      throw new BadRequestException(
+        `Entity type "${params.entityType}" is not available in group audit`
+      )
     }
 
     const page = params?.page ?? 1
@@ -189,7 +193,7 @@ export class AuditService {
 
     const conditions: Prisma.AuditLogWhereInput[] = [
       { OR: entityConditions },
-      ...this.buildCommonConditions(params),
+      ...this.buildCommonConditions(params)
     ]
 
     if (params?.entityId) conditions.push({ entityId: params.entityId })
@@ -197,10 +201,7 @@ export class AuditService {
     if (params?.search) {
       const ids = await this.resolveSearchIds(params.search, groupId)
       conditions.push({
-        OR: [
-          { entityId: { startsWith: params.search } },
-          { entityId: { in: ids } },
-        ],
+        OR: [{ entityId: { startsWith: params.search } }, { entityId: { in: ids } }]
       })
     }
 
@@ -213,9 +214,9 @@ export class AuditService {
           orderBy: { createdAt: params?.sortOrder ?? 'desc' },
           skip: (page - 1) * pageSize,
           take: pageSize,
-          include: { user: { select: { id: true, name: true, email: true } } },
+          include: { user: { select: { id: true, name: true, email: true } } }
         }),
-        this.prisma.auditLog.count({ where }),
+        this.prisma.auditLog.count({ where })
       ])
 
       return { data, total, page, pageSize }

@@ -14,6 +14,7 @@ export interface SampleDetail {
   createdAt: string
   updatedAt: string
   amountOfTubes: number
+  canEdit: boolean
 }
 
 // TODO: call when GET /samples/:id endpoint exists in the backend

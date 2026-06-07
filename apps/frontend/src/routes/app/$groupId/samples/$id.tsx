@@ -1,15 +1,11 @@
-import type { Attribute, Role } from '@/components/attributes/types'
+import type { Attribute } from '@/components/attributes/types'
 import { CreateTubeDialog } from '@/components/sample-detail/create-tube-dialog'
 import { EmptyTubeState } from '@/components/sample-detail/empty-tube-state'
 import type { ReturnPosition } from '@/components/sample-detail/return-to-freezer/return-to-freezer-dialog'
 import { SampleCard } from '@/components/sample-detail/sample-card'
 import { SampleCardSkeleton } from '@/components/sample-detail/sample-card-skeleton'
 import { TubeDetail } from '@/components/sample-detail/tube-detail/tube-detail'
-import {
-  type Tube,
-  type TubeAttribute,
-  positionLabel
-} from '@/components/tube/tube-data'
+import { type Tube, type TubeAttribute, positionLabel } from '@/components/tube/tube-data'
 import { TubeSelector } from '@/components/tube/tube-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,11 +17,12 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { useGroupRole } from '@/hooks/use-group-role'
 import { usePageTitle } from '@/hooks/use-page-title'
-import { getApiErrorMessage } from '@/lib/api/api-error'
-import { archiveSample } from '@/lib/api/archive-sample'
 import type { AddTubeAttributePayload } from '@/lib/api/add-tube-attribute'
 import { addTubeAttribute } from '@/lib/api/add-tube-attribute'
+import { getApiErrorMessage } from '@/lib/api/api-error'
+import { archiveSample } from '@/lib/api/archive-sample'
 import { checkinTube } from '@/lib/api/checkin-tube'
 import { checkoutTube } from '@/lib/api/checkout-tube'
 import { createTube } from '@/lib/api/create-tube'
@@ -33,17 +30,23 @@ import { deleteTube } from '@/lib/api/delete-tube'
 import { deleteTubeAttribute } from '@/lib/api/delete-tube-attribute'
 import { getSample } from '@/lib/api/get-sample'
 import { getSampleTubes } from '@/lib/api/get-sample-tubes'
-import { getGroupMembers } from '@/lib/api/get-group-members'
+import { queryClient } from '@/lib/api/query-client'
 import { updateTube } from '@/lib/api/update-tube'
 import { updateTubeAttribute } from '@/lib/api/update-tube-attribute'
 import { authStore } from '@/lib/auth/store'
-import { queryClient } from '@/lib/api/query-client'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link, createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 
+type SampleSearch = {
+  tubeId?: string
+}
+
 export const Route = createFileRoute('/app/$groupId/samples/$id')({
+  validateSearch: (search: Record<string, unknown>): SampleSearch => ({
+    tubeId: typeof search.tubeId === 'string' ? search.tubeId : undefined
+  }),
   component: RouteComponent
 })
 
@@ -70,10 +73,10 @@ function serializeAttrValue(value: Attribute['value']): string {
 
 function RouteComponent() {
   const { groupId, id } = useParams({ from: '/app/$groupId/samples/$id' })
+  const { tubeId: selectedTubeId } = Route.useSearch()
+  const navigateSearch = Route.useNavigate()
   const navigate = useNavigate()
   const user = authStore.getUser()
-
-  const [selectedTubeId, setSelectedTubeId] = useState<string | null>(null)
   const [tubeError, setTubeError] = useState<string | null>(null)
   const [attrError, setAttrError] = useState<string | null>(null)
 
@@ -88,16 +91,9 @@ function RouteComponent() {
     enabled: !!id
   })
 
-  const { data: members = [] } = useQuery({
-    queryKey: ['group-members', groupId],
-    queryFn: () => getGroupMembers(groupId),
-    enabled: !user?.isAdmin
-  })
+  const userRole = useGroupRole(groupId)
 
   usePageTitle(sample?.name)
-
-  const currentMember = members.find(m => m.user.id === user?.id && !m.isArchived)
-  const userRole: Role = user?.isAdmin ? 'LEADER' : currentMember?.role ?? 'RESEARCHER'
 
   const sampleQueryKeys = [
     ['sample', id],
@@ -134,8 +130,11 @@ function RouteComponent() {
   })
 
   const createTubeMutation = useMutation({
-    mutationFn: (data: { expirationDate: string | null }) =>
-      createTube(id, { expirationDate: data.expirationDate ?? undefined }),
+    mutationFn: (data: { expirationDate: string | null; daysBeforeNotification?: number }) =>
+      createTube(id, {
+        expirationDate: data.expirationDate ?? undefined,
+        daysBeforeNotification: data.daysBeforeNotification
+      }),
     onSuccess: () => {
       setTubeError(null)
       invalidateSample()
@@ -147,7 +146,10 @@ function RouteComponent() {
     mutationFn: (tubeId: string) => deleteTube(tubeId),
     onSuccess: () => {
       setTubeError(null)
-      setSelectedTubeId(null)
+      navigateSearch({
+        search: (prev: SampleSearch) => ({ ...prev, tubeId: undefined }),
+        replace: true
+      })
       invalidateSample()
     },
     onError: async err => setTubeError(await getApiErrorMessage(err))
@@ -173,7 +175,10 @@ function RouteComponent() {
   })
 
   const updateTubeMutation = useMutation({
-    mutationFn: ({ tubeId, data }: { tubeId: string; data: { notes: string } }) =>
+    mutationFn: ({
+      tubeId,
+      data
+    }: { tubeId: string; data: { notes?: string; daysBeforeNotification?: number } }) =>
       updateTube(tubeId, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sample-tubes', id] }),
     onError: async err => setAttrError(await getApiErrorMessage(err))
@@ -201,16 +206,21 @@ function RouteComponent() {
 
   const selectedTube = tubes.find(t => t.id === selectedTubeId) ?? null
   const toggleTube = (tubeId: string) =>
-    setSelectedTubeId(prev => (prev === tubeId ? null : tubeId))
+    navigateSearch({
+      search: (prev: SampleSearch) => ({
+        ...prev,
+        tubeId: prev.tubeId === tubeId ? undefined : tubeId
+      }),
+      replace: true
+    })
 
   const isTubePending =
-    checkoutMutation.isPending ||
-    checkinMutation.isPending ||
-    deleteTubeMutation.isPending
+    checkoutMutation.isPending || checkinMutation.isPending || deleteTubeMutation.isPending
 
   const isOwner = sample ? sample.groupId === groupId : false
-  const canEdit = true
+  const canEdit = sample?.canEdit ?? false
   const canDelete = userRole === 'MANAGER' || userRole === 'LEADER'
+  const canShare = isOwner && (userRole === 'MANAGER' || userRole === 'LEADER')
 
   function getAttrsForTube(tube: Tube): Attribute[] {
     return tube.attributes.map(toAttribute)
@@ -238,7 +248,7 @@ function RouteComponent() {
             sample={sample}
             canEdit={canEdit}
             canDelete={canDelete}
-            isOwner={isOwner}
+            canShare={canShare}
             onDelete={() => archiveSampleMutation.mutate()}
           />
         ) : null}
@@ -257,18 +267,13 @@ function RouteComponent() {
                 {tubes.length}
               </Badge>
             </div>
-            <CreateTubeDialog
-              onSubmit={data => createTubeMutation.mutate(data)}
-            />
+            <CreateTubeDialog onSubmit={data => createTubeMutation.mutate(data)} />
           </CardHeader>
           <CardContent>
             <div className='grid grid-cols-1 gap-5 lg:grid-cols-[220px_1fr]'>
               <div className='lg:sticky lg:top-6 lg:self-start'>
                 <div className='lg:hidden'>
-                  <Select
-                    value={selectedTubeId ?? ''}
-                    onValueChange={v => setSelectedTubeId(prev => (prev === v ? null : v))}
-                  >
+                  <Select value={selectedTubeId ?? ''} onValueChange={v => toggleTube(v)}>
                     <SelectTrigger className='w-full bg-card'>
                       <SelectValue placeholder='Select a tube…' />
                     </SelectTrigger>
@@ -325,11 +330,15 @@ function RouteComponent() {
                       }
                     })
                   }
-                  onAttrDelete={key =>
-                    deleteAttrMutation.mutate({ tubeId: selectedTube.id, key })
-                  }
+                  onAttrDelete={key => deleteAttrMutation.mutate({ tubeId: selectedTube.id, key })}
                   onNotesChange={v =>
                     updateTubeMutation.mutate({ tubeId: selectedTube.id, data: { notes: v } })
+                  }
+                  onDaysBeforeNotificationChange={v =>
+                    updateTubeMutation.mutate({
+                      tubeId: selectedTube.id,
+                      data: { daysBeforeNotification: v }
+                    })
                   }
                   onCheckout={() => checkoutMutation.mutate(selectedTube.id)}
                   onCheckin={pos =>

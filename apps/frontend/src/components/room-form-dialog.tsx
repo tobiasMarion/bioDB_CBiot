@@ -71,7 +71,11 @@ export function RoomFormDialog({
 
   const handleSubmit = () => {
     if (!isFormValid) return
-    onSubmit({ number: form.number.trim(), building: form.building.trim(), floor: Number(form.floor) })
+    onSubmit({
+      number: form.number.trim(),
+      building: form.building.trim(),
+      floor: Number(form.floor)
+    })
     setOpen(false)
   }
 

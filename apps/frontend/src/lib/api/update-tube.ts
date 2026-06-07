@@ -3,6 +3,7 @@ import { apiClient } from './api-client'
 
 export type UpdateTubePayload = {
   notes?: string
+  daysBeforeNotification?: number
 }
 
 export function updateTube(tubeId: string, data: UpdateTubePayload) {

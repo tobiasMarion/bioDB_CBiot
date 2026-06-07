@@ -11,6 +11,7 @@ import {
 import { TubeTray } from '@/components/tube/tube-tray'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
@@ -34,6 +35,7 @@ interface TubeDetailProps {
   onAttrAdd: (attr: Attribute) => void
   onAttrDelete: (key: string) => void
   onNotesChange: (v: string) => void
+  onDaysBeforeNotificationChange: (v: number) => void
   onCheckout?: () => void
   onCheckin?: (position: ReturnPosition) => void
   onDelete?: (reason: string) => void
@@ -52,6 +54,7 @@ export function TubeDetail({
   onAttrAdd,
   onAttrDelete,
   onNotesChange,
+  onDaysBeforeNotificationChange,
   onCheckout,
   onCheckin,
   onDelete
@@ -80,7 +83,16 @@ export function TubeDetail({
   })
 
   const [notesDraft, setNotesDraft] = useState(notes)
-  useEffect(() => { setNotesDraft(notes) }, [notes])
+  useEffect(() => {
+    setNotesDraft(notes)
+  }, [notes])
+
+  const [daysBeforeNotificationDraft, setDaysBeforeNotificationDraft] = useState(
+    String(tube.daysBeforeNotification)
+  )
+  useEffect(() => {
+    setDaysBeforeNotificationDraft(String(tube.daysBeforeNotification))
+  }, [tube.daysBeforeNotification])
 
   return (
     <Card className='min-w-0 overflow-visible'>
@@ -149,6 +161,27 @@ export function TubeDetail({
                     <p className='text-sm text-muted-foreground'>No expiration date set.</p>
                   )}
                 </div>
+
+                <div className='mt-4 max-w-40 space-y-1.5'>
+                  <p className='text-xs font-medium text-muted-foreground'>
+                    Notify before expiration (days)
+                  </p>
+                  <Input
+                    type='number'
+                    min={1}
+                    value={daysBeforeNotificationDraft}
+                    onChange={e => setDaysBeforeNotificationDraft(e.target.value)}
+                    onBlur={() => {
+                      const value = Number(daysBeforeNotificationDraft)
+                      if (value > 0 && value !== tube.daysBeforeNotification) {
+                        onDaysBeforeNotificationChange(value)
+                      } else {
+                        setDaysBeforeNotificationDraft(String(tube.daysBeforeNotification))
+                      }
+                    }}
+                    className='bg-transparent text-sm'
+                  />
+                </div>
               </div>
 
               <div className='px-5 py-4'>
@@ -158,7 +191,8 @@ export function TubeDetail({
                     <div className='space-y-1'>
                       <p className='text-sm'>{tube.box.freezer.name}</p>
                       <p className='text-sm text-muted-foreground'>
-                        Room {tube.box.freezer.room.number}, Building {tube.box.freezer.room.building} — Floor {tube.box.freezer.room.floor}
+                        Room {tube.box.freezer.room.number}, Building{' '}
+                        {tube.box.freezer.room.building} — Floor {tube.box.freezer.room.floor}
                       </p>
                       <p className='text-sm text-muted-foreground'>
                         {tube.box.label}

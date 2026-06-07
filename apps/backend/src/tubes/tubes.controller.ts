@@ -67,11 +67,7 @@ export class TubesController {
   @ApiNotFoundResponse({ description: 'Tube or box not found' })
   @ApiConflictResponse({ description: 'Tube is not checked out or position is already occupied' })
   @ApiBadRequestResponse({ description: 'Invalid request body' })
-  async checkin(
-    @Param('id') id: string,
-    @Body() body: CheckinTubeDTO,
-    @CurrentUser() user: User
-  ) {
+  async checkin(@Param('id') id: string, @Body() body: CheckinTubeDTO, @CurrentUser() user: User) {
     return this.tubesService.checkin(id, body, user)
   }
 
@@ -82,11 +78,7 @@ export class TubesController {
   @ApiForbiddenResponse({ description: 'Insufficient permissions' })
   @ApiNotFoundResponse({ description: 'Tube not found' })
   @ApiBadRequestResponse({ description: 'Invalid request body' })
-  async update(
-    @Param('id') id: string,
-    @Body() body: UpdateTubeDTO,
-    @CurrentUser() user: User
-  ) {
+  async update(@Param('id') id: string, @Body() body: UpdateTubeDTO, @CurrentUser() user: User) {
     return this.tubesService.update(id, body, user)
   }
 

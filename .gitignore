@@ -149,3 +149,8 @@ generated/
 CLAUDE.md
 .claude/
 .mcp.json
+
+# Playwright MCP cache & test artifacts
+.playwright-mcp/
+test-report/
+PENDING_TESTS.md

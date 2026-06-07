@@ -1,5 +1,5 @@
+import type { TubeAttribute } from '@/components/tube/tube-data'
 import { apiClient } from './api-client'
-import type { TubeAttributeResponse } from './get-sample-tubes'
 
 export type AddTubeAttributePayload = {
   key: string
@@ -9,7 +9,5 @@ export type AddTubeAttributePayload = {
 }
 
 export function addTubeAttribute(tubeId: string, data: AddTubeAttributePayload) {
-  return apiClient
-    .post(`tubes/${tubeId}/attributes`, { json: data })
-    .json<TubeAttributeResponse>()
+  return apiClient.post(`tubes/${tubeId}/attributes`, { json: data }).json<TubeAttribute>()
 }

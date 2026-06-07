@@ -6,13 +6,13 @@ import { ButtonGroup } from '../ui/button-group'
 interface SamplesActionsProps {
   groupId: string
   sampleId: string
-  disableShare: boolean
+  canShare: boolean
   onShare: () => void
 }
 
-export function SamplesActions({ groupId, sampleId, onShare, disableShare }: SamplesActionsProps) {
+export function SamplesActions({ groupId, sampleId, onShare, canShare }: SamplesActionsProps) {
   return (
-    <div className='flex items-center justify-center gap-1'>
+    <div className='flex items-center justify-end gap-1'>
       <ButtonGroup>
         <Button variant='outline' size='sm' className='h-8 px-2 text-xs' asChild>
           <Link to='/app/$groupId/samples/$id' params={{ groupId, id: sampleId }}>
@@ -20,16 +20,12 @@ export function SamplesActions({ groupId, sampleId, onShare, disableShare }: Sam
             View
           </Link>
         </Button>
-        <Button
-          variant='outline'
-          size='sm'
-          disabled={disableShare}
-          onClick={onShare}
-          className={'h-8 px-2 text-xs'}
-        >
-          <Share2 className='size-3.5 mr-1' />
-          Share
-        </Button>
+        {canShare && (
+          <Button variant='outline' size='sm' onClick={onShare} className='h-8 px-2 text-xs'>
+            <Share2 className='size-3.5 mr-1' />
+            Share
+          </Button>
+        )}
       </ButtonGroup>
     </div>
   )

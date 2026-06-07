@@ -1,17 +1,17 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { AuthorizationService } from '../auth/authorization.service';
-import { PrismaService } from '../common/prisma/prisma.service';
-import { CreateRoomDTO } from './dto/CreateRoom';
-import { UpdateRoomDTO } from './dto/UpdateRoom';
-import type { User } from '../auth/types/user.type'
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { auditCreate, auditDelete, auditUpdate } from '../auth/audit.utils'
+import { AuthorizationService } from '../auth/authorization.service'
+import type { User } from '../auth/types/user.type'
+import { PrismaService } from '../common/prisma/prisma.service'
+import { CreateRoomDTO } from './dto/CreateRoom'
+import { UpdateRoomDTO } from './dto/UpdateRoom'
 
 @Injectable()
 export class RoomsService {
   constructor(
-      private readonly prisma: PrismaService,
-      private readonly auth: AuthorizationService
-    ) {}
+    private readonly prisma: PrismaService,
+    private readonly auth: AuthorizationService
+  ) {}
 
   async create(data: CreateRoomDTO, user: User) {
     await this.auth.assert({
@@ -20,28 +20,28 @@ export class RoomsService {
     })
 
     try {
-          const newRoom = await this.prisma.room.create({
-            data: {
-              number: data.number,
-              building: data.building,
-              floor: data.floor,
-              createdBy: user.id
-          }})
-    
-            await this.prisma.auditLog.create({
-              data: auditCreate({
-                entityType: 'ROOM',
-                entityId: newRoom.id,
-                performedBy: user.id,
-                current: { number: data.number, building: data.building, floor: data.floor }
-              })
-            })
-    
-            return newRoom
-          
-        } catch (error) {
-          throw new InternalServerErrorException('Error creating room')
+      const newRoom = await this.prisma.room.create({
+        data: {
+          number: data.number,
+          building: data.building,
+          floor: data.floor,
+          createdBy: user.id
         }
+      })
+
+      await this.prisma.auditLog.create({
+        data: auditCreate({
+          entityType: 'ROOM',
+          entityId: newRoom.id,
+          performedBy: user.id,
+          current: { number: data.number, building: data.building, floor: data.floor }
+        })
+      })
+
+      return newRoom
+    } catch (error) {
+      throw new InternalServerErrorException('Error creating room')
+    }
   }
 
   async findAllRooms(user: User) {

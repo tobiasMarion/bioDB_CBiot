@@ -9,6 +9,8 @@ import { AuthorizationService, ROLE_LEVEL } from '../auth/authorization.service'
 import type { User } from '../auth/types/user.type'
 import { GroupRole } from '../common/prisma/generated/enums'
 import { PrismaService } from '../common/prisma/prisma.service'
+import { TubeExpirationService } from '../notifications/tube-expiration/tube-expiration.service'
+import { SampleAccessService } from '../samples/sample-access.service'
 import { AddAttributeDTO } from './dto/AddAttribute'
 import { CheckinTubeDTO } from './dto/CheckinTube'
 import { CreateTubeDTO } from './dto/CreateTube'
@@ -19,6 +21,7 @@ const tubeSelect = {
   id: true,
   sampleId: true,
   expirationDate: true,
+  daysBeforeNotification: true,
   notes: true,
   boxId: true,
   row: true,
@@ -67,9 +70,7 @@ function formatTube(tube: Awaited<ReturnType<TubesService['findRawTube']>>) {
     ...rest,
     status: deriveStatus(tube),
     checkedOut:
-      checkedOutAt && checkedOutUser
-        ? { by: checkedOutUser, at: checkedOutAt.toISOString() }
-        : null
+      checkedOutAt && checkedOutUser ? { by: checkedOutUser, at: checkedOutAt.toISOString() } : null
   }
 }
 
@@ -77,7 +78,9 @@ function formatTube(tube: Awaited<ReturnType<TubesService['findRawTube']>>) {
 export class TubesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly auth: AuthorizationService
+    private readonly auth: AuthorizationService,
+    private readonly tubeExpiration: TubeExpirationService,
+    private readonly sampleAccess: SampleAccessService
   ) {}
 
   private async findRawTube(id: string) {
@@ -89,34 +92,51 @@ export class TubesService {
     return tube
   }
 
-  private async getSampleGroupId(sampleId: string): Promise<string> {
+  private async getSample(sampleId: string): Promise<{ id: string; groupId: string }> {
     const sample = await this.prisma.sample.findUnique({
       where: { id: sampleId, isArchived: false },
-      select: { groupId: true }
+      select: { id: true, groupId: true }
     })
     if (!sample) throw new NotFoundException('Sample not found')
-    return sample.groupId
+    return sample
   }
 
-  private async getTubeGroupId(tubeId: string): Promise<string> {
+  private async getTubeSample(tubeId: string): Promise<{ id: string; groupId: string }> {
     const tube = await this.prisma.tube.findUnique({
       where: { id: tubeId, isArchived: false },
-      select: { sample: { select: { groupId: true } } }
+      select: { sample: { select: { id: true, groupId: true } } }
     })
     if (!tube) throw new NotFoundException('Tube not found')
-    return tube.sample.groupId
+    return tube.sample
+  }
+
+  /** Members of the owning group are checked by their role; members of a group holding an
+   *  active SampleShare are checked against the granted permission (see SampleAccessService). */
+  private async assertCanView(sample: { id: string; groupId: string }, user: User) {
+    const access = await this.sampleAccess.resolveSampleAccess(sample, user)
+    if (!access.canView) throw new ForbiddenException('Insufficient permissions')
+    return access
+  }
+
+  private async assertCanEdit(sample: { id: string; groupId: string }, user: User) {
+    const access = await this.sampleAccess.resolveSampleAccess(sample, user)
+    if (!access.canEdit) throw new ForbiddenException('Insufficient permissions')
+    return access
   }
 
   async create(sampleId: string, data: CreateTubeDTO, user: User) {
-    const groupId = await this.getSampleGroupId(sampleId)
-    await this.auth.assert({ user, permission: 'CREATE_TUBE', groupId })
+    const sample = await this.getSample(sampleId)
+    await this.assertCanEdit(sample, user)
 
     const tube = await this.prisma.$transaction(async tx => {
       const newTube = await tx.tube.create({
         data: {
           sampleId,
           createdBy: user.id,
-          expirationDate: data.expirationDate ? new Date(data.expirationDate) : null
+          expirationDate: data.expirationDate ? new Date(data.expirationDate) : null,
+          ...(data.daysBeforeNotification !== undefined && {
+            daysBeforeNotification: data.daysBeforeNotification
+          })
         },
         select: tubeSelect
       })
@@ -137,12 +157,17 @@ export class TubesService {
   }
 
   async update(tubeId: string, data: UpdateTubeDTO, user: User) {
-    const groupId = await this.getTubeGroupId(tubeId)
-    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
+    const sample = await this.getTubeSample(tubeId)
+    await this.assertCanEdit(sample, user)
 
     const tube = await this.prisma.tube.update({
       where: { id: tubeId, isArchived: false },
-      data: { notes: data.notes },
+      data: {
+        notes: data.notes,
+        ...(data.daysBeforeNotification !== undefined && {
+          daysBeforeNotification: data.daysBeforeNotification
+        })
+      },
       select: tubeSelect
     })
 
@@ -150,8 +175,8 @@ export class TubesService {
   }
 
   async findBySample(sampleId: string, user: User) {
-    const groupId = await this.getSampleGroupId(sampleId)
-    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
+    const sample = await this.getSample(sampleId)
+    await this.assertCanView(sample, user)
 
     const tubes = await this.prisma.tube.findMany({
       where: { sampleId, isArchived: false },
@@ -163,8 +188,8 @@ export class TubesService {
   }
 
   async checkout(tubeId: string, user: User) {
-    const groupId = await this.getTubeGroupId(tubeId)
-    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
+    const sample = await this.getTubeSample(tubeId)
+    await this.assertCanEdit(sample, user)
 
     const current = await this.findRawTube(tubeId)
     if (current.checkedOutAt) throw new ConflictException('Tube is already checked out')
@@ -209,11 +234,13 @@ export class TubesService {
   }
 
   async checkin(tubeId: string, data: CheckinTubeDTO, user: User) {
-    const groupId = await this.getTubeGroupId(tubeId)
-    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId })
+    const sample = await this.getTubeSample(tubeId)
+    await this.assertCanEdit(sample, user)
 
     const current = await this.findRawTube(tubeId)
-    if (!current.checkedOutAt) throw new ConflictException('Tube is not checked out')
+
+    // Reject if already placed in storage — both checked-out and unplaced tubes are acceptable
+    if (current.boxId) throw new ConflictException('Tube is already in storage')
 
     const box = await this.prisma.box.findUnique({
       where: { id: data.boxId, isArchived: false },
@@ -267,13 +294,19 @@ export class TubesService {
   }
 
   async archive(tubeId: string, user: User) {
-    const groupId = await this.getTubeGroupId(tubeId)
-    await this.auth.assert({ user, permission: 'MANAGE_STORAGE', groupId })
+    const sample = await this.getTubeSample(tubeId)
+    // Archiving is a storage-management action reserved for the owning group — a share grant
+    // (VIEW or EDIT) only covers viewing/editing sample data, not destructive storage operations.
+    await this.auth.assert({ user, permission: 'MANAGE_STORAGE', groupId: sample.groupId })
 
     const tube = await this.prisma.$transaction(async tx => {
       const archived = await tx.tube.update({
         where: { id: tubeId },
-        data: { isArchived: true, archivedAt: new Date() },
+        // Free up the storage slot — an archived tube must not keep occupying a box position,
+        // otherwise the (boxId, row, column) unique constraint blocks future placements there
+        // and the checkin "position occupied" check (which only looks at active tubes) misses it,
+        // causing an unhandled unique-constraint error on checkin.
+        data: { isArchived: true, archivedAt: new Date(), boxId: null, row: null, column: null },
         select: tubeSelect
       })
 
@@ -289,24 +322,21 @@ export class TubesService {
       return archived
     })
 
+    await this.tubeExpiration.resolveExpirationNotification(tubeId)
+
     return formatTube(tube)
   }
 
   async addAttribute(tubeId: string, data: AddAttributeDTO, user: User) {
-    const groupId = await this.getTubeGroupId(tubeId)
-    await this.auth.assert({ user, permission: 'CREATE_TUBE', groupId })
+    const sample = await this.getTubeSample(tubeId)
+    const access = await this.assertCanEdit(sample, user)
 
-    if (!user.isAdmin) {
-      const membership = await this.prisma.groupMembership.findUnique({
-        where: { userId_groupId: { userId: user.id, groupId } },
-        select: { role: true }
-      })
-      if (!membership) throw new ForbiddenException('Not a member of this group')
-      if (ROLE_LEVEL[membership.role] < ROLE_LEVEL[data.minRequiredRoleToEdit]) {
-        throw new ForbiddenException(
-          'Cannot create an attribute with a role higher than your own'
-        )
-      }
+    // access.canEdit guarantees effectiveRole is set — it's only null when the user has no access
+    if (
+      !user.isAdmin &&
+      ROLE_LEVEL[access.effectiveRole as GroupRole] < ROLE_LEVEL[data.minRequiredRoleToEdit]
+    ) {
+      throw new ForbiddenException('Cannot create an attribute with a role higher than your own')
     }
 
     const attr = await this.prisma.tubeAttribute.create({
@@ -325,7 +355,8 @@ export class TubesService {
   }
 
   async updateAttribute(tubeId: string, key: string, data: UpdateAttributeDTO, user: User) {
-    const groupId = await this.getTubeGroupId(tubeId)
+    const sample = await this.getTubeSample(tubeId)
+    const access = await this.assertCanEdit(sample, user)
 
     const attr = await this.prisma.tubeAttribute.findUnique({
       where: { tubeId_key: { tubeId, key }, isArchived: false },
@@ -333,14 +364,12 @@ export class TubesService {
     })
     if (!attr) throw new NotFoundException('Attribute not found')
 
-    if (!user.isAdmin) {
-      const membership = await this.prisma.groupMembership.findUnique({
-        where: { userId_groupId: { userId: user.id, groupId } },
-        select: { role: true }
-      })
-      if (!membership || ROLE_LEVEL[membership.role] < ROLE_LEVEL[attr.minRequiredRoleToEdit]) {
-        throw new ForbiddenException('Insufficient role to edit this attribute')
-      }
+    // access.canEdit guarantees effectiveRole is set — it's only null when the user has no access
+    if (
+      !user.isAdmin &&
+      ROLE_LEVEL[access.effectiveRole as GroupRole] < ROLE_LEVEL[attr.minRequiredRoleToEdit]
+    ) {
+      throw new ForbiddenException('Insufficient role to edit this attribute')
     }
 
     return this.prisma.tubeAttribute.update({
@@ -351,7 +380,8 @@ export class TubesService {
   }
 
   async deleteAttribute(tubeId: string, key: string, user: User) {
-    const groupId = await this.getTubeGroupId(tubeId)
+    const sample = await this.getTubeSample(tubeId)
+    const access = await this.assertCanEdit(sample, user)
 
     const attr = await this.prisma.tubeAttribute.findUnique({
       where: { tubeId_key: { tubeId, key }, isArchived: false },
@@ -359,14 +389,12 @@ export class TubesService {
     })
     if (!attr) throw new NotFoundException('Attribute not found')
 
-    if (!user.isAdmin) {
-      const membership = await this.prisma.groupMembership.findUnique({
-        where: { userId_groupId: { userId: user.id, groupId } },
-        select: { role: true }
-      })
-      if (!membership || ROLE_LEVEL[membership.role] < ROLE_LEVEL[attr.minRequiredRoleToEdit]) {
-        throw new ForbiddenException('Insufficient role to delete this attribute')
-      }
+    // access.canEdit guarantees effectiveRole is set — it's only null when the user has no access
+    if (
+      !user.isAdmin &&
+      ROLE_LEVEL[access.effectiveRole as GroupRole] < ROLE_LEVEL[attr.minRequiredRoleToEdit]
+    ) {
+      throw new ForbiddenException('Insufficient role to delete this attribute')
     }
 
     await this.prisma.tubeAttribute.update({

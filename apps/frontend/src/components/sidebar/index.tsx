@@ -31,8 +31,8 @@ export function AppSidebar() {
 
   const { data: members = [] } = useQuery({
     queryKey: ['group-members', activeGroupId],
-    queryFn: () => getGroupMembers(activeGroupId!),
-    enabled: !!activeGroupId && !isAdmin  
+    queryFn: () => getGroupMembers(activeGroupId ?? ''),
+    enabled: !!activeGroupId && !isAdmin
   })
 
   const canViewGroupAudit =
