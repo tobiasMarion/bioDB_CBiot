@@ -73,6 +73,11 @@ const AppAdminAuditIndexRoute = AppAdminAuditIndexRouteImport.update({
   path: '/audit/',
   getParentRoute: () => AppAdminRouteRoute,
 } as any)
+const AppAdminFreezersIndexRoute = AppAdminFreezersIndexRouteImport.update({
+  id: '/admin/freezers/',
+  path: '/admin/freezers/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppGroupIdSamplesIndexRoute = AppGroupIdSamplesIndexRouteImport.update({
   id: '/samples/',
   path: '/samples/',
@@ -259,6 +264,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/admin/audit/'
       preLoaderRoute: typeof AppAdminAuditIndexRouteImport
       parentRoute: typeof AppAdminRouteRoute
+    }
+    '/app/admin/freezers/': {
+      id: '/app/admin/freezers/'
+      path: '/admin/freezers'
+      fullPath: '/app/admin/freezers/'
+      preLoaderRoute: typeof AppAdminFreezersIndexRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/app/$groupId/samples/': {
       id: '/app/$groupId/samples/'

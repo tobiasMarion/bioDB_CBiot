@@ -17,7 +17,12 @@ export interface TubeBox {
   freezer: {
     id: string
     name: string
-    locationDescription: string
+    room: {
+      id: string
+      number: string
+      building: string
+      floor: number
+    }
   }
 }
 

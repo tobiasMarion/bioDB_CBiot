@@ -158,7 +158,7 @@ export function TubeDetail({
                     <div className='space-y-1'>
                       <p className='text-sm'>{tube.box.freezer.name}</p>
                       <p className='text-sm text-muted-foreground'>
-                        {tube.box.freezer.locationDescription}
+                        Room {tube.box.freezer.room.number}, Building {tube.box.freezer.room.building} — Floor {tube.box.freezer.room.floor}
                       </p>
                       <p className='text-sm text-muted-foreground'>
                         {tube.box.label}
