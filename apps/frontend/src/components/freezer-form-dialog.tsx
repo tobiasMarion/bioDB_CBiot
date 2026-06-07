@@ -62,7 +62,11 @@ export function FreezerFormDialog({
     }
   }
 
-  const { data: rooms = [] } = useQuery({
+  const {
+    data: rooms = [],
+    isLoading: isLoadingRooms,
+    isError: isRoomsError
+  } = useQuery({
     queryKey: ['rooms'],
     queryFn: getRooms,
     enabled: open
@@ -116,9 +120,18 @@ export function FreezerFormDialog({
             <Select
               value={form.roomId}
               onValueChange={value => setForm({ ...form, roomId: value })}
+              disabled={isLoadingRooms || isRoomsError}
             >
               <SelectTrigger id='room' className='w-full'>
-                <SelectValue placeholder='Select a room…'>
+                <SelectValue
+                  placeholder={
+                    isLoadingRooms
+                      ? 'Loading rooms…'
+                      : isRoomsError
+                        ? 'Failed to load rooms'
+                        : 'Select a room…'
+                  }
+                >
                   {selectedRoom
                     ? `Room ${selectedRoom.number}, Building ${selectedRoom.building} — Floor ${selectedRoom.floor}`
                     : undefined}
@@ -132,6 +145,11 @@ export function FreezerFormDialog({
                 ))}
               </SelectContent>
             </Select>
+            {isRoomsError && (
+              <p className='text-xs text-destructive'>
+                Could not load rooms. Close and reopen this dialog to try again.
+              </p>
+            )}
           </div>
         </div>
         <DialogFooter>

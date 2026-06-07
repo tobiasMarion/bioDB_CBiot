@@ -26,7 +26,7 @@ export class FreezersService {
     try {
       const newFreezer = await this.prisma.freezer.create({
         data: { ...data, createdBy: user.id },
-        include: { room: true }   // ← add this
+        include: { room: true }
       })
 
       await this.prisma.auditLog.create({

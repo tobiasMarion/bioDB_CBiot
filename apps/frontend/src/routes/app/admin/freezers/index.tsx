@@ -11,14 +11,14 @@ import {
 } from '@/components/ui/dialog'
 import { usePageTitle } from '@/hooks/use-page-title'
 import { getApiErrorMessage } from '@/lib/api/api-error'
-import { queryClient } from '@/lib/api/query-client'
 import {
+  type CreateFreezerPayload,
+  type Freezer,
   archiveFreezer,
   createFreezer,
-  updateFreezer,
-  type CreateFreezerPayload,
-  type Freezer
+  updateFreezer
 } from '@/lib/api/get-freezers'
+import { queryClient } from '@/lib/api/query-client'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -47,7 +47,8 @@ function RouteComponent() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CreateFreezerPayload }) => updateFreezer(id, data),
+    mutationFn: ({ id, data }: { id: string; data: CreateFreezerPayload }) =>
+      updateFreezer(id, data),
     onSuccess: invalidate,
     onError: async err => setError(await getApiErrorMessage(err))
   })
@@ -66,36 +67,40 @@ function RouteComponent() {
         onOpenChange={setShowCreate}
         onSubmit={data => createMutation.mutate(data)}
         isPending={createMutation.isPending}
-      >
-        <span />
-      </FreezerFormDialog>
+      />
 
       {editingFreezer && (
         <FreezerFormDialog
           mode='edit'
           open={!!editingFreezer}
-          onOpenChange={open => { if (!open) setEditingFreezer(null) }}
+          onOpenChange={open => {
+            if (!open) setEditingFreezer(null)
+          }}
           initialData={{
             name: editingFreezer.name,
             roomId: editingFreezer.roomId
           }}
           onSubmit={data => updateMutation.mutate({ id: editingFreezer.id, data })}
           isPending={updateMutation.isPending}
-        >
-          <span />
-        </FreezerFormDialog>
+        />
       )}
 
       <Dialog
         open={!!archivingFreezer}
-        onOpenChange={open => { if (!open) setArchivingFreezer(null) }}
+        onOpenChange={open => {
+          if (!open) setArchivingFreezer(null)
+        }}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Archive freezer?</DialogTitle>
             <DialogDescription>
               Freezer <strong>{archivingFreezer?.name}</strong> in{' '}
-              <strong>Room {archivingFreezer?.room.number}</strong> will be archived.
+              <strong>
+                Room {archivingFreezer?.room.number}, Building {archivingFreezer?.room.building} —
+                Floor {archivingFreezer?.room.floor}
+              </strong>{' '}
+              will be archived.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -122,9 +127,7 @@ function RouteComponent() {
         <h1 className='text-2xl font-semibold'>Freezers</h1>
 
         {error && (
-          <p className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
-            {error}
-          </p>
+          <p className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>{error}</p>
         )}
 
         <FreezersTable
