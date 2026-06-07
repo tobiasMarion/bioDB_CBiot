@@ -10,10 +10,11 @@ import { SamplesActions } from './samples-actions'
 interface SampleRowProps {
   sample: Sample
   groupId: string
+  canShare: boolean
   onShare: () => void
 }
 
-export function SampleRow({ sample, groupId, onShare }: SampleRowProps) {
+export function SampleRow({ sample, groupId, canShare, onShare }: SampleRowProps) {
   const isShared = sample.group.id !== groupId
 
   return (
@@ -68,7 +69,7 @@ export function SampleRow({ sample, groupId, onShare }: SampleRowProps) {
         <SamplesActions
           groupId={groupId}
           sampleId={sample.id}
-          disableShare={isShared}
+          canShare={canShare}
           onShare={onShare}
         />
       </TableCell>

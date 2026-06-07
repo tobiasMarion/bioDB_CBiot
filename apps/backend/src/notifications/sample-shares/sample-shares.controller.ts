@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -19,6 +19,37 @@ import { SampleSharesService } from './sample-shares.service'
 @Controller()
 export class SampleSharesController {
   constructor(private readonly sampleSharesService: SampleSharesService) {}
+
+  @Get('samples/:sampleId/share-targets')
+  @Auth()
+  @ApiOperation({
+    summary: 'List groups eligible to receive a share request for this sample',
+    description: `Returns the active groups other than the sample's own group, for use when picking a target in the share dialog.
+
+**Authorization:** only a MANAGER or LEADER of the group that owns the sample can list targets. Membership in the target group is **not** required to send a share request — only its leaders need to approve it.`
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Missing or invalid authentication token.',
+    schema: { example: { statusCode: 401, message: 'Missing Authorization header' } }
+  })
+  @ApiForbiddenResponse({
+    description: "The authenticated user is not a MANAGER or LEADER of the sample's group.",
+    schema: { example: { statusCode: 403, message: 'Insufficient permissions' } }
+  })
+  @ApiNotFoundResponse({
+    description: 'Sample not found (or archived).',
+    schema: { example: { statusCode: 404, message: 'Sample not found' } }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of groups eligible as share targets.',
+    schema: {
+      example: [{ id: '550e8400-e29b-41d4-a716-446655440001', name: 'Microbiology Lab' }]
+    }
+  })
+  async getShareTargets(@Param('sampleId') sampleId: string, @CurrentUser() user: User) {
+    return this.sampleSharesService.getShareTargets(sampleId, user)
+  }
 
   @Post('samples/:sampleId/share-requests')
   @Auth()

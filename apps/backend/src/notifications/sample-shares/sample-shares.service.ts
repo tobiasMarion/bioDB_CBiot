@@ -113,6 +113,28 @@ export class SampleSharesService {
     })
   }
 
+  async getShareTargets(sampleId: string, user: User) {
+    const sample = await this.prisma.sample.findUnique({
+      where: { id: sampleId, isArchived: false }
+    })
+
+    if (!sample) {
+      throw new NotFoundException('Sample not found')
+    }
+
+    await this.auth.assert({
+      user,
+      permission: 'SHARE_SAMPLE',
+      groupId: sample.groupId
+    })
+
+    return this.prisma.group.findMany({
+      where: { isArchived: false, id: { not: sample.groupId } },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' }
+    })
+  }
+
   async respondToShareRequest(requestId: string, action: ShareRequestAction, user: User) {
     const request = await this.prisma.sampleShareRequest.findUnique({
       where: { id: requestId },

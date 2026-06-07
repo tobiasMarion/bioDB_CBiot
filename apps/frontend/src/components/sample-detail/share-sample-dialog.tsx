@@ -1,5 +1,13 @@
 import { Button } from '@/components/ui/button'
 import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList
+} from '@/components/ui/combobox'
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -18,31 +26,41 @@ import {
 } from '@/components/ui/select'
 import { getApiErrorMessage } from '@/lib/api/api-error'
 import { type CreateShareRequest, createShareRequest } from '@/lib/api/create-share-request'
-import { getGroups } from '@/lib/api/get-groups'
 import type { SamplePermission } from '@/lib/api/get-notifications'
+import { getShareTargets } from '@/lib/api/get-share-targets'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Share2 } from 'lucide-react'
 import { useState } from 'react'
 
 interface ShareSampleDialogProps {
   sampleId: string
-  currentGroupId: string
+  /** Omit to render the dialog with its own trigger button; pass to control it externally (e.g. from a table row action). */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function ShareSampleDialog({ sampleId, currentGroupId }: ShareSampleDialogProps) {
+export function ShareSampleDialog({
+  sampleId,
+  open: openProp,
+  onOpenChange: onOpenChangeProp
+}: ShareSampleDialogProps) {
   const queryClient = useQueryClient()
-  const [open, setOpen] = useState(false)
+  const isControlled = openProp !== undefined
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = isControlled ? openProp : internalOpen
+  const setOpen = isControlled ? onOpenChangeProp! : setInternalOpen
   const [targetGroupId, setTargetGroupId] = useState('')
   const [permission, setPermission] = useState<SamplePermission>('VIEW')
   const [error, setError] = useState<string | null>(null)
 
-  const { data: groups = [] } = useQuery({
-    queryKey: ['groups'],
-    queryFn: getGroups,
+  const { data: eligibleGroups = [] } = useQuery({
+    queryKey: ['share-targets', sampleId],
+    queryFn: () => getShareTargets(sampleId),
     enabled: open
   })
 
-  const eligibleGroups = groups.filter(g => g.id !== currentGroupId)
+  const groupItems = eligibleGroups.map(g => ({ value: g.id, label: g.name }))
+  const selectedGroupItem = groupItems.find(item => item.value === targetGroupId) ?? null
 
   const { mutate: submit, isPending } = useMutation({
     mutationFn: (data: CreateShareRequest) => createShareRequest(data),
@@ -73,16 +91,18 @@ export function ShareSampleDialog({ sampleId, currentGroupId }: ShareSampleDialo
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          variant='ghost'
-          size='sm'
-          className='h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground'
-        >
-          <Share2 className='size-3' />
-          Share
-        </Button>
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button
+            variant='ghost'
+            size='sm'
+            className='h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground'
+          >
+            <Share2 className='size-3' />
+            Share
+          </Button>
+        </DialogTrigger>
+      )}
 
       <DialogContent>
         <DialogHeader>
@@ -98,21 +118,26 @@ export function ShareSampleDialog({ sampleId, currentGroupId }: ShareSampleDialo
             <Label htmlFor='target-group'>Target group</Label>
             {eligibleGroups.length === 0 ? (
               <p className='text-sm text-muted-foreground'>
-                No other groups available. You must be a member of the target group.
+                No other groups available to share with.
               </p>
             ) : (
-              <Select value={targetGroupId} onValueChange={setTargetGroupId}>
-                <SelectTrigger id='target-group'>
-                  <SelectValue placeholder='Select a group…' />
-                </SelectTrigger>
-                <SelectContent>
-                  {eligibleGroups.map(g => (
-                    <SelectItem key={g.id} value={g.id}>
-                      {g.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Combobox
+                items={groupItems}
+                value={selectedGroupItem}
+                onValueChange={item => setTargetGroupId(item?.value ?? '')}
+              >
+                <ComboboxInput id='target-group' placeholder='Search groups…' />
+                <ComboboxContent>
+                  <ComboboxEmpty>No groups found.</ComboboxEmpty>
+                  <ComboboxList>
+                    {(item: { value: string; label: string }) => (
+                      <ComboboxItem key={item.value} value={item}>
+                        {item.label}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             )}
           </div>
 
