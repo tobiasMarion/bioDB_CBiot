@@ -24,7 +24,7 @@ interface SamplesTableProps {
   userRole: Role
 }
 
-const ITEMS_PER_PAGE = 10
+export const ITEMS_PER_PAGE = 10
 const SEARCH_DEBOUNCE_MS = 300
 
 export function SamplesTable({ groupId, userRole }: SamplesTableProps) {
