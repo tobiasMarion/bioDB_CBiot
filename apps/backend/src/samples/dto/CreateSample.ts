@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsString } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class CreateSampleDTO {
   @ApiProperty({ example: 'Bacterial Culture' })
@@ -21,4 +21,9 @@ export class CreateSampleDTO {
   @IsString()
   @IsNotEmpty()
   sourceLab!: string
+
+  @ApiPropertyOptional({ example: 'Stored at -80°C' })
+  @IsString()
+  @IsOptional()
+  observations?: string
 }

@@ -23,6 +23,7 @@ import { Route as AppAdminFreezersIndexRouteImport } from './routes/app/admin/fr
 import { Route as AppAdminAuditIndexRouteImport } from './routes/app/admin/audit/index'
 import { Route as AppGroupIdSamplesIndexRouteImport } from './routes/app/$groupId/samples/index'
 import { Route as AppGroupIdAuditIndexRouteImport } from './routes/app/$groupId/audit/index'
+import { Route as AppGroupIdSamplesNewRouteImport } from './routes/app/$groupId/samples/new'
 import { Route as AppGroupIdSamplesIdRouteImport } from './routes/app/$groupId/samples/$id'
 
 const AppRouteRoute = AppRouteRouteImport.update({
@@ -95,6 +96,11 @@ const AppGroupIdAuditIndexRoute = AppGroupIdAuditIndexRouteImport.update({
   path: '/audit/',
   getParentRoute: () => AppGroupIdRouteRoute,
 } as any)
+const AppGroupIdSamplesNewRoute = AppGroupIdSamplesNewRouteImport.update({
+  id: '/samples/new',
+  path: '/samples/new',
+  getParentRoute: () => AppGroupIdRouteRoute,
+} as any)
 const AppGroupIdSamplesIdRoute = AppGroupIdSamplesIdRouteImport.update({
   id: '/samples/$id',
   path: '/samples/$id',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/': typeof AppGroupIdIndexRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
+  '/app/$groupId/samples/new': typeof AppGroupIdSamplesNewRoute
   '/app/$groupId/audit/': typeof AppGroupIdAuditIndexRoute
   '/app/$groupId/samples/': typeof AppGroupIdSamplesIndexRoute
   '/app/admin/audit/': typeof AppAdminAuditIndexRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId': typeof AppGroupIdIndexRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
+  '/app/$groupId/samples/new': typeof AppGroupIdSamplesNewRoute
   '/app/$groupId/audit': typeof AppGroupIdAuditIndexRoute
   '/app/$groupId/samples': typeof AppGroupIdSamplesIndexRoute
   '/app/admin/audit': typeof AppAdminAuditIndexRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/': typeof AppGroupIdIndexRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
+  '/app/$groupId/samples/new': typeof AppGroupIdSamplesNewRoute
   '/app/$groupId/audit/': typeof AppGroupIdAuditIndexRoute
   '/app/$groupId/samples/': typeof AppGroupIdSamplesIndexRoute
   '/app/admin/audit/': typeof AppAdminAuditIndexRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/app/$groupId/members'
     | '/app/$groupId/'
     | '/app/$groupId/samples/$id'
+    | '/app/$groupId/samples/new'
     | '/app/$groupId/audit/'
     | '/app/$groupId/samples/'
     | '/app/admin/audit/'
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/app/$groupId/members'
     | '/app/$groupId'
     | '/app/$groupId/samples/$id'
+    | '/app/$groupId/samples/new'
     | '/app/$groupId/audit'
     | '/app/$groupId/samples'
     | '/app/admin/audit'
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/app/$groupId/members'
     | '/app/$groupId/'
     | '/app/$groupId/samples/$id'
+    | '/app/$groupId/samples/new'
     | '/app/$groupId/audit/'
     | '/app/$groupId/samples/'
     | '/app/admin/audit/'
@@ -310,6 +322,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGroupIdAuditIndexRouteImport
       parentRoute: typeof AppGroupIdRouteRoute
     }
+    '/app/$groupId/samples/new': {
+      id: '/app/$groupId/samples/new'
+      path: '/samples/new'
+      fullPath: '/app/$groupId/samples/new'
+      preLoaderRoute: typeof AppGroupIdSamplesNewRouteImport
+      parentRoute: typeof AppGroupIdRouteRoute
+    }
     '/app/$groupId/samples/$id': {
       id: '/app/$groupId/samples/$id'
       path: '/samples/$id'
@@ -324,6 +343,7 @@ interface AppGroupIdRouteRouteChildren {
   AppGroupIdMembersRoute: typeof AppGroupIdMembersRoute
   AppGroupIdIndexRoute: typeof AppGroupIdIndexRoute
   AppGroupIdSamplesIdRoute: typeof AppGroupIdSamplesIdRoute
+  AppGroupIdSamplesNewRoute: typeof AppGroupIdSamplesNewRoute
   AppGroupIdAuditIndexRoute: typeof AppGroupIdAuditIndexRoute
   AppGroupIdSamplesIndexRoute: typeof AppGroupIdSamplesIndexRoute
 }
@@ -332,6 +352,7 @@ const AppGroupIdRouteRouteChildren: AppGroupIdRouteRouteChildren = {
   AppGroupIdMembersRoute: AppGroupIdMembersRoute,
   AppGroupIdIndexRoute: AppGroupIdIndexRoute,
   AppGroupIdSamplesIdRoute: AppGroupIdSamplesIdRoute,
+  AppGroupIdSamplesNewRoute: AppGroupIdSamplesNewRoute,
   AppGroupIdAuditIndexRoute: AppGroupIdAuditIndexRoute,
   AppGroupIdSamplesIndexRoute: AppGroupIdSamplesIndexRoute,
 }
