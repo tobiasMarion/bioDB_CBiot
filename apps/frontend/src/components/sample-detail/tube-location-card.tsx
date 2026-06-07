@@ -3,7 +3,7 @@ import {
   type Tube,
   expirationStatus,
   positionLabel
-} from '@/components/tube-data'
+} from '@/components/tube/tube-data'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { Package, Thermometer } from 'lucide-react'

@@ -18,19 +18,11 @@ interface SampleCardProps {
   sample: SampleDetail
   canEdit: boolean
   canDelete: boolean
-  isOwner: boolean
   canShare: boolean
   onDelete: () => void
 }
 
-export function SampleCard({
-  sample,
-  canEdit,
-  canDelete,
-  isOwner,
-  canShare,
-  onDelete
-}: SampleCardProps) {
+export function SampleCard({ sample, canEdit, canDelete, canShare, onDelete }: SampleCardProps) {
   const [name, setName] = useState(sample.name)
   const [type, setType] = useState(sample.type)
   const [originOrganism, setOriginOrganism] = useState(sample.originOrganism)

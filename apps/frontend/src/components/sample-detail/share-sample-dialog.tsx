@@ -48,7 +48,7 @@ export function ShareSampleDialog({
   const isControlled = openProp !== undefined
   const [internalOpen, setInternalOpen] = useState(false)
   const open = isControlled ? openProp : internalOpen
-  const setOpen = isControlled ? onOpenChangeProp! : setInternalOpen
+  const setOpen = onOpenChangeProp ?? setInternalOpen
   const [targetGroupId, setTargetGroupId] = useState('')
   const [permission, setPermission] = useState<SamplePermission>('VIEW')
   const [error, setError] = useState<string | null>(null)

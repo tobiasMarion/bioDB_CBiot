@@ -146,7 +146,10 @@ function RouteComponent() {
     mutationFn: (tubeId: string) => deleteTube(tubeId),
     onSuccess: () => {
       setTubeError(null)
-      navigateSearch({ search: prev => ({ ...prev, tubeId: undefined }), replace: true })
+      navigateSearch({
+        search: (prev: SampleSearch) => ({ ...prev, tubeId: undefined }),
+        replace: true
+      })
       invalidateSample()
     },
     onError: async err => setTubeError(await getApiErrorMessage(err))
@@ -204,7 +207,10 @@ function RouteComponent() {
   const selectedTube = tubes.find(t => t.id === selectedTubeId) ?? null
   const toggleTube = (tubeId: string) =>
     navigateSearch({
-      search: prev => ({ ...prev, tubeId: prev.tubeId === tubeId ? undefined : tubeId }),
+      search: (prev: SampleSearch) => ({
+        ...prev,
+        tubeId: prev.tubeId === tubeId ? undefined : tubeId
+      }),
       replace: true
     })
 
@@ -242,7 +248,6 @@ function RouteComponent() {
             sample={sample}
             canEdit={canEdit}
             canDelete={canDelete}
-            isOwner={isOwner}
             canShare={canShare}
             onDelete={() => archiveSampleMutation.mutate()}
           />

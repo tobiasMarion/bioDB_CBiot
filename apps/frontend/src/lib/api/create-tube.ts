@@ -1,5 +1,5 @@
 import { apiClient } from './api-client'
-import type { TubeResponse } from './get-sample-tubes'
+import type { Tube } from './get-sample-tubes'
 
 export type CreateTubePayload = {
   expirationDate?: string | null
@@ -7,5 +7,5 @@ export type CreateTubePayload = {
 }
 
 export function createTube(sampleId: string, data: CreateTubePayload) {
-  return apiClient.post(`samples/${sampleId}/tubes`, { json: data }).json<TubeResponse>()
+  return apiClient.post(`samples/${sampleId}/tubes`, { json: data }).json<Tube>()
 }
