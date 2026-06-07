@@ -132,7 +132,8 @@ export function Notifications() {
                       onNavigate={() =>
                         navigate({
                           to: '/app/$groupId/samples/$id',
-                          params: { groupId: notification.groupId, id: notification.sampleId }
+                          params: { groupId: notification.groupId, id: notification.sampleId },
+                          search: { tubeId: notification.tubeId }
                         })
                       }
                     />

@@ -39,7 +39,14 @@ import { Link, createFileRoute, useNavigate, useParams } from '@tanstack/react-r
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 
+type SampleSearch = {
+  tubeId?: string
+}
+
 export const Route = createFileRoute('/app/$groupId/samples/$id')({
+  validateSearch: (search: Record<string, unknown>): SampleSearch => ({
+    tubeId: typeof search.tubeId === 'string' ? search.tubeId : undefined
+  }),
   component: RouteComponent
 })
 
@@ -66,10 +73,10 @@ function serializeAttrValue(value: Attribute['value']): string {
 
 function RouteComponent() {
   const { groupId, id } = useParams({ from: '/app/$groupId/samples/$id' })
+  const { tubeId: selectedTubeId } = Route.useSearch()
+  const navigateSearch = Route.useNavigate()
   const navigate = useNavigate()
   const user = authStore.getUser()
-
-  const [selectedTubeId, setSelectedTubeId] = useState<string | null>(null)
   const [tubeError, setTubeError] = useState<string | null>(null)
   const [attrError, setAttrError] = useState<string | null>(null)
 
@@ -139,7 +146,7 @@ function RouteComponent() {
     mutationFn: (tubeId: string) => deleteTube(tubeId),
     onSuccess: () => {
       setTubeError(null)
-      setSelectedTubeId(null)
+      navigateSearch({ search: prev => ({ ...prev, tubeId: undefined }), replace: true })
       invalidateSample()
     },
     onError: async err => setTubeError(await getApiErrorMessage(err))
@@ -196,7 +203,10 @@ function RouteComponent() {
 
   const selectedTube = tubes.find(t => t.id === selectedTubeId) ?? null
   const toggleTube = (tubeId: string) =>
-    setSelectedTubeId(prev => (prev === tubeId ? null : tubeId))
+    navigateSearch({
+      search: prev => ({ ...prev, tubeId: prev.tubeId === tubeId ? undefined : tubeId }),
+      replace: true
+    })
 
   const isTubePending =
     checkoutMutation.isPending || checkinMutation.isPending || deleteTubeMutation.isPending
@@ -258,10 +268,7 @@ function RouteComponent() {
             <div className='grid grid-cols-1 gap-5 lg:grid-cols-[220px_1fr]'>
               <div className='lg:sticky lg:top-6 lg:self-start'>
                 <div className='lg:hidden'>
-                  <Select
-                    value={selectedTubeId ?? ''}
-                    onValueChange={v => setSelectedTubeId(prev => (prev === v ? null : v))}
-                  >
+                  <Select value={selectedTubeId ?? ''} onValueChange={v => toggleTube(v)}>
                     <SelectTrigger className='w-full bg-card'>
                       <SelectValue placeholder='Select a tube…' />
                     </SelectTrigger>
