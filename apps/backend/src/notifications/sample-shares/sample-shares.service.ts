@@ -8,7 +8,7 @@ import {
 import { auditCreate, auditNotify, auditUpdate } from '../../auth/audit.utils'
 import { AuthorizationService } from '../../auth/authorization.service'
 import type { User } from '../../auth/types/user.type'
-import { InviteStatus } from '../../common/prisma/generated/enums'
+import { GroupRole, InviteStatus } from '../../common/prisma/generated/enums'
 import { PrismaService } from '../../common/prisma/prisma.service'
 import type { CreateShareRequestDto } from './dto/create-share-request.dto'
 import { ShareRequestAction } from './dto/respond-share-request.dto'
@@ -57,11 +57,15 @@ export class SampleSharesService {
       )
     }
 
-    const leaders = await this.prisma.groupMembership.findMany({
-      where: { groupId: dto.targetGroupId, role: 'LEADER', isArchived: false },
+    const respondersOfTargetGroup = await this.prisma.groupMembership.findMany({
+      where: {
+        groupId: dto.targetGroupId,
+        role: { in: [GroupRole.MANAGER, GroupRole.LEADER] },
+        isArchived: false
+      },
       select: { userId: true }
     })
-    const leaderIds = leaders.map(l => l.userId)
+    const responderIds = respondersOfTargetGroup.map(m => m.userId)
 
     return this.prisma.$transaction(async tx => {
       const shareRequest = await tx.sampleShareRequest.upsert({
@@ -105,7 +109,7 @@ export class SampleSharesService {
           entityType: 'SHARE',
           entityId: shareRequest.id,
           message: `Share request for sample "${shareRequest.sample.name}" sent to group "${shareRequest.group.name}"`,
-          recipientIds: leaderIds
+          recipientIds: responderIds
         })
       })
 
@@ -160,14 +164,16 @@ export class SampleSharesService {
       throw new BadRequestException('Target group is archived')
     }
 
-    const isLeaderOfTargetGroup = await this.auth.can({
+    const canRespond = await this.auth.can({
       user,
-      permission: 'UPDATE_GROUP',
+      permission: 'SHARE_SAMPLE',
       groupId: request.targetGroupId
     })
 
-    if (!isLeaderOfTargetGroup) {
-      throw new ForbiddenException('Only a leader of the target group can respond to this request')
+    if (!canRespond) {
+      throw new ForbiddenException(
+        'Only a manager or leader of the target group can respond to this request'
+      )
     }
 
     const newStatus =

@@ -108,8 +108,8 @@ export function ShareSampleDialog({
         <DialogHeader>
           <DialogTitle>Share sample</DialogTitle>
           <DialogDescription>
-            Send a share request to another group. Their leaders will be notified and can accept or
-            reject access.
+            Send a share request to another group. Their managers and leaders will be notified and
+            can accept or reject access.
           </DialogDescription>
         </DialogHeader>
 

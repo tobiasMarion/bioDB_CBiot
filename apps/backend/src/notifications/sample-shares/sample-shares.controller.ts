@@ -26,7 +26,7 @@ export class SampleSharesController {
     summary: 'List groups eligible to receive a share request for this sample',
     description: `Returns the active groups other than the sample's own group, for use when picking a target in the share dialog.
 
-**Authorization:** only a MANAGER or LEADER of the group that owns the sample can list targets. Membership in the target group is **not** required to send a share request — only its leaders need to approve it.`
+**Authorization:** only a MANAGER or LEADER of the group that owns the sample can list targets. Membership in the target group is **not** required to send a share request — only its managers or leaders need to approve it.`
   })
   @ApiUnauthorizedResponse({
     description: 'Missing or invalid authentication token.',
@@ -55,14 +55,14 @@ export class SampleSharesController {
   @Auth()
   @ApiOperation({
     summary: 'Request to share a sample with another group',
-    description: `Creates a pending share request that notifies all leaders of the target group.
+    description: `Creates a pending share request that notifies the managers and leaders of the target group.
 
 **Authorization:** only a MANAGER or LEADER of the group that owns the sample can initiate this request.
 
 **Business rules:**
 - The target group must be different from the sample's own group
 - Only one PENDING request can exist per sample + target group pair. If a previous request was accepted or rejected it can be re-sent.
-- On creation, a notification is pushed to all LEADER members of the target group via \`GET /notifications/me\`.`
+- On creation, a notification is pushed to all MANAGER and LEADER members of the target group via \`GET /notifications/me\`.`
   })
   @ApiUnauthorizedResponse({
     description: 'Missing or invalid authentication token.',
@@ -91,7 +91,8 @@ export class SampleSharesController {
   })
   @ApiResponse({
     status: 201,
-    description: 'Share request created successfully. Target group leaders are notified.',
+    description:
+      'Share request created successfully. Target group managers and leaders are notified.',
     schema: {
       example: {
         id: '771f9511-f3ac-52e5-b827-557766551111',
@@ -121,25 +122,25 @@ export class SampleSharesController {
   @Auth()
   @ApiOperation({
     summary: 'Accept or reject a sample share request',
-    description: `Allows a LEADER of the target group to accept or reject a pending share request.
+    description: `Allows a MANAGER or LEADER of the target group to accept or reject a pending share request.
 
-**Authorization:** only a LEADER of the target group specified in the request can respond.
+**Authorization:** only a MANAGER or LEADER of the target group specified in the request can respond — the same level required to send a share request in the first place.
 
 **Business rules:**
 - Only PENDING requests can be responded to.
-- On **accept**: a \`SampleShare\` record is created (or restored), granting all members of the target group access to the sample with the specified permission level. The share request notification disappears for all leaders of the target group.
-- On **reject**: no share is created. The notification disappears for all leaders of the target group. The originating group may re-send the request in the future.`
+- On **accept**: a \`SampleShare\` record is created (or restored), granting all members of the target group access to the sample with the specified permission level. The share request notification disappears for all managers and leaders of the target group.
+- On **reject**: no share is created. The notification disappears for all managers and leaders of the target group. The originating group may re-send the request in the future.`
   })
   @ApiUnauthorizedResponse({
     description: 'Missing or invalid authentication token.',
     schema: { example: { statusCode: 401, message: 'Missing Authorization header' } }
   })
   @ApiForbiddenResponse({
-    description: 'The authenticated user is not a LEADER of the target group.',
+    description: 'The authenticated user is not a MANAGER or LEADER of the target group.',
     schema: {
       example: {
         statusCode: 403,
-        message: 'Only a leader of the target group can respond to this request'
+        message: 'Only a manager or leader of the target group can respond to this request'
       }
     }
   })
