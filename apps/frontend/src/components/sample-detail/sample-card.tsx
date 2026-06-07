@@ -160,9 +160,7 @@ export function SampleCard({
             </div>
             <div className='flex items-center gap-1'>
               {canDelete && <DeleteSampleDialog sampleName={name} onDelete={onDelete} />}
-              {canShare && (
-                <ShareSampleDialog sampleId={sample.id} />
-              )}
+              {canShare && <ShareSampleDialog sampleId={sample.id} />}
             </div>
           </div>
         </div>
