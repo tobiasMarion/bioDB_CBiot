@@ -85,9 +85,7 @@ export function CreateSampleDialog({ groupId, open, onOpenChange }: CreateSample
   }
 
   const isValid = name.trim() && type.trim() && originOrganism.trim() && sourceLab.trim()
-  const filteredTypes = existingTypes.filter(t =>
-    t.toLowerCase().includes(typeInput.toLowerCase())
-  )
+  const filteredTypes = existingTypes.filter(t => t.toLowerCase().includes(typeInput.toLowerCase()))
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -101,14 +99,14 @@ export function CreateSampleDialog({ groupId, open, onOpenChange }: CreateSample
       <DialogContent className='sm:max-w-lg max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>New Sample</DialogTitle>
-          <DialogDescription>
-            Fields marked with * are required.
-          </DialogDescription>
+          <DialogDescription>Fields marked with * are required.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
           <div className='grid gap-2'>
-            <Label htmlFor='name'>Name <span className='text-destructive'>*</span></Label>
+            <Label htmlFor='name'>
+              Name <span className='text-destructive'>*</span>
+            </Label>
             <Input
               id='name'
               value={name}
@@ -119,7 +117,9 @@ export function CreateSampleDialog({ groupId, open, onOpenChange }: CreateSample
           </div>
 
           <div className='grid gap-2'>
-            <Label>Type <span className='text-destructive'>*</span></Label>
+            <Label>
+              Type <span className='text-destructive'>*</span>
+            </Label>
             <Popover open={typePopoverOpen} onOpenChange={setTypePopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -166,21 +166,22 @@ export function CreateSampleDialog({ groupId, open, onOpenChange }: CreateSample
                         </CommandItem>
                       ))}
                     </CommandGroup>
-                    {typeInput && !existingTypes.some(t => t.toLowerCase() === typeInput.toLowerCase()) && (
-                      <CommandGroup>
-                        <CommandItem
-                          value={`__new__${typeInput}`}
-                          onSelect={() => {
-                            setType(typeInput)
-                            setTypePopoverOpen(false)
-                          }}
-                          className='cursor-pointer font-medium'
-                        >
-                          <Plus className='mr-2 size-4 text-muted-foreground' />
-                          {`Use "${typeInput}"`}
-                        </CommandItem>
-                      </CommandGroup>
-                    )}
+                    {typeInput &&
+                      !existingTypes.some(t => t.toLowerCase() === typeInput.toLowerCase()) && (
+                        <CommandGroup>
+                          <CommandItem
+                            value={`__new__${typeInput}`}
+                            onSelect={() => {
+                              setType(typeInput)
+                              setTypePopoverOpen(false)
+                            }}
+                            className='cursor-pointer font-medium'
+                          >
+                            <Plus className='mr-2 size-4 text-muted-foreground' />
+                            {`Use "${typeInput}"`}
+                          </CommandItem>
+                        </CommandGroup>
+                      )}
                   </CommandList>
                 </Command>
               </PopoverContent>
@@ -188,7 +189,9 @@ export function CreateSampleDialog({ groupId, open, onOpenChange }: CreateSample
           </div>
 
           <div className='grid gap-2'>
-            <Label htmlFor='originOrganism'>Origin Organism <span className='text-destructive'>*</span></Label>
+            <Label htmlFor='originOrganism'>
+              Origin Organism <span className='text-destructive'>*</span>
+            </Label>
             <Input
               id='originOrganism'
               value={originOrganism}
@@ -199,7 +202,9 @@ export function CreateSampleDialog({ groupId, open, onOpenChange }: CreateSample
           </div>
 
           <div className='grid gap-2'>
-            <Label htmlFor='sourceLab'>Source Lab <span className='text-destructive'>*</span></Label>
+            <Label htmlFor='sourceLab'>
+              Source Lab <span className='text-destructive'>*</span>
+            </Label>
             <Input
               id='sourceLab'
               value={sourceLab}

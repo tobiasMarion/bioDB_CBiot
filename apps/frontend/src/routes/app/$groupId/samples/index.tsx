@@ -8,9 +8,8 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/app/$groupId/samples/')({
-  validateSearch: (search: Record<string, unknown>) => ({
-    create: search.create === true || search.create === 'true'
-  }),
+  validateSearch: (search: Record<string, unknown>): { create?: true } =>
+    search.create === true || search.create === 'true' ? { create: true } : {},
   component: RouteComponent
 })
 
@@ -62,10 +61,8 @@ function RouteComponent() {
 
         <SamplesTable
           groupId={groupId}
-          openCreate={create}
-          onOpenChangeCreate={open => {
-            if (!open) navigate({ to: '.', search: {} })
-          }}
+          openCreate={create ?? false}
+          onOpenChangeCreate={open => navigate({ to: '.', search: open ? { create: true } : {} })}
         />
       </div>
     </div>

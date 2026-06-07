@@ -10,19 +10,18 @@ import {
 import { getSamples } from '@/lib/api/get-samples'
 import { getSamplesTypes } from '@/lib/api/get-samples-types'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { CreateSampleDialog } from './create-sample-dialog'
 import { SampleRow } from './sample-row'
-import { SamplesTableSkeleton } from './samples-table-skeleton'
 import { SamplesPagination } from './samples-pagination'
+import { SamplesTableSkeleton } from './samples-table-skeleton'
 import { SamplesToolbar } from './samples-toolbar'
 
 interface SamplesTableProps {
   groupId: string
-  openCreate?: boolean
-  onOpenChangeCreate?: (open: boolean) => void
+  openCreate: boolean
+  onOpenChangeCreate: (open: boolean) => void
 }
 
 const ITEMS_PER_PAGE = 10
@@ -35,15 +34,6 @@ export function SamplesTable({ groupId, openCreate, onOpenChangeCreate }: Sample
   const [currentPage, setCurrentPage] = useState(1)
   const [sortBy, setSortBy] = useState<'name' | 'type' | 'createdAt'>('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const navigate = useNavigate()
-  const [internalOpen, setInternalOpen] = useState(false)
-  const showCreateDialog = openCreate || internalOpen
-  const setShowCreateDialog = (open: boolean) => {
-    setInternalOpen(open)
-    onOpenChangeCreate?.(open)
-    // Sincroniza a URL com o estado do dialog
-    navigate({ to: '.', search: open ? { create: true } : {} })
-  }
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), SEARCH_DEBOUNCE_MS)
@@ -107,11 +97,7 @@ export function SamplesTable({ groupId, openCreate, onOpenChangeCreate }: Sample
 
   return (
     <div className='flex flex-col gap-4'>
-      <CreateSampleDialog
-        groupId={groupId}
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-      />
+      <CreateSampleDialog groupId={groupId} open={openCreate} onOpenChange={onOpenChangeCreate} />
       <div className='flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between'>
         <div className='flex-1 order-2 sm:order-1'>
           <SamplesToolbar
@@ -130,7 +116,7 @@ export function SamplesTable({ groupId, openCreate, onOpenChangeCreate }: Sample
         <Button
           size='sm'
           className='order-1 sm:order-2 gap-2 w-full sm:w-auto [&:hover]:bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.08),transparent_50%)]'
-          onClick={() => setShowCreateDialog(true)}
+          onClick={() => onOpenChangeCreate(true)}
         >
           <Plus className='size-4' />
           New Sample
