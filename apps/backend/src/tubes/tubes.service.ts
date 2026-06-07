@@ -287,7 +287,11 @@ export class TubesService {
     const tube = await this.prisma.$transaction(async tx => {
       const archived = await tx.tube.update({
         where: { id: tubeId },
-        data: { isArchived: true, archivedAt: new Date() },
+        // Free up the storage slot — an archived tube must not keep occupying a box position,
+        // otherwise the (boxId, row, column) unique constraint blocks future placements there
+        // and the checkin "position occupied" check (which only looks at active tubes) misses it,
+        // causing an unhandled unique-constraint error on checkin.
+        data: { isArchived: true, archivedAt: new Date(), boxId: null, row: null, column: null },
         select: tubeSelect
       })
 
