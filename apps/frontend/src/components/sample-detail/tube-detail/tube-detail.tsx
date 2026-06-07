@@ -78,7 +78,7 @@ export function TubeDetail({
 
   const { data: otherCells = [] } = useQuery({
     queryKey: ['box-occupancy', tube.boxId, tube.sampleId],
-    queryFn: () => getBoxOccupancy(tube.boxId!, tube.sampleId),
+    queryFn: () => getBoxOccupancy(tube.boxId ?? '', tube.sampleId),
     enabled: !!tube.boxId
   })
 

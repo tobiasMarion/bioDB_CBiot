@@ -62,7 +62,7 @@ export function ReturnToFreezerDialog({
 
   const { data: otherCells = [] } = useQuery({
     queryKey: ['box-occupancy', selectedBoxId, tube.sampleId],
-    queryFn: () => getBoxOccupancy(selectedBoxId!, tube.sampleId),
+    queryFn: () => getBoxOccupancy(selectedBoxId ?? '', tube.sampleId),
     enabled: open && !!selectedBoxId
   })
 
