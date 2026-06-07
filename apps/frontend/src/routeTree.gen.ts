@@ -18,6 +18,7 @@ import { Route as AppGroupIdRouteRouteImport } from './routes/app/$groupId/route
 import { Route as AppGroupIdMembersRouteImport } from './routes/app/$groupId/members'
 import { Route as AppAdminRoomsIndexRouteImport } from './routes/app/admin/rooms/index'
 import { Route as AppGroupIdSamplesIndexRouteImport } from './routes/app/$groupId/samples/index'
+import { Route as AppGroupIdSamplesNewRouteImport } from './routes/app/$groupId/samples/new'
 import { Route as AppGroupIdSamplesIdRouteImport } from './routes/app/$groupId/samples/$id'
 
 const AppRouteRoute = AppRouteRouteImport.update({
@@ -65,6 +66,11 @@ const AppGroupIdSamplesIndexRoute = AppGroupIdSamplesIndexRouteImport.update({
   path: '/samples/',
   getParentRoute: () => AppGroupIdRouteRoute,
 } as any)
+const AppGroupIdSamplesNewRoute = AppGroupIdSamplesNewRouteImport.update({
+  id: '/samples/new',
+  path: '/samples/new',
+  getParentRoute: () => AppGroupIdRouteRoute,
+} as any)
 const AppGroupIdSamplesIdRoute = AppGroupIdSamplesIdRouteImport.update({
   id: '/samples/$id',
   path: '/samples/$id',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
+  '/app/$groupId/samples/new': typeof AppGroupIdSamplesNewRoute
   '/app/$groupId/samples/': typeof AppGroupIdSamplesIndexRoute
   '/app/admin/rooms/': typeof AppAdminRoomsIndexRoute
 }
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
+  '/app/$groupId/samples/new': typeof AppGroupIdSamplesNewRoute
   '/app/$groupId/samples': typeof AppGroupIdSamplesIndexRoute
   '/app/admin/rooms': typeof AppAdminRoomsIndexRoute
 }
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/app/$groupId/members': typeof AppGroupIdMembersRoute
   '/app/$groupId/samples/$id': typeof AppGroupIdSamplesIdRoute
+  '/app/$groupId/samples/new': typeof AppGroupIdSamplesNewRoute
   '/app/$groupId/samples/': typeof AppGroupIdSamplesIndexRoute
   '/app/admin/rooms/': typeof AppAdminRoomsIndexRoute
 }
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/$groupId/members'
     | '/app/$groupId/samples/$id'
+    | '/app/$groupId/samples/new'
     | '/app/$groupId/samples/'
     | '/app/admin/rooms/'
   fileRoutesByTo: FileRoutesByTo
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/$groupId/members'
     | '/app/$groupId/samples/$id'
+    | '/app/$groupId/samples/new'
     | '/app/$groupId/samples'
     | '/app/admin/rooms'
   id:
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/$groupId/members'
     | '/app/$groupId/samples/$id'
+    | '/app/$groupId/samples/new'
     | '/app/$groupId/samples/'
     | '/app/admin/rooms/'
   fileRoutesById: FileRoutesById
@@ -217,6 +229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGroupIdSamplesIndexRouteImport
       parentRoute: typeof AppGroupIdRouteRoute
     }
+    '/app/$groupId/samples/new': {
+      id: '/app/$groupId/samples/new'
+      path: '/samples/new'
+      fullPath: '/app/$groupId/samples/new'
+      preLoaderRoute: typeof AppGroupIdSamplesNewRouteImport
+      parentRoute: typeof AppGroupIdRouteRoute
+    }
     '/app/$groupId/samples/$id': {
       id: '/app/$groupId/samples/$id'
       path: '/samples/$id'
@@ -230,12 +249,14 @@ declare module '@tanstack/react-router' {
 interface AppGroupIdRouteRouteChildren {
   AppGroupIdMembersRoute: typeof AppGroupIdMembersRoute
   AppGroupIdSamplesIdRoute: typeof AppGroupIdSamplesIdRoute
+  AppGroupIdSamplesNewRoute: typeof AppGroupIdSamplesNewRoute
   AppGroupIdSamplesIndexRoute: typeof AppGroupIdSamplesIndexRoute
 }
 
 const AppGroupIdRouteRouteChildren: AppGroupIdRouteRouteChildren = {
   AppGroupIdMembersRoute: AppGroupIdMembersRoute,
   AppGroupIdSamplesIdRoute: AppGroupIdSamplesIdRoute,
+  AppGroupIdSamplesNewRoute: AppGroupIdSamplesNewRoute,
   AppGroupIdSamplesIndexRoute: AppGroupIdSamplesIndexRoute,
 }
 

@@ -10,6 +10,7 @@ import {
 import { getSamples } from '@/lib/api/get-samples'
 import { getSamplesTypes } from '@/lib/api/get-samples-types'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SampleRow } from './sample-row'
@@ -112,9 +113,12 @@ export function SamplesTable({ groupId }: SamplesTableProps) {
         <Button
           size='sm'
           className='order-1 sm:order-2 gap-2 w-full sm:w-auto [&:hover]:bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.08),transparent_50%)]'
+          asChild
         >
-          <Plus className='size-4' />
-          New Sample
+          <Link to='/app/$groupId/samples/new' params={{ groupId }}>
+            <Plus className='size-4' />
+            New Sample
+          </Link>
         </Button>
       </div>
 
