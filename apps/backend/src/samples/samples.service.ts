@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException
+} from '@nestjs/common'
 import { auditCreate, auditDelete, auditUpdate } from '../auth/audit.utils'
 import { AuthorizationService } from '../auth/authorization.service'
 import type { User } from '../auth/types/user.type'
@@ -7,6 +12,7 @@ import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateSampleDTO } from './dto/CreateSample'
 import type { GetSamplesFilter } from './dto/GetSamplesFilter'
 import { UpdateSampleDTO } from './dto/UpdateSample'
+import { SampleAccessService } from './sample-access.service'
 
 const sampleSelect = {
   id: true,
@@ -40,7 +46,8 @@ const sampleListSelect = {
 export class SamplesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly auth: AuthorizationService
+    private readonly auth: AuthorizationService,
+    private readonly sampleAccess: SampleAccessService
   ) {}
 
   async create(data: CreateSampleDTO, groupId: string, user: User) {
@@ -93,10 +100,13 @@ export class SamplesService {
 
     if (!sample) throw new NotFoundException('Sample not found')
 
-    await this.auth.assert({ user, permission: 'VIEW_GROUP', groupId: sample.groupId })
+    const access = await this.sampleAccess.resolveSampleAccess(sample, user)
+    if (!access.canView) {
+      throw new ForbiddenException('Insufficient permissions')
+    }
 
     const { _count, ...rest } = sample
-    return { ...rest, amountOfTubes: _count.tubes }
+    return { ...rest, amountOfTubes: _count.tubes, canEdit: access.canEdit }
   }
 
   async findAllByGroup(groupId: string, user: User, params: GetSamplesFilter) {
@@ -264,11 +274,10 @@ export class SamplesService {
 
     if (!currentSample) throw new NotFoundException('Sample not found')
 
-    await this.auth.assert({
-      user,
-      permission: 'UPDATE_SAMPLE',
-      groupId: currentSample.groupId
-    })
+    const access = await this.sampleAccess.resolveSampleAccess(currentSample, user)
+    if (!access.canEdit) {
+      throw new ForbiddenException('Insufficient permissions')
+    }
 
     try {
       return await this.prisma.$transaction(async tx => {

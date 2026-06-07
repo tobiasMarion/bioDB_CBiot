@@ -203,7 +203,7 @@ function RouteComponent() {
     checkoutMutation.isPending || checkinMutation.isPending || deleteTubeMutation.isPending
 
   const isOwner = sample ? sample.groupId === groupId : false
-  const canEdit = true
+  const canEdit = sample?.canEdit ?? false
   const canDelete = userRole === 'MANAGER' || userRole === 'LEADER'
   const canShare = isOwner && (userRole === 'MANAGER' || userRole === 'LEADER')
 
