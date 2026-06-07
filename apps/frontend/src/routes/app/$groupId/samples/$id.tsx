@@ -1,4 +1,4 @@
-import type { Attribute, Role } from '@/components/attributes/types'
+import type { Attribute } from '@/components/attributes/types'
 import { CreateTubeDialog } from '@/components/sample-detail/create-tube-dialog'
 import { EmptyTubeState } from '@/components/sample-detail/empty-tube-state'
 import type { ReturnPosition } from '@/components/sample-detail/return-to-freezer/return-to-freezer-dialog'
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { useGroupRole } from '@/hooks/use-group-role'
 import { usePageTitle } from '@/hooks/use-page-title'
 import type { AddTubeAttributePayload } from '@/lib/api/add-tube-attribute'
 import { addTubeAttribute } from '@/lib/api/add-tube-attribute'
@@ -27,7 +28,6 @@ import { checkoutTube } from '@/lib/api/checkout-tube'
 import { createTube } from '@/lib/api/create-tube'
 import { deleteTube } from '@/lib/api/delete-tube'
 import { deleteTubeAttribute } from '@/lib/api/delete-tube-attribute'
-import { getGroupMembers } from '@/lib/api/get-group-members'
 import { getSample } from '@/lib/api/get-sample'
 import { getSampleTubes } from '@/lib/api/get-sample-tubes'
 import { queryClient } from '@/lib/api/query-client'
@@ -84,16 +84,9 @@ function RouteComponent() {
     enabled: !!id
   })
 
-  const { data: members = [] } = useQuery({
-    queryKey: ['group-members', groupId],
-    queryFn: () => getGroupMembers(groupId),
-    enabled: !user?.isAdmin
-  })
+  const userRole = useGroupRole(groupId)
 
   usePageTitle(sample?.name)
-
-  const currentMember = members.find(m => m.user.id === user?.id && !m.isArchived)
-  const userRole: Role = user?.isAdmin ? 'LEADER' : (currentMember?.role ?? 'RESEARCHER')
 
   const sampleQueryKeys = [
     ['sample', id],

@@ -1,6 +1,7 @@
 import { HeroSamplesCard } from '@/components/hero-sample-card'
 import { SamplesTable } from '@/components/samples-table'
 import { StatCard } from '@/components/stats-cards'
+import { useGroupRole } from '@/hooks/use-group-role'
 import { usePageTitle } from '@/hooks/use-page-title'
 import { getGroupDetails } from '@/lib/api/get-group-details'
 import { getSamplesStats } from '@/lib/api/get-samples-stats'
@@ -14,6 +15,7 @@ export const Route = createFileRoute('/app/$groupId/samples/')({
 function RouteComponent() {
   const params = useParams({ from: '/app/$groupId/samples/' })
   const groupId = params.groupId
+  const userRole = useGroupRole(groupId)
 
   const { data: group, isLoading: isLoadingGroup } = useQuery({
     queryKey: ['group', groupId],
@@ -55,7 +57,7 @@ function RouteComponent() {
           />
         </section>
 
-        <SamplesTable groupId={groupId} />
+        <SamplesTable groupId={groupId} userRole={userRole} />
       </div>
     </div>
   )
