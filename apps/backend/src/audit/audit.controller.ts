@@ -24,7 +24,6 @@ import { AuditService } from './audit.service'
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
-  // Endpoint para admins — sem restrição de entityType
   @Get('audit-logs')
   @Auth()
   @ApiOperation({
@@ -93,7 +92,6 @@ export class AuditController {
     })
   }
 
-  // Endpoint para líderes de grupo — restrito ao groupId da URL
   @Get('groups/:groupId/audit')
   @Auth()
   @ApiOperation({
