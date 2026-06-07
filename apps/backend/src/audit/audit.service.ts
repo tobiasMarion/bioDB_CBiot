@@ -82,21 +82,35 @@ export class AuditService {
     return Promise.all(types.map(type => resolvers[type]()))
   }
 
-  // Busca samples pelo nome e retorna os IDs deles + IDs dos tubes relacionados.
+  // Busca samples pelo nome ou ID e retorna os IDs deles + IDs dos tubes relacionados.
   private async resolveSearchIds(search: string, groupId?: string): Promise<string[]> {
     const samples = await this.prisma.sample.findMany({
       where: {
-        name: { contains: search, mode: 'insensitive' },
-        ...(groupId ? { groupId } : {}),  
+        AND: [
+          {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { id: { startsWith: search } },
+            ],
+          },
+          ...(groupId
+            ? [{
+                OR: [
+                  { groupId },
+                  { shares: { some: { targetGroupId: groupId, isArchived: false } } },
+                ],
+              }]
+            : []),
+        ],
       },
       select: {
         id: true,
-        tubes: { select: { id: true } },  
+        tubes: { select: { id: true } },
       },
     })
 
     const sampleIds = samples.map(s => s.id)
-    const tubeIds = samples.flatMap(s => s.tubes.map(t => t.id))  
+    const tubeIds = samples.flatMap(s => s.tubes.map(t => t.id))
     return [...sampleIds, ...tubeIds]
   }
 
