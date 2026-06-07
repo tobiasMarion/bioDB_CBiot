@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { AuditModule } from './audit/audit.module'
 import { AuthModule } from './auth/auth.module'
 import { PrismaModule } from './common/prisma/prisma.module'
 import { FreezersModule } from './freezers/freezers.module'
@@ -17,7 +18,8 @@ import { TubesModule } from './tubes/tubes.module'
     NotificationsModule,
     SamplesModule,
     TubesModule,
-    RoomsModule
+    RoomsModule,
+    AuditModule
   ],
   controllers: [],
   providers: []

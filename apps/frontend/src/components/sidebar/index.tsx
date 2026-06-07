@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
-import { FlaskConical, ShieldCheck, Snowflake, Users } from 'lucide-react'
+import { ClipboardList, FlaskConical, ShieldCheck, Snowflake, Users } from 'lucide-react'
 
 import {
   Sidebar,
@@ -9,6 +9,7 @@ import {
   SidebarHeader,
   SidebarRail
 } from '@/components/ui/sidebar'
+import { getGroupMembers } from '@/lib/api/get-group-members'
 import { getGroups } from '@/lib/api/get-groups'
 import { authStore } from '@/lib/auth/store'
 import { GroupSwitcher } from './group-switcher'
@@ -26,6 +27,16 @@ export function AppSidebar() {
 
   const isAdmin = user?.isAdmin ?? false
   const hasGroups = groups.length > 0
+  const activeGroupId = groupId || localStorage.getItem('lastAccessedGroup') || groups[0]?.id
+
+  const { data: members = [] } = useQuery({
+    queryKey: ['group-members', activeGroupId],
+    queryFn: () => getGroupMembers(activeGroupId!),
+    enabled: !!activeGroupId && !isAdmin  
+  })
+
+  const canViewGroupAudit =
+    isAdmin || members.some(m => m.userId === user?.id && m.role === 'LEADER' && !m.isArchived)
 
   return (
     <Sidebar collapsible='icon'>
@@ -34,21 +45,24 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {hasGroups && groupId && (
+        {hasGroups && activeGroupId && (
           <NavMain
             title='Current Group'
             items={[
               {
                 title: 'Samples',
-                url: `/app/${groupId}/samples`,
+                url: `/app/${activeGroupId}/samples`,
                 icon: FlaskConical,
                 isActive: true,
                 items: [
-                  { title: 'All Samples', url: `/app/${groupId}/samples` },
-                  { title: 'Add New', url: `/app/${groupId}/samples/new` }
+                  { title: 'All Samples', url: `/app/${activeGroupId}/samples` },
+                  { title: 'Add New', url: `/app/${activeGroupId}/samples/new` }
                 ]
               },
-              { title: 'Members', url: `/app/${groupId}/members`, icon: Users }
+              { title: 'Members', url: `/app/${activeGroupId}/members`, icon: Users },
+              ...(canViewGroupAudit
+                ? [{ title: 'Audit Logs', url: `/app/${activeGroupId}/audit`, icon: ClipboardList }]
+                : [])
             ]}
           />
         )}
@@ -63,10 +77,10 @@ export function AppSidebar() {
                 icon: Snowflake,
                 items: [
                   { title: 'Manage Freezers', url: '/app/admin/freezers' },
-                  { title: 'Position Map', url: '/app/admin/map' }
+                  { title: 'Manage Rooms', url: '/app/admin/rooms/' }
                 ]
               },
-              { title: 'Audit Logs', url: '/app/admin/audit', icon: ShieldCheck }
+              { title: 'Admin Audit Logs', url: '/app/admin/audit', icon: ShieldCheck }
             ]}
           />
         )}

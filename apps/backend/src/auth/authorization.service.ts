@@ -14,6 +14,7 @@ export type AdminOnlyPermission =
   | 'VIEW_REPORTS'
   | 'CREATE_ROOM'
   | 'UPDATE_ROOM'
+  | 'VIEW_ADMIN_AUDIT'
 
 export type StandardGroupPermission =
   | 'VIEW_GROUP'
@@ -27,6 +28,7 @@ export type StandardGroupPermission =
   | 'CREATE_BOX'
   | 'MANAGE_STORAGE'
   | 'VIEW_PENDING_INVITES'
+  | 'VIEW_GROUP_AUDIT'
 
 export type ManageMembershipPermission = 'MANAGE_MEMBERSHIP_ROLE'
 
@@ -72,7 +74,8 @@ const REQUIRED_ROLE: Record<StandardGroupPermission, GroupRole> = {
   CREATE_TUBE: GroupRole.RESEARCHER,
   CREATE_BOX: GroupRole.RESEARCHER,
   MANAGE_STORAGE: GroupRole.MANAGER,
-  VIEW_PENDING_INVITES: GroupRole.RESEARCHER
+  VIEW_PENDING_INVITES: GroupRole.RESEARCHER,
+  VIEW_GROUP_AUDIT: GroupRole.LEADER
 }
 
 const ADMIN_PERMISSIONS = new Set<AdminOnlyPermission>([
@@ -85,7 +88,8 @@ const ADMIN_PERMISSIONS = new Set<AdminOnlyPermission>([
   'VIEW_ALL_SAMPLES',
   'VIEW_REPORTS',
   'CREATE_ROOM',
-  'UPDATE_ROOM'
+  'UPDATE_ROOM',
+  'VIEW_ADMIN_AUDIT'
 ])
 
 function isAdminPermission(permission: Permission): permission is AdminOnlyPermission {

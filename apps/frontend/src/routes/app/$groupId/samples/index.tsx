@@ -6,9 +6,11 @@ import { usePageTitle } from '@/hooks/use-page-title'
 import { getGroupDetails } from '@/lib/api/get-group-details'
 import { getSamplesStats } from '@/lib/api/get-samples-stats'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, useParams } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/app/$groupId/samples/')({
+  validateSearch: (search: Record<string, unknown>): { create?: true } =>
+    search.create === true || search.create === 'true' ? { create: true } : {},
   component: RouteComponent
 })
 
@@ -16,6 +18,8 @@ function RouteComponent() {
   const params = useParams({ from: '/app/$groupId/samples/' })
   const groupId = params.groupId
   const userRole = useGroupRole(groupId)
+  const { create } = Route.useSearch()
+  const navigate = useNavigate()
 
   const { data: group, isLoading: isLoadingGroup } = useQuery({
     queryKey: ['group', groupId],
@@ -57,7 +61,12 @@ function RouteComponent() {
           />
         </section>
 
-        <SamplesTable groupId={groupId} userRole={userRole} />
+        <SamplesTable
+          groupId={groupId}
+          userRole={userRole}
+          openCreate={create ?? false}
+          onOpenChangeCreate={open => navigate({ to: '.', search: open ? { create: true } : {} })}
+        />
       </div>
     </div>
   )

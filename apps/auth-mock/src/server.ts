@@ -37,8 +37,20 @@ const mockUsers: Record<string, { name: string; isAdmin: boolean }> = {
     name: 'Tobias Cadoná Marion',
     isAdmin: false
   },
-  'lucas@example.com': {
-    name: 'Lucas Silva',
+  'felipe@example.com': {
+    name: 'Felipe',
+    isAdmin: false
+  },
+  'joao@example.com': {
+    name: 'João',
+    isAdmin: false
+  },
+  'rafael@example.com': {
+    name: 'Rafael',
+    isAdmin: false
+  },
+  'pietro@example.com': {
+    name: 'Pietro',
     isAdmin: false
   },
   'jonas@example.com': {

@@ -42,7 +42,9 @@ export function ReturnToFreezerControls({
             {freezers.map(f => (
               <SelectItem key={f.id} value={f.id}>
                 <span className='block'>{f.name}</span>
-                <span className='block text-xs text-muted-foreground'>{f.locationDescription}</span>
+                <span className='block text-xs text-muted-foreground'>
+                  Room {f.room.number}, Building {f.room.building} — Floor {f.room.floor}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

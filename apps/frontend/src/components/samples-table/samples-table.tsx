@@ -14,6 +14,7 @@ import { getSamplesTypes } from '@/lib/api/get-samples-types'
 import { useQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { CreateSampleDialog } from './create-sample-dialog'
 import { SampleRow } from './sample-row'
 import { SamplesPagination } from './samples-pagination'
 import { SamplesTableSkeleton } from './samples-table-skeleton'
@@ -22,12 +23,19 @@ import { SamplesToolbar } from './samples-toolbar'
 interface SamplesTableProps {
   groupId: string
   userRole: Role
+  openCreate: boolean
+  onOpenChangeCreate: (open: boolean) => void
 }
 
 export const ITEMS_PER_PAGE = 10
 const SEARCH_DEBOUNCE_MS = 300
 
-export function SamplesTable({ groupId, userRole }: SamplesTableProps) {
+export function SamplesTable({
+  groupId,
+  userRole,
+  openCreate,
+  onOpenChangeCreate
+}: SamplesTableProps) {
   const [shareSampleId, setShareSampleId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -98,6 +106,7 @@ export function SamplesTable({ groupId, userRole }: SamplesTableProps) {
 
   return (
     <div className='flex flex-col gap-4'>
+      <CreateSampleDialog groupId={groupId} open={openCreate} onOpenChange={onOpenChangeCreate} />
       <div className='flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between'>
         <div className='flex-1 order-2 sm:order-1'>
           <SamplesToolbar
@@ -116,6 +125,7 @@ export function SamplesTable({ groupId, userRole }: SamplesTableProps) {
         <Button
           size='sm'
           className='order-1 sm:order-2 gap-2 w-full sm:w-auto [&:hover]:bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.08),transparent_50%)]'
+          onClick={() => onOpenChangeCreate(true)}
         >
           <Plus className='size-4' />
           New Sample

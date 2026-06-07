@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsOptional, IsString, MinLength } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { IsOptional, IsString, IsUUID, MinLength } from 'class-validator'
 
 export class UpdateFreezerDTO {
   @ApiProperty({ example: 'My Freezer', minLength: 3 })
@@ -8,9 +8,8 @@ export class UpdateFreezerDTO {
   @IsOptional()
   name?: string
 
-  @ApiProperty({ example: 'Building A, Room 301', minLength: 3 })
-  @IsString()
-  @MinLength(3)
+  @ApiPropertyOptional({ example: '123e4567-e89b-12d3-a456-426614174000' })
   @IsOptional()
-  locationDescription?: string
+  @IsUUID()
+  roomId?: string
 }

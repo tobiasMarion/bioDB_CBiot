@@ -65,6 +65,7 @@ export class SamplesService {
             type: data.type,
             originOrganism: data.originOrganism,
             sourceLab: data.sourceLab,
+            observations: data.observations,
             groupId: groupId,
             createdBy: user.id
           },

@@ -206,7 +206,7 @@ model Tube {
 model Freezer {
   id                  String @id @default(uuid())
   name                String
-  locationDescription String
+  roomId              String
   createdBy           String
 
   isArchived Boolean   @default(false)
@@ -215,6 +215,7 @@ model Freezer {
   createdAt DateTime @default(now())
 
   creator User  @relation(fields: [createdBy], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
   boxes   Box[]
 }
 
@@ -232,6 +233,7 @@ model Room {
   updatedAt DateTime @updatedAt
 
   creator User  @relation(fields: [createdBy], references: [id])
+  freezers Freezer[]
 }
 
 model Box {
