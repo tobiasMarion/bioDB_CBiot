@@ -1,7 +1,6 @@
 import { Controller, Get, Param, Post } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
-  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,

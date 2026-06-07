@@ -9,11 +9,11 @@ export class NotificationsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getMyNotifications(user: User): Promise<NotificationResponse[]> {
-    const leaderGroupIds = await this.getLeaderGroupIds(user.id)
+    const shareResponderGroupIds = await this.getShareResponderGroupIds(user.id)
 
     const [invites, shareRequests, expirationNotifications] = await Promise.all([
       this.fetchGroupInvites(user.id),
-      this.fetchShareRequests(leaderGroupIds),
+      this.fetchShareRequests(shareResponderGroupIds),
       this.fetchTubeExpirationNotifications(user.id)
     ])
 
@@ -26,9 +26,13 @@ export class NotificationsService {
     return notifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   }
 
-  private async getLeaderGroupIds(userId: string): Promise<string[]> {
+  private async getShareResponderGroupIds(userId: string): Promise<string[]> {
     const memberships = await this.prisma.groupMembership.findMany({
-      where: { userId, role: GroupRole.LEADER, isArchived: false },
+      where: {
+        userId,
+        role: { in: [GroupRole.LEADER, GroupRole.MANAGER] },
+        isArchived: false
+      },
       select: { groupId: true }
     })
     return memberships.map(m => m.groupId)
