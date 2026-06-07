@@ -11,14 +11,14 @@ import {
 } from '@/components/ui/dialog'
 import { usePageTitle } from '@/hooks/use-page-title'
 import { getApiErrorMessage } from '@/lib/api/api-error'
-import { queryClient } from '@/lib/api/query-client'
 import {
+  type CreateRoomPayload,
+  type Room,
   archiveRoom,
   createRoom,
-  updateRoom,
-  type CreateRoomPayload,
-  type Room
+  updateRoom
 } from '@/lib/api/get-rooms'
+import { queryClient } from '@/lib/api/query-client'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -74,7 +74,9 @@ function RouteComponent() {
         <RoomFormDialog
           mode='edit'
           open={!!editingRoom}
-          onOpenChange={open => { if (!open) setEditingRoom(null) }}
+          onOpenChange={open => {
+            if (!open) setEditingRoom(null)
+          }}
           initialData={{
             number: editingRoom.number,
             building: editingRoom.building,
@@ -89,7 +91,9 @@ function RouteComponent() {
 
       <Dialog
         open={!!archivingRoom}
-        onOpenChange={open => { if (!open) setArchivingRoom(null) }}
+        onOpenChange={open => {
+          if (!open) setArchivingRoom(null)
+        }}
       >
         <DialogContent>
           <DialogHeader>
@@ -123,9 +127,7 @@ function RouteComponent() {
         <h1 className='text-2xl font-semibold'>Rooms</h1>
 
         {error && (
-          <p className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
-            {error}
-          </p>
+          <p className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>{error}</p>
         )}
 
         <RoomsTable

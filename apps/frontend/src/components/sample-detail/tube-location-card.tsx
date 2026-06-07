@@ -29,7 +29,8 @@ export function TubeLocationCard({ tube }: TubeLocationCardProps) {
             <div className='min-w-0'>
               <p className='text-sm font-medium leading-snug'>{tube.box.freezer.name}</p>
               <p className='mt-0.5 text-xs text-muted-foreground'>
-                Room {tube.box.freezer.room.number}, Building {tube.box.freezer.room.building} — Floor {tube.box.freezer.room.floor}
+                Room {tube.box.freezer.room.number}, Building {tube.box.freezer.room.building} —
+                Floor {tube.box.freezer.room.floor}
               </p>
             </div>
           </div>

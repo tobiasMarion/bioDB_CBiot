@@ -101,7 +101,9 @@ export function AuditPagination({
               <PaginationNext
                 onClick={() => onPageChange(currentPage + 1)}
                 aria-disabled={currentPage === totalPages}
-                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : undefined}
+                className={
+                  currentPage === totalPages ? 'pointer-events-none opacity-50' : undefined
+                }
               />
             </PaginationItem>
           </PaginationContent>

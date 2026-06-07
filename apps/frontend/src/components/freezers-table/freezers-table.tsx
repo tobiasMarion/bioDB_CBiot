@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { getFreezers, type Freezer } from '@/lib/api/get-freezers'
+import { type Freezer, getFreezers } from '@/lib/api/get-freezers'
 import { useQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { FreezerRow } from './freezer-row'
@@ -19,7 +19,11 @@ interface FreezersTableProps {
   onArchiveFreezer: (freezer: Freezer) => void
 }
 
-export function FreezersTable({ onNewFreezer, onEditFreezer, onArchiveFreezer }: FreezersTableProps) {
+export function FreezersTable({
+  onNewFreezer,
+  onEditFreezer,
+  onArchiveFreezer
+}: FreezersTableProps) {
   const { data: freezers, isLoading } = useQuery({
     queryKey: ['freezers'],
     queryFn: getFreezers

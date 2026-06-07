@@ -25,11 +25,24 @@ import { Check, ChevronsUpDown, Search, X } from 'lucide-react'
 import { useState } from 'react'
 
 const ALL_ENTITY_TYPES: AuditEntityType[] = [
-  'SAMPLE', 'TUBE', 'GROUP', 'SHARE', 'USER', 'FREEZER', 'MEMBERSHIP', 'INVITE', 'ROOM'
+  'SAMPLE',
+  'TUBE',
+  'GROUP',
+  'SHARE',
+  'USER',
+  'FREEZER',
+  'MEMBERSHIP',
+  'INVITE',
+  'ROOM'
 ]
 
 export const GROUP_ENTITY_TYPES: AuditEntityType[] = [
-  'SAMPLE', 'TUBE', 'GROUP', 'SHARE', 'MEMBERSHIP', 'INVITE'
+  'SAMPLE',
+  'TUBE',
+  'GROUP',
+  'SHARE',
+  'MEMBERSHIP',
+  'INVITE'
 ]
 
 const ALL_ACTIONS: AuditAction[] = ['CREATE', 'UPDATE', 'ARCHIVE', 'MOVE', 'HANDLE', 'SHARE']
@@ -101,7 +114,9 @@ export function AuditToolbar({
           <SelectContent>
             <SelectItem value='all'>All entities</SelectItem>
             {entityTypes.map(type => (
-              <SelectItem key={type} value={type}>{type}</SelectItem>
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -116,7 +131,9 @@ export function AuditToolbar({
           <SelectContent>
             <SelectItem value='all'>All actions</SelectItem>
             {ALL_ACTIONS.map(a => (
-              <SelectItem key={a} value={a}>{a}</SelectItem>
+              <SelectItem key={a} value={a}>
+                {a}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>

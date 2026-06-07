@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { getRooms, type Room } from '@/lib/api/get-rooms'
+import { type Room, getRooms } from '@/lib/api/get-rooms'
 import { useQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { RoomRow } from './room-row'

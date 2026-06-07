@@ -1,11 +1,4 @@
-import {
-  Controller,
-  DefaultValuePipe,
-  Get,
-  Param,
-  ParseIntPipe,
-  Query
-} from '@nestjs/common'
+import { Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Query } from '@nestjs/common'
 import {
   ApiForbiddenResponse,
   ApiOperation,
@@ -28,7 +21,7 @@ export class AuditController {
   @Auth()
   @ApiOperation({
     summary: 'List all audit logs (admin)',
-    description: 'Returns all audit logs in the system. Requires admin role.',
+    description: 'Returns all audit logs in the system. Requires admin role.'
   })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
   @ApiForbiddenResponse({ description: 'Insufficient permissions. Requires admin.' })
@@ -46,7 +39,11 @@ export class AuditController {
             changes: { name: { from: 'Sample A', to: 'Sample B' } },
             performedBy: 'c3d4e5f6-a7b8-9012-cdef-123456789012',
             createdAt: '2026-06-05T22:15:39.932Z',
-            user: { id: 'c3d4e5f6-a7b8-9012-cdef-123456789012', name: 'João Silva', email: 'joao@example.com' }
+            user: {
+              id: 'c3d4e5f6-a7b8-9012-cdef-123456789012',
+              name: 'João Silva',
+              email: 'joao@example.com'
+            }
           }
         ],
         total: 42,
@@ -59,7 +56,11 @@ export class AuditController {
   @ApiQuery({ name: 'entityId', required: false, description: 'Exact entity UUID' })
   @ApiQuery({ name: 'action', enum: AuditAction, required: false })
   @ApiQuery({ name: 'performedBy', required: false, description: 'User UUID' })
-  @ApiQuery({ name: 'search', required: false, description: 'Sample name (also returns related tube logs)' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Sample name (also returns related tube logs)'
+  })
   @ApiQuery({ name: 'from', required: false, description: 'ISO date string (start of range)' })
   @ApiQuery({ name: 'to', required: false, description: 'ISO date string (end of range)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -88,7 +89,7 @@ export class AuditController {
       to,
       page,
       pageSize,
-      sortOrder,
+      sortOrder
     })
   }
 
@@ -96,7 +97,7 @@ export class AuditController {
   @Auth()
   @ApiOperation({
     summary: 'List audit logs for a group',
-    description: 'Returns audit logs for a specific group. Requires LEADER role.',
+    description: 'Returns audit logs for a specific group. Requires LEADER role.'
   })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
   @ApiForbiddenResponse({ description: 'Insufficient permissions. Requires LEADER role.' })
@@ -111,10 +112,19 @@ export class AuditController {
             entityType: 'SAMPLE',
             entityId: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
             action: 'CREATE',
-            changes: { name: 'Sample A', type: 'DNA', originOrganism: 'Homo sapiens', sourceLab: 'Lab A' },
+            changes: {
+              name: 'Sample A',
+              type: 'DNA',
+              originOrganism: 'Homo sapiens',
+              sourceLab: 'Lab A'
+            },
             performedBy: 'c3d4e5f6-a7b8-9012-cdef-123456789012',
             createdAt: '2026-06-05T22:15:39.932Z',
-            user: { id: 'c3d4e5f6-a7b8-9012-cdef-123456789012', name: 'João Silva', email: 'joao@example.com' }
+            user: {
+              id: 'c3d4e5f6-a7b8-9012-cdef-123456789012',
+              name: 'João Silva',
+              email: 'joao@example.com'
+            }
           }
         ],
         total: 15,
@@ -127,7 +137,11 @@ export class AuditController {
   @ApiQuery({ name: 'entityId', required: false, description: 'Exact entity UUID' })
   @ApiQuery({ name: 'action', enum: AuditAction, required: false })
   @ApiQuery({ name: 'performedBy', required: false, description: 'User UUID' })
-  @ApiQuery({ name: 'search', required: false, description: 'Sample name (also returns related tube logs)' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Sample name (also returns related tube logs)'
+  })
   @ApiQuery({ name: 'from', required: false, description: 'ISO date string (start of range)' })
   @ApiQuery({ name: 'to', required: false, description: 'ISO date string (end of range)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -157,7 +171,7 @@ export class AuditController {
       to,
       page,
       pageSize,
-      sortOrder,
+      sortOrder
     })
   }
 }

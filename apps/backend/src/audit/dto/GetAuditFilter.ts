@@ -3,12 +3,12 @@ import type { AuditAction, AuditEntityType } from '../../common/prisma/generated
 export type GetAuditFilter = {
   entityType?: AuditEntityType
   action?: AuditAction
-  performedBy?: string   
-  from?: string          // ISO date string
-  to?: string            // ISO date string
+  performedBy?: string
+  from?: string // ISO date string
+  to?: string // ISO date string
   entityId?: string
 
-  // Busca por nome de sample (puxa logs do sample + tubes relacionados) 
+  // Busca por nome de sample (puxa logs do sample + tubes relacionados)
   search?: string
 
   page?: number
