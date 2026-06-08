@@ -294,7 +294,7 @@ export class TubesService {
     return formatTube(tube)
   }
 
-  async archive(tubeId: string, user: User) {
+  async archive(tubeId: string, user: User, reason: string) {
     const sample = await this.getTubeSample(tubeId)
     // Archiving is a storage-management action reserved for the owning group — a share grant
     // (VIEW or EDIT) only covers viewing/editing sample data, not destructive storage operations.
@@ -316,7 +316,8 @@ export class TubesService {
           entityType: 'TUBE',
           entityId: tubeId,
           performedBy: user.id,
-          previous: archived
+          previous: archived,
+          reasonForArchiving: reason
         })
       })
 

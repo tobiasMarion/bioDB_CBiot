@@ -12,6 +12,7 @@ import {
 import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
 import { AddAttributeDTO } from './dto/AddAttribute'
+import { ArchiveTubeDTO } from './dto/ArchiveTube'
 import { CheckinTubeDTO } from './dto/CheckinTube'
 import { CreateTubeDTO } from './dto/CreateTube'
 import { FractionateTubeDTO } from './dto/FractionateTube'
@@ -134,8 +135,8 @@ export class TubesController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
   @ApiForbiddenResponse({ description: 'Insufficient permissions. Requires MANAGER or higher.' })
   @ApiNotFoundResponse({ description: 'Tube not found' })
-  async archive(@Param('id') id: string, @CurrentUser() user: User) {
-    return this.tubesService.archive(id, user)
+  async archive(@Param('id') id: string, @Body() body: ArchiveTubeDTO, @CurrentUser() user: User) {
+    return this.tubesService.archive(id, user, body.reasonForArchiving)
   }
 
   @Post('tubes/:id/attributes')

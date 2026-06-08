@@ -19,7 +19,7 @@ interface SampleCardProps {
   canEdit: boolean
   canDelete: boolean
   canShare: boolean
-  onDelete: () => void
+  onDelete: (reason: string) => void
 }
 
 export function SampleCard({ sample, canEdit, canDelete, canShare, onDelete }: SampleCardProps) {

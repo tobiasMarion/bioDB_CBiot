@@ -165,7 +165,7 @@ export class SamplesService {
     }
   }
 
-  async archive(id: string, user: User) {
+  async archive(id: string, user: User, reason: string) {
     const sample = await this.prisma.sample.findUnique({
       where: { id },
       select: { groupId: true }
@@ -194,7 +194,8 @@ export class SamplesService {
           entityType: 'SAMPLE',
           entityId: id,
           performedBy: user.id,
-          previous: sample
+          previous: sample,
+          reasonForArchiving: reason
         })
       })
 

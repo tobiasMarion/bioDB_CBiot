@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger'
 import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
+import { ArchiveSampleDTO } from './dto/ArchiveSample'
 import { CreateSampleDTO } from './dto/CreateSample'
 import { UpdateSampleDTO } from './dto/UpdateSample'
 import { SamplesService } from './samples.service'
@@ -203,8 +204,12 @@ export class SamplesController {
       }
     }
   })
-  async remove(@Param('id') id: string, @CurrentUser() user: User) {
-    return this.samplesService.archive(id, user)
+  async remove(
+    @Param('id') id: string,
+    @Body() body: ArchiveSampleDTO,
+    @CurrentUser() user: User
+  ) {
+    return this.samplesService.archive(id, user, body.reasonForArchiving)
   }
 
   @Get('groups/:groupId/samples/types')
