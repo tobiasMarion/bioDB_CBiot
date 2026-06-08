@@ -28,6 +28,7 @@ import { checkoutTube } from '@/lib/api/checkout-tube'
 import { createTube } from '@/lib/api/create-tube'
 import { deleteTube } from '@/lib/api/delete-tube'
 import { deleteTubeAttribute } from '@/lib/api/delete-tube-attribute'
+import { fractionateTube } from '@/lib/api/fractionate-tube'
 import { getSample } from '@/lib/api/get-sample'
 import { getSampleTubes } from '@/lib/api/get-sample-tubes'
 import { queryClient } from '@/lib/api/query-client'
@@ -204,6 +205,16 @@ function RouteComponent() {
     onError: async err => setAttrError(await getApiErrorMessage(err))
   })
 
+  const fractionateMutation = useMutation({
+    mutationFn: ({ tubeId, quantity }: { tubeId: string; quantity: number }) =>
+      fractionateTube(tubeId, quantity),
+    onSuccess: () => {
+      setTubeError(null)
+      queryClient.invalidateQueries({ queryKey: ['sample-tubes', id] })
+    },
+    onError: async err => setTubeError(await getApiErrorMessage(err))
+  })
+
   const selectedTube = tubes.find(t => t.id === selectedTubeId) ?? null
   const toggleTube = (tubeId: string) =>
     navigateSearch({
@@ -215,7 +226,10 @@ function RouteComponent() {
     })
 
   const isTubePending =
-    checkoutMutation.isPending || checkinMutation.isPending || deleteTubeMutation.isPending
+    checkoutMutation.isPending ||
+    checkinMutation.isPending ||
+    deleteTubeMutation.isPending ||
+    fractionateMutation.isPending
 
   const isOwner = sample ? sample.groupId === groupId : false
   const canEdit = sample?.canEdit ?? false
@@ -343,6 +357,9 @@ function RouteComponent() {
                   onCheckout={() => checkoutMutation.mutate(selectedTube.id)}
                   onCheckin={pos =>
                     checkinMutation.mutate({ tubeId: selectedTube.id, position: pos })
+                  }
+                  onFractionate={qty =>
+                    fractionateMutation.mutate({ tubeId: selectedTube.id, quantity: qty })
                   }
                   onDelete={_reason => deleteTubeMutation.mutate(selectedTube.id)}
                 />

@@ -14,6 +14,7 @@ import { SampleAccessService } from '../samples/sample-access.service'
 import { AddAttributeDTO } from './dto/AddAttribute'
 import { CheckinTubeDTO } from './dto/CheckinTube'
 import { CreateTubeDTO } from './dto/CreateTube'
+import { FractionateTubeDTO } from './dto/FractionateTube'
 import { UpdateAttributeDTO } from './dto/UpdateAttribute'
 import { UpdateTubeDTO } from './dto/UpdateTube'
 
@@ -325,6 +326,81 @@ export class TubesService {
     await this.tubeExpiration.resolveExpirationNotification(tubeId)
 
     return formatTube(tube)
+  }
+
+  async fractionate(tubeId: string, data: FractionateTubeDTO, user: User) {
+    const current = await this.findRawTube(tubeId)
+
+    const isCheckedOutByMe =
+      current.checkedOutAt && current.checkedOutBy === user.id
+    const isUnplaced = !current.checkedOutAt && !current.boxId
+
+    if (!isCheckedOutByMe && !isUnplaced) {
+      if (current.checkedOutAt) {
+        throw new ForbiddenException(
+          'Only the user who checked out this tube can fractionate it'
+        )
+      }
+      throw new ForbiddenException(
+        'Cannot fractionate a tube that is in storage. Check it out first or use an unplaced tube.'
+      )
+    }
+
+    if (isUnplaced) {
+      const sample = await this.getTubeSample(tubeId)
+      await this.assertCanEdit(sample, user)
+    }
+
+    const { quantity } = data
+
+    const newTubes = await this.prisma.$transaction(async tx => {
+      const created: Array<unknown> = []
+
+      for (let i = 0; i < quantity; i++) {
+        const newTube = await tx.tube.create({
+          data: {
+            sampleId: current.sampleId,
+            createdBy: user.id,
+            expirationDate: current.expirationDate,
+            daysBeforeNotification: current.daysBeforeNotification,
+            notes: current.notes,
+            boxId: null,
+            row: null,
+            column: null
+          },
+          select: tubeSelect
+        })
+
+        const nonArchivedAttributes = current.attributes ?? []
+        if (nonArchivedAttributes.length > 0) {
+          await tx.tubeAttribute.createMany({
+            data: nonArchivedAttributes.map(attr => ({
+              tubeId: newTube.id,
+              key: attr.key,
+              value: attr.value,
+              type: attr.type,
+              minRequiredRoleToEdit: attr.minRequiredRoleToEdit,
+              createdBy: user.id
+            }))
+          })
+        }
+
+        await tx.auditLog.create({
+          data: auditCreate({
+            entityType: 'TUBE',
+            entityId: newTube.id,
+            performedBy: user.id,
+            current: newTube
+          })
+        })
+
+        created.push(newTube)
+      }
+
+      return created
+    })
+
+    return newTubes.map(formatTube)
   }
 
   async addAttribute(tubeId: string, data: AddAttributeDTO, user: User) {

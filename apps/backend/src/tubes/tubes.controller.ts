@@ -14,6 +14,7 @@ import type { User } from '../auth/types/user.type'
 import { AddAttributeDTO } from './dto/AddAttribute'
 import { CheckinTubeDTO } from './dto/CheckinTube'
 import { CreateTubeDTO } from './dto/CreateTube'
+import { FractionateTubeDTO } from './dto/FractionateTube'
 import { UpdateAttributeDTO } from './dto/UpdateAttribute'
 import { UpdateTubeDTO } from './dto/UpdateTube'
 import { TubesService } from './tubes.service'
@@ -69,6 +70,21 @@ export class TubesController {
   @ApiBadRequestResponse({ description: 'Invalid request body' })
   async checkin(@Param('id') id: string, @Body() body: CheckinTubeDTO, @CurrentUser() user: User) {
     return this.tubesService.checkin(id, body, user)
+  }
+
+  @Post('tubes/:id/fractionate')
+  @Auth()
+  @ApiOperation({ summary: 'Fractionate a tube into multiple unplaced tubes' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
+  @ApiForbiddenResponse({ description: 'Insufficient permissions' })
+  @ApiNotFoundResponse({ description: 'Tube not found' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  async fractionate(
+    @Param('id') id: string,
+    @Body() body: FractionateTubeDTO,
+    @CurrentUser() user: User
+  ) {
+    return this.tubesService.fractionate(id, body, user)
   }
 
   @Patch('tubes/:id')

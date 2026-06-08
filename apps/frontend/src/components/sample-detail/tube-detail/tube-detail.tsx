@@ -38,6 +38,7 @@ interface TubeDetailProps {
   onDaysBeforeNotificationChange: (v: number) => void
   onCheckout?: () => void
   onCheckin?: (position: ReturnPosition) => void
+  onFractionate?: (quantity: number) => void
   onDelete?: (reason: string) => void
 }
 
@@ -57,6 +58,7 @@ export function TubeDetail({
   onDaysBeforeNotificationChange,
   onCheckout,
   onCheckin,
+  onFractionate,
   onDelete
 }: TubeDetailProps) {
   const pos = positionLabel(tube.row, tube.column)
@@ -117,6 +119,7 @@ export function TubeDetail({
             isPending={isPending}
             onCheckout={onCheckout}
             onCheckin={onCheckin}
+            onFractionate={onFractionate}
             onDelete={onDelete}
           />
         </div>
