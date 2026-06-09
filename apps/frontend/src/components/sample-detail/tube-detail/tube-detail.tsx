@@ -28,6 +28,7 @@ interface TubeDetailProps {
   groupId: string
   userRole: Role
   currentUserId: string
+  canEdit: boolean
   attributes: Attribute[]
   notes: string
   isPending?: boolean
@@ -48,6 +49,7 @@ export function TubeDetail({
   groupId,
   userRole,
   currentUserId,
+  canEdit,
   attributes,
   notes,
   isPending = false,
@@ -116,6 +118,7 @@ export function TubeDetail({
             groupId={groupId}
             isCheckedOutByMe={isCheckedOutByMe}
             canAct={canAct}
+            canEdit={canEdit}
             isPending={isPending}
             onCheckout={onCheckout}
             onCheckin={onCheckin}

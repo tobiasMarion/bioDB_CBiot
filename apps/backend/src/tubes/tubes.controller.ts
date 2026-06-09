@@ -75,6 +75,36 @@ export class TubesController {
   @Post('tubes/:id/fractionate')
   @Auth()
   @ApiOperation({ summary: 'Fractionate a tube into multiple unplaced tubes' })
+  @ApiResponse({
+    status: 201,
+    description: 'List of newly created fractions',
+    schema: {
+      example: [
+        {
+          id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+          sampleId: 's1b2c3d4-e5f6-7890-abcd-ef1234567890',
+          expirationDate: '2027-01-01T00:00:00.000Z',
+          daysBeforeNotification: 30,
+          notes: null,
+          boxId: null,
+          row: null,
+          column: null,
+          box: null,
+          attributes: [
+            {
+              id: 'attr-uuid',
+              key: 'concentration',
+              value: '50ng/uL',
+              type: 'TEXT',
+              minRequiredRoleToEdit: 'MANAGER'
+            }
+          ],
+          status: 'unplaced',
+          checkedOut: null
+        }
+      ]
+    }
+  })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
   @ApiForbiddenResponse({ description: 'Insufficient permissions' })
   @ApiNotFoundResponse({ description: 'Tube not found' })

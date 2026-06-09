@@ -16,15 +16,16 @@ import { useState } from 'react'
 
 interface FractionateTubeDialogProps {
   tube: Tube
+  isPending?: boolean
   onFractionate: (quantity: number) => void
 }
 
-export function FractionateTubeDialog({ tube, onFractionate }: FractionateTubeDialogProps) {
+export function FractionateTubeDialog({ tube, isPending = false, onFractionate }: FractionateTubeDialogProps) {
   const [open, setOpen] = useState(false)
   const [quantity, setQuantity] = useState('1')
 
   const handleSubmit = () => {
-    const qty = Number(quantity)
+    const qty = Math.floor(Number(quantity))
     if (qty < 1) return
     onFractionate(qty)
     setQuantity('1')
@@ -66,6 +67,8 @@ export function FractionateTubeDialog({ tube, onFractionate }: FractionateTubeDi
               id='quantity'
               type='number'
               min={1}
+              max={50}
+              step={1}
               value={quantity}
               onChange={e => setQuantity(e.target.value)}
             />
@@ -78,7 +81,7 @@ export function FractionateTubeDialog({ tube, onFractionate }: FractionateTubeDi
           <Button variant='outline' onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!quantity || Number(quantity) < 1}>
+          <Button onClick={handleSubmit} disabled={!quantity || Number(quantity) < 1 || isPending}>
             Create {quantity && Number(quantity) > 1 ? `${quantity} tubes` : '1 tube'}
           </Button>
         </DialogFooter>

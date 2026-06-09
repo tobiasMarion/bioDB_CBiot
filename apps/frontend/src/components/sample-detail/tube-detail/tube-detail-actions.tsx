@@ -12,6 +12,7 @@ interface TubeDetailActionsProps {
   groupId: string
   isCheckedOutByMe: boolean
   canAct: boolean
+  canEdit: boolean
   isPending?: boolean
   onCheckout?: () => void
   onCheckin?: (position: ReturnPosition) => void
@@ -25,6 +26,7 @@ export function TubeDetailActions({
   groupId,
   isCheckedOutByMe,
   canAct,
+  canEdit,
   isPending = false,
   onCheckout,
   onCheckin,
@@ -32,7 +34,7 @@ export function TubeDetailActions({
   onDelete
 }: TubeDetailActionsProps) {
   const canFractionate =
-    onFractionate && (isCheckedOutByMe || tube.status === 'unplaced')
+    onFractionate && (isCheckedOutByMe || (tube.status === 'unplaced' && canEdit))
 
   return (
     <div className='mt-4 flex items-center justify-between gap-2'>
@@ -59,7 +61,7 @@ export function TubeDetailActions({
           />
         )}
         {canFractionate && (
-          <FractionateTubeDialog tube={tube} onFractionate={onFractionate} />
+          <FractionateTubeDialog tube={tube} isPending={isPending} onFractionate={onFractionate} />
         )}
         {tube.status === 'unplaced' && !isCheckedOutByMe && (
           <ReturnToFreezerDialog

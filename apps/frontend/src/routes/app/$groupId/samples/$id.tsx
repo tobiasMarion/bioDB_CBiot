@@ -323,6 +323,7 @@ function RouteComponent() {
                   groupId={groupId}
                   userRole={userRole}
                   currentUserId={user?.id ?? ''}
+                  canEdit={canEdit}
                   attributes={getAttrsForTube(selectedTube)}
                   notes={selectedTube.notes}
                   isPending={isTubePending}

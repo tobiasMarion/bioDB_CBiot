@@ -354,7 +354,7 @@ export class TubesService {
     const { quantity } = data
 
     const newTubes = await this.prisma.$transaction(async tx => {
-      const created: Array<unknown> = []
+      const created: Awaited<ReturnType<TubesService['findRawTube']>>[] = []
 
       for (let i = 0; i < quantity; i++) {
         const newTube = await tx.tube.create({
@@ -371,10 +371,9 @@ export class TubesService {
           select: tubeSelect
         })
 
-        const nonArchivedAttributes = current.attributes ?? []
-        if (nonArchivedAttributes.length > 0) {
+        if (current.attributes.length > 0) {
           await tx.tubeAttribute.createMany({
-            data: nonArchivedAttributes.map(attr => ({
+            data: current.attributes.map(attr => ({
               tubeId: newTube.id,
               key: attr.key,
               value: attr.value,
