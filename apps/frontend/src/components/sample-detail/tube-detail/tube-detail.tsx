@@ -28,6 +28,7 @@ interface TubeDetailProps {
   groupId: string
   userRole: Role
   currentUserId: string
+  canEdit: boolean
   attributes: Attribute[]
   notes: string
   isPending?: boolean
@@ -38,6 +39,7 @@ interface TubeDetailProps {
   onDaysBeforeNotificationChange: (v: number) => void
   onCheckout?: () => void
   onCheckin?: (position: ReturnPosition) => void
+  onFractionate?: (quantity: number) => void
   onDelete?: (reason: string) => void
 }
 
@@ -47,6 +49,7 @@ export function TubeDetail({
   groupId,
   userRole,
   currentUserId,
+  canEdit,
   attributes,
   notes,
   isPending = false,
@@ -57,6 +60,7 @@ export function TubeDetail({
   onDaysBeforeNotificationChange,
   onCheckout,
   onCheckin,
+  onFractionate,
   onDelete
 }: TubeDetailProps) {
   const pos = positionLabel(tube.row, tube.column)
@@ -114,9 +118,11 @@ export function TubeDetail({
             groupId={groupId}
             isCheckedOutByMe={isCheckedOutByMe}
             canAct={canAct}
+            canEdit={canEdit}
             isPending={isPending}
             onCheckout={onCheckout}
             onCheckin={onCheckin}
+            onFractionate={onFractionate}
             onDelete={onDelete}
           />
         </div>

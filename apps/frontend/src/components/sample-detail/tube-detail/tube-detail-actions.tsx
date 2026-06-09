@@ -4,6 +4,7 @@ import type { Tube } from '@/components/tube/tube-data'
 import { Button } from '@/components/ui/button'
 import { ArrowUpFromLine, Scissors } from 'lucide-react'
 import { DeleteTubeDialog } from '../delete-tube-dialog'
+import { FractionateTubeDialog } from '../fractionate-tube-dialog'
 
 interface TubeDetailActionsProps {
   tube: Tube
@@ -11,9 +12,11 @@ interface TubeDetailActionsProps {
   groupId: string
   isCheckedOutByMe: boolean
   canAct: boolean
+  canEdit: boolean
   isPending?: boolean
   onCheckout?: () => void
   onCheckin?: (position: ReturnPosition) => void
+  onFractionate?: (quantity: number) => void
   onDelete?: (reason: string) => void
 }
 
@@ -23,11 +26,16 @@ export function TubeDetailActions({
   groupId,
   isCheckedOutByMe,
   canAct,
+  canEdit,
   isPending = false,
   onCheckout,
   onCheckin,
+  onFractionate,
   onDelete
 }: TubeDetailActionsProps) {
+  const canFractionate =
+    onFractionate && (isCheckedOutByMe || (tube.status === 'unplaced' && canEdit))
+
   return (
     <div className='mt-4 flex items-center justify-between gap-2'>
       <div className='flex flex-wrap items-center gap-2'>
@@ -44,26 +52,18 @@ export function TubeDetailActions({
           </Button>
         )}
         {isCheckedOutByMe && (
-          <>
-            <ReturnToFreezerDialog
-              tube={tube}
-              allTubes={allTubes}
-              groupId={groupId}
-              variant='return'
-              onConfirm={pos => onCheckin?.(pos)}
-            />
-            <Button
-              variant='outline'
-              size='sm'
-              className='gap-2'
-              onClick={() => console.log('fractionate', tube.id)}
-            >
-              <Scissors className='size-3.5' />
-              Fractionate
-            </Button>
-          </>
+          <ReturnToFreezerDialog
+            tube={tube}
+            allTubes={allTubes}
+            groupId={groupId}
+            variant='return'
+            onConfirm={pos => onCheckin?.(pos)}
+          />
         )}
-        {tube.status === 'unplaced' && (
+        {canFractionate && (
+          <FractionateTubeDialog tube={tube} isPending={isPending} onFractionate={onFractionate} />
+        )}
+        {tube.status === 'unplaced' && !isCheckedOutByMe && (
           <ReturnToFreezerDialog
             tube={tube}
             allTubes={allTubes}
