@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -22,6 +23,7 @@ const sampleSelect = {
   sourceLab: true,
   observations: true,
   groupId: true,
+  reasonForArchiving: true,
   group: {
     select: { id: true, name: true }
   },
@@ -165,7 +167,7 @@ export class SamplesService {
     }
   }
 
-  async archive(id: string, user: User) {
+  async archive(id: string, user: User, reason: string) {
     const sample = await this.prisma.sample.findUnique({
       where: { id },
       select: { groupId: true }
@@ -180,11 +182,22 @@ export class SamplesService {
     })
 
     return await this.prisma.$transaction(async tx => {
+      const activeTubeCount = await tx.tube.count({
+        where: { sampleId: id, isArchived: false }
+      })
+
+      if (activeTubeCount > 0) {
+        throw new BadRequestException(
+          `Cannot archive sample with ${activeTubeCount} active tube${activeTubeCount > 1 ? 's' : ''}. Archive all tubes first.`
+        )
+      }
+
       const archivedSample = await tx.sample.update({
         where: { id },
         data: {
           isArchived: true,
-          archivedAt: new Date()
+          archivedAt: new Date(),
+          reasonForArchiving: reason
         },
         select: sampleSelect
       })
@@ -194,7 +207,7 @@ export class SamplesService {
           entityType: 'SAMPLE',
           entityId: id,
           performedBy: user.id,
-          previous: sample
+          previous: archivedSample
         })
       })
 

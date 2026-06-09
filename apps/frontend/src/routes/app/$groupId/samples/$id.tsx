@@ -144,7 +144,8 @@ function RouteComponent() {
   })
 
   const deleteTubeMutation = useMutation({
-    mutationFn: (tubeId: string) => deleteTube(tubeId),
+    mutationFn: ({ tubeId, reason }: { tubeId: string; reason: string }) =>
+      deleteTube(tubeId, reason),
     onSuccess: () => {
       setTubeError(null)
       navigateSearch({
@@ -157,7 +158,7 @@ function RouteComponent() {
   })
 
   const archiveSampleMutation = useMutation({
-    mutationFn: () => archiveSample(id),
+    mutationFn: (reason: string) => archiveSample(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['samples', groupId] })
       navigate({ to: '/app/$groupId/samples', params: { groupId } })
@@ -263,7 +264,8 @@ function RouteComponent() {
             canEdit={canEdit}
             canDelete={canDelete}
             canShare={canShare}
-            onDelete={() => archiveSampleMutation.mutate()}
+            activeTubeCount={sample.amountOfTubes}
+            onDelete={reason => archiveSampleMutation.mutate(reason)}
           />
         ) : null}
 
@@ -362,7 +364,7 @@ function RouteComponent() {
                   onFractionate={qty =>
                     fractionateMutation.mutate({ tubeId: selectedTube.id, quantity: qty })
                   }
-                  onDelete={_reason => deleteTubeMutation.mutate(selectedTube.id)}
+                  onDelete={reason => deleteTubeMutation.mutate({ tubeId: selectedTube.id, reason })}
                 />
               ) : (
                 <EmptyTubeState />
