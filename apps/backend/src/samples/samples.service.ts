@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -178,6 +179,16 @@ export class SamplesService {
       permission: 'DELETE_SAMPLE',
       groupId: sample.groupId
     })
+
+    const activeTubeCount = await this.prisma.tube.count({
+      where: { sampleId: id, isArchived: false }
+    })
+
+    if (activeTubeCount > 0) {
+      throw new BadRequestException(
+        `Cannot archive sample with ${activeTubeCount} active tube${activeTubeCount > 1 ? 's' : ''}. Archive all tubes first.`
+      )
+    }
 
     return await this.prisma.$transaction(async tx => {
       const archivedSample = await tx.sample.update({

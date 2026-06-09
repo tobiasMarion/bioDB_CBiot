@@ -19,10 +19,11 @@ interface SampleCardProps {
   canEdit: boolean
   canDelete: boolean
   canShare: boolean
+  activeTubeCount: number
   onDelete: (reason: string) => void
 }
 
-export function SampleCard({ sample, canEdit, canDelete, canShare, onDelete }: SampleCardProps) {
+export function SampleCard({ sample, canEdit, canDelete, canShare, activeTubeCount, onDelete }: SampleCardProps) {
   const [name, setName] = useState(sample.name)
   const [type, setType] = useState(sample.type)
   const [originOrganism, setOriginOrganism] = useState(sample.originOrganism)
@@ -151,7 +152,13 @@ export function SampleCard({ sample, canEdit, canDelete, canShare, onDelete }: S
               <p className='text-2xl font-semibold tabular-nums'>{sample.amountOfTubes}</p>
             </div>
             <div className='flex items-center gap-1'>
-              {canDelete && <DeleteSampleDialog sampleName={name} onDelete={onDelete} />}
+              {canDelete && (
+                <DeleteSampleDialog
+                  sampleName={name}
+                  activeTubeCount={activeTubeCount}
+                  onDelete={onDelete}
+                />
+              )}
               {canShare && <ShareSampleDialog sampleId={sample.id} />}
             </div>
           </div>
