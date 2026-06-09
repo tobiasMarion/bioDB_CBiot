@@ -29,6 +29,7 @@ const tubeSelect = {
   column: true,
   checkedOutBy: true,
   checkedOutAt: true,
+  reasonForArchiving: true,
   checkedOutUser: { select: { id: true, name: true } },
   box: {
     select: {
@@ -307,7 +308,7 @@ export class TubesService {
         // otherwise the (boxId, row, column) unique constraint blocks future placements there
         // and the checkin "position occupied" check (which only looks at active tubes) misses it,
         // causing an unhandled unique-constraint error on checkin.
-        data: { isArchived: true, archivedAt: new Date(), boxId: null, row: null, column: null },
+        data: { isArchived: true, archivedAt: new Date(), reasonForArchiving: reason, boxId: null, row: null, column: null },
         select: tubeSelect
       })
 
@@ -316,8 +317,7 @@ export class TubesService {
           entityType: 'TUBE',
           entityId: tubeId,
           performedBy: user.id,
-          previous: archived,
-          reasonForArchiving: reason
+          previous: archived
         })
       })
 

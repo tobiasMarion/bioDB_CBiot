@@ -5,5 +5,5 @@ export class ArchiveTubeDTO {
   @ApiProperty({ example: 'Material expirado, contaminação detectada.' })
   @IsString()
   @IsNotEmpty()
-  reasonForArchiving: string
+  reasonForArchiving!: string
 }

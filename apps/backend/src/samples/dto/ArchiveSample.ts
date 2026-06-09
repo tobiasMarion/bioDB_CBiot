@@ -5,5 +5,5 @@ export class ArchiveSampleDTO {
   @ApiProperty({ example: 'Amostra degradada, material insuficiente para análise.' })
   @IsString()
   @IsNotEmpty()
-  reasonForArchiving: string
+  reasonForArchiving!: string
 }

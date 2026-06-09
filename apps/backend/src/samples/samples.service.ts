@@ -23,6 +23,7 @@ const sampleSelect = {
   sourceLab: true,
   observations: true,
   groupId: true,
+  reasonForArchiving: true,
   group: {
     select: { id: true, name: true }
   },
@@ -180,22 +181,23 @@ export class SamplesService {
       groupId: sample.groupId
     })
 
-    const activeTubeCount = await this.prisma.tube.count({
-      where: { sampleId: id, isArchived: false }
-    })
-
-    if (activeTubeCount > 0) {
-      throw new BadRequestException(
-        `Cannot archive sample with ${activeTubeCount} active tube${activeTubeCount > 1 ? 's' : ''}. Archive all tubes first.`
-      )
-    }
-
     return await this.prisma.$transaction(async tx => {
+      const activeTubeCount = await tx.tube.count({
+        where: { sampleId: id, isArchived: false }
+      })
+
+      if (activeTubeCount > 0) {
+        throw new BadRequestException(
+          `Cannot archive sample with ${activeTubeCount} active tube${activeTubeCount > 1 ? 's' : ''}. Archive all tubes first.`
+        )
+      }
+
       const archivedSample = await tx.sample.update({
         where: { id },
         data: {
           isArchived: true,
-          archivedAt: new Date()
+          archivedAt: new Date(),
+          reasonForArchiving: reason
         },
         select: sampleSelect
       })
@@ -205,8 +207,7 @@ export class SamplesService {
           entityType: 'SAMPLE',
           entityId: id,
           performedBy: user.id,
-          previous: sample,
-          reasonForArchiving: reason
+          previous: archivedSample
         })
       })
 

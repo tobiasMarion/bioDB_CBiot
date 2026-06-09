@@ -106,7 +106,6 @@ export function auditUpdate<T extends ComparableRecord>(
 export function auditDelete<T extends ComparableRecord>(
   params: BaseAuditParams & {
     previous: T
-    reasonForArchiving?: string
   }
 ): AuditPayload {
   const ignoredFields = params.ignoredFields ?? DEFAULT_IGNORED_FIELDS
@@ -116,10 +115,7 @@ export function auditDelete<T extends ComparableRecord>(
     entityId: params.entityId,
     performedBy: params.performedBy,
     action: AuditAction.ARCHIVE,
-    changes: {
-      ...(params.reasonForArchiving ? { reasonForArchiving: params.reasonForArchiving } : {}),
-      ...buildSnapshot(params.previous, ignoredFields)
-    }
+    changes: buildSnapshot(params.previous, ignoredFields)
   }
 }
 

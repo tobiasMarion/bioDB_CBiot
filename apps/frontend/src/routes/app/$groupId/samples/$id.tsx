@@ -264,7 +264,7 @@ function RouteComponent() {
             canEdit={canEdit}
             canDelete={canDelete}
             canShare={canShare}
-            activeTubeCount={tubes.length}
+            activeTubeCount={sample.amountOfTubes}
             onDelete={reason => archiveSampleMutation.mutate(reason)}
           />
         ) : null}
