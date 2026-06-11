@@ -84,7 +84,7 @@ export class BoxesService {
     try {
       const updated = await this.prisma.box.update({
         where: { id },
-        data: { label: dto.label }
+        data: { ...(dto.label !== undefined && { label: dto.label }) }
       })
 
       await this.prisma.auditLog.create({

@@ -7,5 +7,6 @@ import { BoxesController } from './boxes.controller';
   imports: [AuthModule],
   controllers: [BoxesController],
   providers: [BoxesService],
+  exports: [BoxesService],
 })
 export class BoxesModule {}
