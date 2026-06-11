@@ -1,34 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { BoxesService } from './boxes.service';
-import { CreateBoxDTO } from './dto/CreateBox';
-import { UpdateBoxDTO } from './dto/UpdateBox';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Query,
+} from '@nestjs/common'
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { Auth, CurrentUser } from '../auth/authentication.guard'
+import type { User } from '../auth/types/user.type'
+import { BoxesService } from './boxes.service'
+import { UpdateBoxDTO } from './dto/UpdateBox'
 
-@Controller('box')
+@Controller('boxes')
+@Auth()
 export class BoxesController {
   constructor(private readonly boxesService: BoxesService) {}
 
-  @Post()
-  create(@Body() CreateBoxDTO: CreateBoxDTO) {
-    return this.boxService.create(CreateBoxDTO);
-  }
-
-  @Get()
-  findAll() {
-    return this.boxService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.boxService.findOne(+id);
-  }
-
   @Patch(':id')
-  update(@Param('id') id: string, @Body() UpdateBoxDTO: UpdateBoxDTO) {
-    return this.boxService.update(+id, UpdateBoxDTO);
+  @ApiOperation({ summary: 'Update a box label' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @ApiResponse({ status: 200, description: 'Box updated' })
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateBoxDTO,
+    @CurrentUser() user: User
+  ) {
+    return this.boxesService.update(id, dto, user)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.boxService.remove(+id);
+  @ApiOperation({ summary: 'Archive a box' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @ApiQuery({ name: 'groupId', type: 'string', format: 'uuid', required: true })
+  @ApiResponse({ status: 200, description: 'Box archived' })
+  async archive(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('groupId', ParseUUIDPipe) groupId: string,
+    @CurrentUser() user: User
+  ) {
+    return this.boxesService.archive(id, groupId, user)
   }
 }
