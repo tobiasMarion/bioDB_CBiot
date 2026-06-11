@@ -79,7 +79,8 @@ export class AuditService {
         entityType: AuditEntityType.FREEZER,
         entityId: ''
       }),
-      [AuditEntityType.ROOM]: async () => ({ entityType: AuditEntityType.ROOM, entityId: '' })
+      [AuditEntityType.ROOM]: async () => ({ entityType: AuditEntityType.ROOM, entityId: '' }),
+      [AuditEntityType.BOX]: async () => ({ entityType: AuditEntityType.BOX, entityId: '' })
     }
 
     return Promise.all(types.map(type => resolvers[type]()))
