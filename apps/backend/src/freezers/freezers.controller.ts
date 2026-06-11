@@ -12,13 +12,18 @@ import {
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger'
 import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
+import { BoxesService } from '../boxes/boxes.service'
+import { CreateBoxDTO } from '../boxes/dto/CreateBox'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
 import { UpdateFreezerDTO } from './dto/UpdateFreezer'
 import { FreezersService } from './freezers.service'
 
 @Controller()
 export class FreezersController {
-  constructor(private readonly freezersService: FreezersService) {}
+  constructor(
+    private readonly freezersService: FreezersService,
+    private readonly boxesService: BoxesService
+  ) {}
 
   @Post('freezers/new')
   @Auth()
@@ -52,6 +57,33 @@ export class FreezersController {
   @ApiResponse({ status: 403, description: 'Not a member of this group' })
   async getFreezersForGroup(@Param('groupId') groupId: string, @CurrentUser() user: User) {
     return this.freezersService.findAllWithBoxes(groupId, user)
+  }
+
+  @Post('freezers/:freezerId/boxes')
+  @Auth()
+  @ApiOperation({ summary: 'Create a box in a freezer' })
+  @ApiParam({ name: 'freezerId', type: 'string', format: 'uuid' })
+  @ApiBody({ type: CreateBoxDTO })
+  @ApiResponse({ status: 201, description: 'Box created' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 409, description: 'A box with this label already exists' })
+  async createBox(
+    @Param('freezerId', ParseUUIDPipe) freezerId: string,
+    @Body() dto: CreateBoxDTO,
+    @CurrentUser() user: User
+  ) {
+    return this.boxesService.create(freezerId, dto, user)
+  }
+
+  @Get('freezers/:freezerId/boxes')
+  @Auth()
+  @ApiOperation({ summary: 'List active boxes from a freezer' })
+  @ApiParam({ name: 'freezerId', type: 'string', format: 'uuid' })
+  @ApiResponse({ status: 200, description: 'Boxes returned' })
+  async getBoxesByFreezer(
+    @Param('freezerId', ParseUUIDPipe) freezerId: string
+  ) {
+    return this.boxesService.findByFreezer(freezerId)
   }
 
   @Get('boxes/:boxId/occupancy')
