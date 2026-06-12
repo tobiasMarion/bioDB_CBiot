@@ -76,7 +76,7 @@ export function CreateBoxForGroupDialog({ groupId, open, onOpenChange, initialFr
 
   const isValid = label.trim() && freezerId
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!isValid) return
     setError(null)
