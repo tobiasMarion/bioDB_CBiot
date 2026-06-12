@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { type FreezerWithBoxes, getGroupFreezers } from '@/lib/api/get-group-freezers'
+import { getGroupFreezers } from '@/lib/api/get-group-freezers'
 import { createBox } from '@/lib/api/boxes'
 import { getApiErrorMessage } from '@/lib/api/api-error'
 import { queryClient } from '@/lib/api/query-client'
