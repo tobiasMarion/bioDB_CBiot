@@ -33,11 +33,11 @@ export class BoxesController {
   @Delete(':id')
   @ApiOperation({ summary: 'Archive a box' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiQuery({ name: 'groupId', type: 'string', format: 'uuid', required: true })
+  @ApiQuery({ name: 'groupId', type: 'string', format: 'uuid', required: false })
   @ApiResponse({ status: 200, description: 'Box archived' })
   async archive(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('groupId', ParseUUIDPipe) groupId: string,
+    @Query('groupId') groupId: string | undefined,
     @CurrentUser() user: User
   ) {
     return this.boxesService.archive(id, groupId, user)

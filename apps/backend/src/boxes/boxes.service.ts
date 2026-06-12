@@ -106,11 +106,11 @@ export class BoxesService {
     }
   }
 
-  async archive(id: string, groupId: string, user: User) {
+  async archive(id: string, groupId: string | undefined, user: User) {
     await this.auth.assert({
       user,
       permission: 'MANAGE_STORAGE',
-      groupId
+      groupId: groupId ?? ''
     })
 
     const previous = await this.prisma.box.findUnique({ where: { id } })
