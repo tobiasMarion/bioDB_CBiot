@@ -9,6 +9,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
+import { CreateBoxForGroupDialog } from '@/components/samples-table/create-box-for-group-dialog'
 import { getBoxOccupancy } from '@/lib/api/get-box-occupancy'
 import { getGroupFreezers } from '@/lib/api/get-group-freezers'
 import { useQuery } from '@tanstack/react-query'
@@ -41,6 +42,7 @@ export function ReturnToFreezerDialog({
   onConfirm
 }: ReturnToFreezerDialogProps) {
   const [open, setOpen] = useState(false)
+  const [showCreateBox, setShowCreateBox] = useState(false)
 
   const originalFreezerId = tube.box?.freezer.id ?? null
   const originalBoxId = tube.boxId ?? null
@@ -130,6 +132,8 @@ export function ReturnToFreezerDialog({
 
         <Separator />
 
+        <CreateBoxForGroupDialog groupId={groupId} open={showCreateBox} onOpenChange={setShowCreateBox} initialFreezerId={selectedFreezerId ?? undefined} />
+
         <div className='flex min-h-0 flex-1'>
           <ReturnToFreezerControls
             freezers={freezers}
@@ -140,6 +144,7 @@ export function ReturnToFreezerDialog({
             onFreezerChange={handleFreezerChange}
             onBoxChange={handleBoxChange}
             onNotesChange={setExperimentNotes}
+            onNewBox={() => setShowCreateBox(true)}
           />
 
           <div className='basis-3/5 min-w-0 overflow-x-auto px-6 py-5'>
