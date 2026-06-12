@@ -27,13 +27,20 @@ interface CreateBoxForGroupDialogProps {
   groupId: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  initialFreezerId?: string
 }
 
-export function CreateBoxForGroupDialog({ groupId, open, onOpenChange }: CreateBoxForGroupDialogProps) {
-  const [freezerId, setFreezerId] = useState('')
+export function CreateBoxForGroupDialog({ groupId, open, onOpenChange, initialFreezerId }: CreateBoxForGroupDialogProps) {
+  const [freezerId, setFreezerId] = useState(initialFreezerId ?? '')
   const [label, setLabel] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    if (open && initialFreezerId) {
+      setFreezerId(initialFreezerId)
+    }
+  }, [open, initialFreezerId])
 
   const { data: freezers = [] } = useQuery({
     queryKey: ['group-freezers', groupId],
