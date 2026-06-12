@@ -12,8 +12,9 @@ import {
 import { getSamples } from '@/lib/api/get-samples'
 import { getSamplesTypes } from '@/lib/api/get-samples-types'
 import { useQuery } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
+import { PackagePlus, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { CreateBoxForGroupDialog } from './create-box-for-group-dialog'
 import { CreateSampleDialog } from './create-sample-dialog'
 import { SampleRow } from './sample-row'
 import { SamplesPagination } from './samples-pagination'
@@ -36,6 +37,7 @@ export function SamplesTable({
   openCreate,
   onOpenChangeCreate
 }: SamplesTableProps) {
+  const [showCreateBox, setShowCreateBox] = useState(false)
   const [shareSampleId, setShareSampleId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -107,6 +109,7 @@ export function SamplesTable({
   return (
     <div className='flex flex-col gap-4'>
       <CreateSampleDialog groupId={groupId} open={openCreate} onOpenChange={onOpenChangeCreate} />
+      <CreateBoxForGroupDialog groupId={groupId} open={showCreateBox} onOpenChange={setShowCreateBox} />
       <div className='flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between'>
         <div className='flex-1 order-2 sm:order-1'>
           <SamplesToolbar
@@ -125,6 +128,14 @@ export function SamplesTable({
         <Button
           size='sm'
           className='order-1 sm:order-2 gap-2 w-full sm:w-auto [&:hover]:bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.08),transparent_50%)]'
+          onClick={() => setShowCreateBox(true)}
+        >
+          <PackagePlus className='size-4' />
+          New Box
+        </Button>
+        <Button
+          size='sm'
+          className='order-1 sm:order-3 gap-2 w-full sm:w-auto [&:hover]:bg-[radial-gradient(circle_at_80%_50%,rgba(34,211,238,0.08),transparent_50%)]'
           onClick={() => onOpenChangeCreate(true)}
         >
           <Plus className='size-4' />
