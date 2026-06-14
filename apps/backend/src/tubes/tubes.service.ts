@@ -284,8 +284,8 @@ export class TubesService {
           entityType: 'TUBE',
           entityId: tubeId,
           performedBy: user.id,
-          previous: current,
-          current: updated
+          previous: { ...current, experimentNotes: undefined },
+          current: { ...updated, experimentNotes: data.notes }
         })
       })
 
