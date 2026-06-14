@@ -279,22 +279,14 @@ export class TubesService {
         }
       })
 
-      const auditPayload = auditUpdate({
-        entityType: 'TUBE',
-        entityId: tubeId,
-        performedBy: user.id,
-        previous: current,
-        current: updated
-      })
-
       await tx.auditLog.create({
-        data: {
-          ...auditPayload,
-          changes: {
-            ...(auditPayload.changes as Record<string, unknown>),
-            ...(data.notes ? { experimentNotes: data.notes } : {})
-          }
-        }
+        data: auditUpdate({
+          entityType: 'TUBE',
+          entityId: tubeId,
+          performedBy: user.id,
+          previous: { ...current, experimentNotes: undefined },
+          current: { ...updated, experimentNotes: data.notes }
+        })
       })
 
       return updated
