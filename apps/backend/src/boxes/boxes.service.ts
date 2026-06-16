@@ -1,11 +1,25 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException
+} from '@nestjs/common'
 import { auditCreate, auditDelete, auditUpdate } from '../auth/audit.utils'
 import { AuthorizationService } from '../auth/authorization.service'
 import type { User } from '../auth/types/user.type'
 import { Prisma } from '../common/prisma/generated/client'
 import { PrismaService } from '../common/prisma/prisma.service'
-import { CreateBoxDTO } from './dto/CreateBox';
-import { UpdateBoxDTO } from './dto/UpdateBox';
+import { CreateBoxDTO } from './dto/CreateBox'
+import { UpdateBoxDTO } from './dto/UpdateBox'
+
+const boxSelect = {
+  id: true,
+  freezerId: true,
+  label: true,
+  createdBy: true,
+  createdAt: true
+}
 
 @Injectable()
 export class BoxesService {
@@ -15,172 +29,173 @@ export class BoxesService {
   ) {}
 
   async create(freezerId: string, data: CreateBoxDTO, user: User) {
-    await this.auth.assertAnyGroup(user, 'CREATE_BOX')
+    await this.auth.assert({ user, permission: 'CREATE_BOX' })
 
     try {
-      const newBox = await this.prisma.box.create({
-        data: {
-          freezerId,
-          label: data.label,
-          createdBy: user.id
-        }
-      })
-
-      await this.prisma.auditLog.create({
-        data: auditCreate({
-          entityType: 'BOX',
-          entityId: newBox.id,
-          performedBy: user.id,
-          current: newBox
+      return await this.prisma.$transaction(async tx => {
+        const newBox = await tx.box.create({
+          data: { freezerId, label: data.label, createdBy: user.id },
+          select: boxSelect
         })
-      })
 
-      return newBox
+        await tx.auditLog.create({
+          data: auditCreate({
+            entityType: 'BOX',
+            entityId: newBox.id,
+            performedBy: user.id,
+            current: newBox
+          })
+        })
+
+        return newBox
+      })
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           const archivedBox = await this.prisma.box.findFirst({
-            where: {
-              freezerId,
-              label: data.label,
-              isArchived: true
-            }
+            where: { freezerId, label: data.label, isArchived: true }
           })
+
           if (archivedBox) {
-            await this.prisma.box.update({
-              where: { id: archivedBox.id },
-              data: { label: `${data.label} (archived ${archivedBox.id.slice(0, 8)})` }
-            })
-            const newBox = await this.prisma.box.create({
-              data: {
-                freezerId,
-                label: data.label,
-                createdBy: user.id
-              }
-            })
-            await this.prisma.auditLog.create({
-              data: auditCreate({
-                entityType: 'BOX',
-                entityId: newBox.id,
-                performedBy: user.id,
-                current: newBox
+            return await this.prisma.$transaction(async tx => {
+              await tx.box.update({
+                where: { id: archivedBox.id },
+                data: { label: `${data.label} (archived ${archivedBox.id.slice(0, 8)})` }
               })
+
+              const newBox = await tx.box.create({
+                data: { freezerId, label: data.label, createdBy: user.id },
+                select: boxSelect
+              })
+
+              await tx.auditLog.create({
+                data: auditCreate({
+                  entityType: 'BOX',
+                  entityId: newBox.id,
+                  performedBy: user.id,
+                  current: newBox
+                })
+              })
+
+              return newBox
             })
-            return newBox
           }
+
           throw new ConflictException('A box with this label already exists in this freezer')
         }
+
         if (error.code === 'P2003') {
           throw new NotFoundException('Freezer not found')
         }
       }
+
       throw new InternalServerErrorException('Error creating box')
     }
-
   }
 
   async findByFreezer(freezerId: string) {
     return this.prisma.box.findMany({
-      where: {
-        freezerId,
-        isArchived: false
-      },
+      where: { freezerId, isArchived: false },
       select: {
         id: true,
         label: true,
-        _count: {
-          select: { tubes: true }
-        }
+        _count: { select: { tubes: true } }
       },
       orderBy: { label: 'asc' }
     })
   }
 
   async update(id: string, dto: UpdateBoxDTO, user: User) {
-    await this.auth.assertAnyGroup(user, 'UPDATE_BOX')
+    await this.auth.assert({ user, permission: 'UPDATE_BOX' })
 
-    const previous = await this.prisma.box.findUnique({ where: { id } })
+    const previous = await this.prisma.box.findUnique({ where: { id, isArchived: false } })
     if (!previous) throw new NotFoundException('Box not found')
 
+    if (dto.label === undefined) return this.prisma.box.findUniqueOrThrow({ where: { id }, select: boxSelect })
+
     try {
-      const updated = await this.prisma.box.update({
-        where: { id },
-        data: { ...(dto.label !== undefined && { label: dto.label }) }
-      })
-
-      await this.prisma.auditLog.create({
-        data: auditUpdate({
-          entityType: 'BOX',
-          entityId: id,
-          performedBy: user.id,
-          previous,
-          current: updated
+      return await this.prisma.$transaction(async tx => {
+        const updated = await tx.box.update({
+          where: { id },
+          data: { label: dto.label },
+          select: boxSelect
         })
-      })
 
-      return updated
+        await tx.auditLog.create({
+          data: auditUpdate({
+            entityType: 'BOX',
+            entityId: id,
+            performedBy: user.id,
+            previous,
+            current: updated
+          })
+        })
+
+        return updated
+      })
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         const archivedBox = await this.prisma.box.findFirst({
-          where: {
-            freezerId: previous.freezerId,
-            label: dto.label,
-            isArchived: true
-          }
+          where: { freezerId: previous.freezerId, label: dto.label, isArchived: true }
         })
+
         if (archivedBox) {
-          await this.prisma.box.update({
-            where: { id: archivedBox.id },
-            data: { label: `${dto.label} (archived ${archivedBox.id.slice(0, 8)})` }
-          })
-          const updated = await this.prisma.box.update({
-            where: { id },
-            data: { ...(dto.label !== undefined && { label: dto.label }) }
-          })
-          await this.prisma.auditLog.create({
-            data: auditUpdate({
-              entityType: 'BOX',
-              entityId: id,
-              performedBy: user.id,
-              previous,
-              current: updated
+          return await this.prisma.$transaction(async tx => {
+            await tx.box.update({
+              where: { id: archivedBox.id },
+              data: { label: `${dto.label} (archived ${archivedBox.id.slice(0, 8)})` }
             })
+
+            const updated = await tx.box.update({
+              where: { id },
+              data: { label: dto.label },
+              select: boxSelect
+            })
+
+            await tx.auditLog.create({
+              data: auditUpdate({
+                entityType: 'BOX',
+                entityId: id,
+                performedBy: user.id,
+                previous,
+                current: updated
+              })
+            })
+
+            return updated
           })
-          return updated
         }
+
         throw new ConflictException('A box with this label already exists in this freezer')
       }
+
       throw new InternalServerErrorException('Failed to update box')
     }
   }
 
   async archive(id: string, user: User) {
-    await this.auth.assertAnyGroup(user, 'DELETE_BOX')
+    await this.auth.assert({ user, permission: 'DELETE_BOX' })
 
     const previous = await this.prisma.box.findUnique({ where: { id } })
     if (!previous) throw new NotFoundException('Box not found')
+    if (previous.isArchived) throw new ConflictException('Box is already archived')
 
     try {
-      const hasActiveTubes = await this.prisma.tube.findFirst({
-        where: {
-          isArchived: false,
-          boxId: id
-        }
-      })
-      if (hasActiveTubes) {
-        throw new BadRequestException('Cannot archive box because it contains active tubes')
-      }
+      await this.prisma.$transaction(async tx => {
+        const hasActiveTubes = await tx.tube.findFirst({
+          where: { isArchived: false, boxId: id }
+        })
 
-      const archived = await this.prisma.box.update({
-        where: { id },
-        data: {
-          isArchived: true,
-          archivedAt: new Date()
+        if (hasActiveTubes) {
+          throw new BadRequestException('Cannot archive box because it contains active tubes')
         }
-      })
 
-      if (!previous.isArchived) {
-        await this.prisma.auditLog.create({
+        await tx.box.update({
+          where: { id },
+          data: { isArchived: true, archivedAt: new Date() }
+        })
+
+        await tx.auditLog.create({
           data: auditDelete({
             entityType: 'BOX',
             entityId: id,
@@ -188,9 +203,7 @@ export class BoxesService {
             previous
           })
         })
-      }
-
-      return archived
+      })
     } catch (error) {
       if (error instanceof BadRequestException) throw error
       throw new InternalServerErrorException('Failed to archive box')

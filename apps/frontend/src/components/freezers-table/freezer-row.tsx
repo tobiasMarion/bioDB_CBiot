@@ -62,7 +62,10 @@ export function FreezerRow({ freezer, onEdit, onArchive }: FreezerRowProps) {
 
   const archiveBoxMutation = useMutation({
     mutationFn: (id: string) => archiveBox(id),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      setArchivingBox(null)
+      invalidate()
+    },
     onError: async err => setError(await getApiErrorMessage(err))
   })
 
@@ -217,12 +220,9 @@ export function FreezerRow({ freezer, onEdit, onArchive }: FreezerRowProps) {
             </Button>
             <Button
               variant='destructive'
-              disabled={archiveBoxMutation.isPending}
+              disabled={archiveBoxMutation.isPending || (archivingBox?._count.tubes ?? 0) > 0}
               onClick={() => {
-                if (archivingBox) {
-                  archiveBoxMutation.mutate(archivingBox.id)
-                  setArchivingBox(null)
-                }
+                if (archivingBox) archiveBoxMutation.mutate(archivingBox.id)
               }}
             >
               Archive box

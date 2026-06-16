@@ -27,5 +27,5 @@ export function updateBox(id: string, data: UpdateBoxPayload) {
 }
 
 export function archiveBox(id: string) {
-  return apiClient.delete(`boxes/${id}`).json<Box>()
+  return apiClient.delete(`boxes/${id}`)
 }

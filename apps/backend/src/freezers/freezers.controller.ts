@@ -64,9 +64,23 @@ export class FreezersController {
   @ApiOperation({ summary: 'Create a box in a freezer' })
   @ApiParam({ name: 'freezerId', type: 'string', format: 'uuid' })
   @ApiBody({ type: CreateBoxDTO })
-  @ApiResponse({ status: 201, description: 'Box created' })
+  @ApiResponse({
+    status: 201,
+    description: 'Box created',
+    schema: {
+      example: {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        freezerId: '661e8400-e29b-41d4-a716-446655440001',
+        label: 'BOX-A1',
+        createdBy: '123e4567-e89b-12d3-a456-426614174000',
+        createdAt: '2026-05-01T10:00:00.000Z'
+      }
+    }
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 409, description: 'A box with this label already exists' })
+  @ApiResponse({ status: 403, description: 'Forbidden - must be a member of at least one group' })
+  @ApiResponse({ status: 404, description: 'Freezer not found' })
+  @ApiResponse({ status: 409, description: 'A box with this label already exists in this freezer' })
   async createBox(
     @Param('freezerId', ParseUUIDPipe) freezerId: string,
     @Body() dto: CreateBoxDTO,
@@ -79,7 +93,20 @@ export class FreezersController {
   @Auth()
   @ApiOperation({ summary: 'List active boxes from a freezer' })
   @ApiParam({ name: 'freezerId', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Boxes returned' })
+  @ApiResponse({
+    status: 200,
+    description: 'Boxes returned',
+    schema: {
+      example: [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          label: 'BOX-A1',
+          _count: { tubes: 3 }
+        }
+      ]
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getBoxesByFreezer(
     @Param('freezerId', ParseUUIDPipe) freezerId: string
   ) {
