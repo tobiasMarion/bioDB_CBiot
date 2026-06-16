@@ -1,6 +1,7 @@
+import dnaFallbackSrc from '@/assets/dna-fallback.svg'
 import { Environment, Float } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 
 const NUM_RUNGS = 35
@@ -277,6 +278,15 @@ export function DNAHelix({
   className = '',
   style = {}
 }: DNAHelixProps) {
+  const [hasWebGL] = useState(() => {
+    try {
+      const canvas = document.createElement('canvas')
+      return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+    } catch {
+      return false
+    }
+  })
+
   const colorA = useMemo(() => new THREE.Color(colorBottom), [colorBottom])
   const colorB = useMemo(() => new THREE.Color(colorTop), [colorTop])
 
@@ -284,6 +294,29 @@ export function DNAHelix({
     () => ({ roughness, metalness, clearcoat, clearcoatRoughness, envMapIntensity }),
     [roughness, metalness, clearcoat, clearcoatRoughness, envMapIntensity]
   )
+
+  if (!hasWebGL) {
+    return (
+      <div
+        className={className}
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'transparent',
+          ...style
+        }}
+      >
+        <img
+          src={dnaFallbackSrc}
+          alt='DNA helix'
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+        />
+      </div>
+    )
+  }
 
   return (
     <div
