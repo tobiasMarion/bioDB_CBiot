@@ -26,6 +26,8 @@ export type StandardGroupPermission =
   | 'DELETE_SAMPLE'
   | 'CREATE_TUBE'
   | 'CREATE_BOX'
+  | 'UPDATE_BOX'
+  | 'DELETE_BOX'
   | 'MANAGE_STORAGE'
   | 'VIEW_PENDING_INVITES'
   | 'VIEW_GROUP_AUDIT'
@@ -73,6 +75,8 @@ const REQUIRED_ROLE: Record<StandardGroupPermission, GroupRole> = {
   DELETE_SAMPLE: GroupRole.MANAGER,
   CREATE_TUBE: GroupRole.RESEARCHER,
   CREATE_BOX: GroupRole.RESEARCHER,
+  UPDATE_BOX: GroupRole.RESEARCHER,
+  DELETE_BOX: GroupRole.RESEARCHER,
   MANAGE_STORAGE: GroupRole.MANAGER,
   VIEW_PENDING_INVITES: GroupRole.RESEARCHER,
   VIEW_GROUP_AUDIT: GroupRole.LEADER
@@ -113,6 +117,28 @@ export class AuthorizationService {
 
     if (!allowed) {
       throw new ForbiddenException(params.message ?? 'Insufficient permissions')
+    }
+  }
+
+  async assertAnyGroup(user: User, permission: StandardGroupPermission): Promise<void> {
+    if (user.isAdmin) return
+
+    const membership = await this.prisma.groupMembership.findFirst({
+      where: {
+        userId: user.id,
+        isArchived: false,
+        group: { isArchived: false }
+      },
+      select: { role: true }
+    })
+
+    if (!membership) {
+      throw new ForbiddenException('Insufficient permissions')
+    }
+
+    const requiredRole = REQUIRED_ROLE[permission]
+    if (ROLE_LEVEL[membership.role] < ROLE_LEVEL[requiredRole]) {
+      throw new ForbiddenException('Insufficient permissions')
     }
   }
 
