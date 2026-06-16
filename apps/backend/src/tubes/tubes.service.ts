@@ -308,7 +308,14 @@ export class TubesService {
         // otherwise the (boxId, row, column) unique constraint blocks future placements there
         // and the checkin "position occupied" check (which only looks at active tubes) misses it,
         // causing an unhandled unique-constraint error on checkin.
-        data: { isArchived: true, archivedAt: new Date(), reasonForArchiving: reason, boxId: null, row: null, column: null },
+        data: {
+          isArchived: true,
+          archivedAt: new Date(),
+          reasonForArchiving: reason,
+          boxId: null,
+          row: null,
+          column: null
+        },
         select: tubeSelect
       })
 
@@ -332,15 +339,12 @@ export class TubesService {
   async fractionate(tubeId: string, data: FractionateTubeDTO, user: User) {
     const current = await this.findRawTube(tubeId)
 
-    const isCheckedOutByMe =
-      current.checkedOutAt && current.checkedOutBy === user.id
+    const isCheckedOutByMe = current.checkedOutAt && current.checkedOutBy === user.id
     const isUnplaced = !current.checkedOutAt && !current.boxId
 
     if (!isCheckedOutByMe && !isUnplaced) {
       if (current.checkedOutAt) {
-        throw new ForbiddenException(
-          'Only the user who checked out this tube can fractionate it'
-        )
+        throw new ForbiddenException('Only the user who checked out this tube can fractionate it')
       }
       throw new ForbiddenException(
         'Cannot fractionate a tube that is in storage. Check it out first or use an unplaced tube.'

@@ -364,7 +364,9 @@ function RouteComponent() {
                   onFractionate={qty =>
                     fractionateMutation.mutate({ tubeId: selectedTube.id, quantity: qty })
                   }
-                  onDelete={reason => deleteTubeMutation.mutate({ tubeId: selectedTube.id, reason })}
+                  onDelete={reason =>
+                    deleteTubeMutation.mutate({ tubeId: selectedTube.id, reason })
+                  }
                 />
               ) : (
                 <EmptyTubeState />

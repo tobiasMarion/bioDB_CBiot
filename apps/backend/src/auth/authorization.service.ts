@@ -35,7 +35,11 @@ export type StandardGroupPermission =
 
 export type ManageMembershipPermission = 'MANAGE_MEMBERSHIP_ROLE'
 
-export type Permission = AdminOnlyPermission | AnyGroupPermission | StandardGroupPermission | ManageMembershipPermission
+export type Permission =
+  | AdminOnlyPermission
+  | AnyGroupPermission
+  | StandardGroupPermission
+  | ManageMembershipPermission
 
 type BaseParams = {
   user: User

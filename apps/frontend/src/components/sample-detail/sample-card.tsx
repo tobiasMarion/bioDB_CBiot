@@ -23,7 +23,14 @@ interface SampleCardProps {
   onDelete: (reason: string) => void
 }
 
-export function SampleCard({ sample, canEdit, canDelete, canShare, activeTubeCount, onDelete }: SampleCardProps) {
+export function SampleCard({
+  sample,
+  canEdit,
+  canDelete,
+  canShare,
+  activeTubeCount,
+  onDelete
+}: SampleCardProps) {
   const [name, setName] = useState(sample.name)
   const [type, setType] = useState(sample.type)
   const [originOrganism, setOriginOrganism] = useState(sample.originOrganism)

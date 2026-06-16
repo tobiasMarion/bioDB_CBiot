@@ -1,3 +1,4 @@
+import { BoxDialog } from '@/components/create-box-dialog'
 import type { Tube } from '@/components/tube/tube-data'
 import { positionLabel } from '@/components/tube/tube-data'
 import { Button } from '@/components/ui/button'
@@ -9,7 +10,6 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { BoxDialog } from '@/components/create-box-dialog'
 import { createBox } from '@/lib/api/boxes'
 import { getBoxOccupancy } from '@/lib/api/get-box-occupancy'
 import { getGroupFreezers } from '@/lib/api/get-group-freezers'

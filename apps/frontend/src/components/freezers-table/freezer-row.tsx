@@ -1,15 +1,9 @@
 import { Button } from '@/components/ui/button'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import type { Freezer } from '@/lib/api/get-freezers'
-import {
-  type Box,
-  archiveBox,
-  createBox,
-  getFreezerBoxes,
-  updateBox,
-} from '@/lib/api/boxes'
 import { getApiErrorMessage } from '@/lib/api/api-error'
+import { type Box, archiveBox, createBox, getFreezerBoxes, updateBox } from '@/lib/api/boxes'
+import type { Freezer } from '@/lib/api/get-freezers'
 import { queryClient } from '@/lib/api/query-client'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { ChevronDown, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
@@ -21,7 +15,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from '../ui/dialog'
 
 interface FreezerRowProps {
@@ -99,7 +93,10 @@ export function FreezerRow({ freezer, onEdit, onArchive }: FreezerRowProps) {
               variant='ghost'
               size='sm'
               className='h-7 gap-1.5 text-xs text-muted-foreground'
-              onClick={e => { e.stopPropagation(); onEdit(freezer) }}
+              onClick={e => {
+                e.stopPropagation()
+                onEdit(freezer)
+              }}
             >
               <Pencil className='size-3' />
               Edit
@@ -108,7 +105,10 @@ export function FreezerRow({ freezer, onEdit, onArchive }: FreezerRowProps) {
               variant='ghost'
               size='sm'
               className='h-7 gap-1.5 text-xs text-muted-foreground hover:text-destructive'
-              onClick={e => { e.stopPropagation(); onArchive(freezer) }}
+              onClick={e => {
+                e.stopPropagation()
+                onArchive(freezer)
+              }}
             >
               <Trash2 className='size-3' />
               Archive
@@ -190,7 +190,9 @@ export function FreezerRow({ freezer, onEdit, onArchive }: FreezerRowProps) {
         <BoxDialog
           mode='edit'
           open={!!editingBox}
-          onOpenChange={open => { if (!open) setEditingBox(null) }}
+          onOpenChange={open => {
+            if (!open) setEditingBox(null)
+          }}
           initialLabel={editingBox.label}
           onSubmit={label => updateBoxMutation.mutate({ id: editingBox.id, label })}
           isPending={updateBoxMutation.isPending}
@@ -199,7 +201,9 @@ export function FreezerRow({ freezer, onEdit, onArchive }: FreezerRowProps) {
 
       <Dialog
         open={!!archivingBox}
-        onOpenChange={open => { if (!open) setArchivingBox(null) }}
+        onOpenChange={open => {
+          if (!open) setArchivingBox(null)
+        }}
       >
         <DialogContent>
           <DialogHeader>
