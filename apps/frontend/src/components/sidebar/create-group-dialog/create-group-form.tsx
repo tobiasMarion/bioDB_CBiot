@@ -25,8 +25,7 @@ export function CreateGroupForm({ onCancel, onSuccess }: CreateGroupFormProps) {
       queryClient.invalidateQueries({ queryKey: ['groups'] })
       onSuccess(group.id, group.name)
     },
-    onError: error => {
-      console.error('Failed to create the group:', error)
+    onError: () => {
       setErrorMessage('Unable to create the group. Please try again later.')
     }
   })

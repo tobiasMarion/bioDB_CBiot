@@ -36,8 +36,7 @@ export function LoginForm({ className, redirect, ...props }: LoginFormProps) {
         to: redirect || '/app',
         replace: true
       })
-    } catch (err) {
-      console.log(err)
+    } catch {
       setError('Invalid email or password')
     } finally {
       setLoading(false)
