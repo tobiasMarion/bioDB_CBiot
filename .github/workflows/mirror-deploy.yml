@@ -1,0 +1,28 @@
+name: Mirror main to deploy
+
+# Every push to main (i.e. every merged PR) is fast-forwarded onto the
+# `deploy` branch. The ES-Builder server polls `deploy` (~60s) and rebuilds
+# the containers, so this gives us automatic deploys on merge to main.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write # lets GITHUB_TOKEN push to the deploy branch
+
+concurrency:
+  group: mirror-deploy # serialize runs so two quick merges can't race
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fast-forward deploy to main
+        run: git push origin HEAD:deploy
