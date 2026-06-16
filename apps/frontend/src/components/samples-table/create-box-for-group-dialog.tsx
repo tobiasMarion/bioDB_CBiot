@@ -49,7 +49,7 @@ export function CreateBoxForGroupDialog({ groupId, open, onOpenChange, initialFr
   })
 
   const { mutate, isPending } = useMutation({
-    mutationFn: () => createBox(freezerId, { label: label.trim(), groupId }),
+    mutationFn: () => createBox(freezerId, { label: label.trim() }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-freezers', groupId] })
       setSuccess(true)
