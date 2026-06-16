@@ -4,7 +4,7 @@ import { ThemeProvider } from './components/theme-provider'
 import { queryClient } from './lib/api/query-client'
 import { routeTree } from './routeTree.gen'
 
-const router = createRouter({ routeTree })
+const router = createRouter({ routeTree, basepath: import.meta.env.BASE_URL })
 
 export function App() {
   return (

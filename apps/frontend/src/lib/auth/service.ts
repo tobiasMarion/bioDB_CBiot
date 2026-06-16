@@ -9,7 +9,7 @@ export const authService = {
 
   async login(email: string, password: string) {
     const { token } = await authClient
-      .post('login', {
+      .post('auth/login', {
         json: { email, password }
       })
       .json<{ token: string }>()

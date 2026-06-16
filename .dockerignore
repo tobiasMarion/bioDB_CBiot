@@ -1,0 +1,13 @@
+# Build context is the repository root (ES-Builder default: context ".").
+# Keep the context small and never ship secrets or build artifacts.
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+!**/.env.example
+.git
+.output
+coverage
+*.log
+.vscode
+.idea

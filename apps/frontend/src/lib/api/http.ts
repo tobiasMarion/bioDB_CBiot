@@ -30,7 +30,7 @@ export function createClient(
                 localStorage.removeItem('access_token')
 
                 if (!location.pathname.includes('/login')) {
-                  window.location.href = '/login'
+                  window.location.href = `${import.meta.env.BASE_URL}login`
                 }
               }
 
