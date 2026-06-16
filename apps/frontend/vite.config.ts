@@ -19,5 +19,16 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src')
     }
+  },
+  // Mirrors the deploy Nginx in local dev: `/api/*` is proxied to the backend
+  // with the `/api` prefix stripped (the backend serves routes at the root).
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, '')
+      }
+    }
   }
 })

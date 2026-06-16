@@ -8,10 +8,10 @@ CREATE TYPE "InviteStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED');
 CREATE TYPE "SamplePermission" AS ENUM ('VIEW', 'EDIT');
 
 -- CreateEnum
-CREATE TYPE "AuditEntityType" AS ENUM ('SAMPLE', 'TUBE', 'GROUP', 'SHARE', 'USER');
+CREATE TYPE "AuditEntityType" AS ENUM ('SAMPLE', 'TUBE', 'GROUP', 'SHARE', 'USER', 'FREEZER', 'MEMBERSHIP', 'INVITE', 'ROOM', 'BOX');
 
 -- CreateEnum
-CREATE TYPE "AuditAction" AS ENUM ('CREATE', 'UPDATE', 'ARCHIVE', 'MOVE', 'HANDLE', 'SHARE');
+CREATE TYPE "AuditAction" AS ENUM ('CREATE', 'UPDATE', 'ARCHIVE', 'MOVE', 'HANDLE', 'SHARE', 'NOTIFY');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -21,7 +21,7 @@ CREATE TABLE "User" (
     "name" TEXT NOT NULL,
     "isAdmin" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -33,7 +33,7 @@ CREATE TABLE "Group" (
     "name" TEXT NOT NULL,
     "createdBy" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
 
     CONSTRAINT "Group_pkey" PRIMARY KEY ("id")
@@ -46,7 +46,7 @@ CREATE TABLE "GroupMembership" (
     "groupId" TEXT NOT NULL,
     "role" "GroupRole" NOT NULL,
     "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
 
     CONSTRAINT "GroupMembership_pkey" PRIMARY KEY ("id")
@@ -58,9 +58,10 @@ CREATE TABLE "GroupInvite" (
     "groupId" TEXT NOT NULL,
     "invitedUserId" TEXT NOT NULL,
     "invitedBy" TEXT NOT NULL,
+    "role" "GroupRole" NOT NULL,
     "status" "InviteStatus" NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
 
     CONSTRAINT "GroupInvite_pkey" PRIMARY KEY ("id")
@@ -73,10 +74,12 @@ CREATE TABLE "Sample" (
     "type" TEXT NOT NULL,
     "originOrganism" TEXT NOT NULL,
     "sourceLab" TEXT NOT NULL,
+    "observations" TEXT NOT NULL DEFAULT '',
     "groupId" TEXT NOT NULL,
     "createdBy" TEXT NOT NULL,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
+    "reasonForArchiving" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -88,12 +91,17 @@ CREATE TABLE "Tube" (
     "id" TEXT NOT NULL,
     "sampleId" TEXT NOT NULL,
     "createdBy" TEXT NOT NULL,
-    "expirationDate" TIMESTAMP(3) NOT NULL,
+    "expirationDate" TIMESTAMP(3),
     "boxId" TEXT,
     "row" INTEGER,
     "column" INTEGER,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "daysBeforeNotification" INTEGER NOT NULL DEFAULT 1,
+    "notes" TEXT NOT NULL DEFAULT '',
+    "checkedOutBy" TEXT,
+    "checkedOutAt" TIMESTAMP(3),
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
+    "reasonForArchiving" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -104,13 +112,28 @@ CREATE TABLE "Tube" (
 CREATE TABLE "Freezer" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "locationDescription" TEXT NOT NULL,
+    "roomId" TEXT NOT NULL,
     "createdBy" TEXT NOT NULL,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Freezer_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Room" (
+    "id" TEXT NOT NULL,
+    "number" TEXT NOT NULL,
+    "building" TEXT NOT NULL,
+    "floor" INTEGER NOT NULL,
+    "createdBy" TEXT NOT NULL,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
+    "archivedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Room_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -119,7 +142,7 @@ CREATE TABLE "Box" (
     "freezerId" TEXT NOT NULL,
     "label" TEXT NOT NULL,
     "createdBy" TEXT NOT NULL,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -140,7 +163,7 @@ CREATE TABLE "TubeEvent" (
     "lab" TEXT,
     "notes" TEXT,
     "performedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
 
     CONSTRAINT "TubeEvent_pkey" PRIMARY KEY ("id")
@@ -153,7 +176,7 @@ CREATE TABLE "SampleShare" (
     "targetGroupId" TEXT NOT NULL,
     "permission" "SamplePermission" NOT NULL,
     "sharedBy" TEXT NOT NULL,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -166,10 +189,13 @@ CREATE TABLE "TubeAttribute" (
     "tubeId" TEXT NOT NULL,
     "key" TEXT NOT NULL,
     "value" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
     "createdBy" TEXT NOT NULL,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "minRequiredRoleToEdit" "GroupRole" NOT NULL,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
     "archivedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "TubeAttribute_pkey" PRIMARY KEY ("id")
 );
@@ -179,12 +205,47 @@ CREATE TABLE "AuditLog" (
     "id" TEXT NOT NULL,
     "entityType" "AuditEntityType" NOT NULL,
     "entityId" TEXT NOT NULL,
-    "performedBy" TEXT NOT NULL,
+    "performedBy" TEXT,
     "action" "AuditAction" NOT NULL,
     "changes" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SampleShareRequest" (
+    "id" TEXT NOT NULL,
+    "sampleId" TEXT NOT NULL,
+    "targetGroupId" TEXT NOT NULL,
+    "permission" "SamplePermission" NOT NULL,
+    "requestedBy" TEXT NOT NULL,
+    "status" "InviteStatus" NOT NULL DEFAULT 'PENDING',
+    "respondedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
+    "archivedAt" TIMESTAMP(3),
+
+    CONSTRAINT "SampleShareRequest_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TubeExpirationNotification" (
+    "id" TEXT NOT NULL,
+    "tubeId" TEXT NOT NULL,
+    "isResolved" BOOLEAN NOT NULL DEFAULT false,
+    "resolvedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "TubeExpirationNotification_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TubeExpirationNotificationRecipient" (
+    "notificationId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "TubeExpirationNotificationRecipient_pkey" PRIMARY KEY ("notificationId","userId")
 );
 
 -- CreateIndex
@@ -223,6 +284,15 @@ CREATE UNIQUE INDEX "TubeAttribute_tubeId_key_key" ON "TubeAttribute"("tubeId", 
 -- CreateIndex
 CREATE INDEX "AuditLog_entityType_entityId_idx" ON "AuditLog"("entityType", "entityId");
 
+-- CreateIndex
+CREATE INDEX "SampleShareRequest_targetGroupId_idx" ON "SampleShareRequest"("targetGroupId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SampleShareRequest_sampleId_targetGroupId_key" ON "SampleShareRequest"("sampleId", "targetGroupId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TubeExpirationNotification_tubeId_key" ON "TubeExpirationNotification"("tubeId");
+
 -- AddForeignKey
 ALTER TABLE "Group" ADD CONSTRAINT "Group_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -254,10 +324,19 @@ ALTER TABLE "Tube" ADD CONSTRAINT "Tube_sampleId_fkey" FOREIGN KEY ("sampleId") 
 ALTER TABLE "Tube" ADD CONSTRAINT "Tube_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Tube" ADD CONSTRAINT "Tube_checkedOutBy_fkey" FOREIGN KEY ("checkedOutBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Tube" ADD CONSTRAINT "Tube_boxId_fkey" FOREIGN KEY ("boxId") REFERENCES "Box"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Freezer" ADD CONSTRAINT "Freezer_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Freezer" ADD CONSTRAINT "Freezer_roomId_fkey" FOREIGN KEY ("roomId") REFERENCES "Room"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Room" ADD CONSTRAINT "Room_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Box" ADD CONSTRAINT "Box_freezerId_fkey" FOREIGN KEY ("freezerId") REFERENCES "Freezer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -293,4 +372,22 @@ ALTER TABLE "TubeAttribute" ADD CONSTRAINT "TubeAttribute_tubeId_fkey" FOREIGN K
 ALTER TABLE "TubeAttribute" ADD CONSTRAINT "TubeAttribute_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_performedBy_fkey" FOREIGN KEY ("performedBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_performedBy_fkey" FOREIGN KEY ("performedBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SampleShareRequest" ADD CONSTRAINT "SampleShareRequest_sampleId_fkey" FOREIGN KEY ("sampleId") REFERENCES "Sample"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SampleShareRequest" ADD CONSTRAINT "SampleShareRequest_targetGroupId_fkey" FOREIGN KEY ("targetGroupId") REFERENCES "Group"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SampleShareRequest" ADD CONSTRAINT "SampleShareRequest_requestedBy_fkey" FOREIGN KEY ("requestedBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TubeExpirationNotification" ADD CONSTRAINT "TubeExpirationNotification_tubeId_fkey" FOREIGN KEY ("tubeId") REFERENCES "Tube"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TubeExpirationNotificationRecipient" ADD CONSTRAINT "TubeExpirationNotificationRecipient_notificationId_fkey" FOREIGN KEY ("notificationId") REFERENCES "TubeExpirationNotification"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TubeExpirationNotificationRecipient" ADD CONSTRAINT "TubeExpirationNotificationRecipient_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
