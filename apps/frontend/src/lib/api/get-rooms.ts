@@ -6,8 +6,6 @@ export type Room = {
   building: string
   floor: number
   createdBy: string
-  isArchived: boolean
-  archivedAt: string | null
   createdAt: string
   updatedAt: string
 }
@@ -37,5 +35,5 @@ export function updateRoom(id: string, data: UpdateRoomPayload) {
 }
 
 export function archiveRoom(id: string) {
-  return apiClient.delete(`rooms/${id}`).json<Room>()
+  return apiClient.delete(`rooms/${id}`).json<{ success: boolean }>()
 }

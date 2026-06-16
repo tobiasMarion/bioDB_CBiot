@@ -55,8 +55,7 @@ export function AssignLeaderForm({ groupId, groupName, onFinish }: AssignLeaderF
       queryClient.invalidateQueries({ queryKey: ['groups'] })
       onFinish()
     },
-    onError: error => {
-      console.error('Failed to assign leader:', error)
+    onError: () => {
       setErrorMessage('Unable to assign the leader. Please try again later.')
     }
   })

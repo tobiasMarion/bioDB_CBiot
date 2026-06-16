@@ -36,8 +36,7 @@ export function LoginForm({ className, redirect, ...props }: LoginFormProps) {
         to: redirect || '/app',
         replace: true
       })
-    } catch (err) {
-      console.log(err)
+    } catch {
       setError('Invalid email or password')
     } finally {
       setLoading(false)
@@ -62,12 +61,9 @@ export function LoginForm({ className, redirect, ...props }: LoginFormProps) {
         <Field>
           <div className='flex items-center'>
             <FieldLabel htmlFor='password'>Password</FieldLabel>
-            <a
-              href='https://google.com'
-              className='ml-auto text-sm underline-offset-4 hover:underline'
-            >
+            <span className='ml-auto text-sm text-muted-foreground'>
               Forgot your password?
-            </a>
+            </span>
           </div>
           <Input id='password' name='password' type='password' required />
         </Field>
@@ -82,10 +78,7 @@ export function LoginForm({ className, redirect, ...props }: LoginFormProps) {
 
         <Field>
           <FieldDescription className='text-center'>
-            Don&apos;t have an account?{' '}
-            <a href='https://google.com' className='underline underline-offset-4'>
-              Sign up
-            </a>
+            Don&apos;t have an account? Contact your group administrator.
           </FieldDescription>
         </Field>
       </FieldGroup>

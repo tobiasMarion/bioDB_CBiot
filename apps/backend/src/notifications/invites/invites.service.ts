@@ -18,7 +18,14 @@ export class InvitesService {
           isArchived: false
         }
       },
-      include: {
+      select: {
+        id: true,
+        groupId: true,
+        invitedUserId: true,
+        invitedBy: true,
+        role: true,
+        status: true,
+        createdAt: true,
         group: { select: { name: true } },
         sender: { select: { name: true, email: true } }
       }
@@ -52,9 +59,20 @@ export class InvitesService {
         where: { userId_groupId: { userId: user.id, groupId: invite.groupId } }
       })
 
+      const inviteSelect = {
+        id: true,
+        groupId: true,
+        invitedUserId: true,
+        invitedBy: true,
+        role: true,
+        status: true,
+        createdAt: true
+      }
+
       const acceptedInvite = await tx.groupInvite.update({
         where: { id: inviteId },
-        data: { status: InviteStatus.ACCEPTED }
+        data: { status: InviteStatus.ACCEPTED },
+        select: inviteSelect
       })
 
       await tx.auditLog.create({
@@ -135,7 +153,16 @@ export class InvitesService {
 
     const rejectedInvite = await this.prisma.groupInvite.update({
       where: { id: inviteId },
-      data: { status: InviteStatus.REJECTED }
+      data: { status: InviteStatus.REJECTED },
+      select: {
+        id: true,
+        groupId: true,
+        invitedUserId: true,
+        invitedBy: true,
+        role: true,
+        status: true,
+        createdAt: true
+      }
     })
 
     await this.prisma.auditLog.create({

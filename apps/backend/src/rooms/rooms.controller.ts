@@ -24,8 +24,6 @@ export class RoomsController {
         building: '43421',
         floor: 2,
         createdBy: '709ef1a9-a2b3-4c8a-a36a-eeb1c6b2367a',
-        isArchived: false,
-        archivedAt: null,
         createdAt: '2026-06-04T13:59:41.589Z',
         updatedAt: '2026-06-04T13:59:41.589Z'
       }
@@ -53,8 +51,6 @@ export class RoomsController {
           building: '43421',
           floor: 2,
           createdBy: '709ef1a9-a2b3-4c8a-a36a-eeb1c6b2367a',
-          isArchived: false,
-          archivedAt: null,
           createdAt: '2026-06-04T13:59:41.589Z',
           updatedAt: '2026-06-04T13:59:41.589Z'
         },
@@ -64,8 +60,6 @@ export class RoomsController {
           building: '43421',
           floor: 2,
           createdBy: '0e4a003e-8aa0-4480-beb3-19abe2ca096b',
-          isArchived: false,
-          archivedAt: null,
           createdAt: '2026-06-03T23:25:40.265Z',
           updatedAt: '2026-06-03T23:25:40.265Z'
         }
@@ -92,8 +86,6 @@ export class RoomsController {
         building: '43421',
         floor: 2,
         createdBy: '0e4a003e-8aa0-4480-beb3-19abe2ca096b',
-        isArchived: false,
-        archivedAt: null,
         createdAt: '2026-06-03T23:25:40.265Z',
         updatedAt: '2026-06-03T23:25:40.265Z'
       }
@@ -118,8 +110,6 @@ export class RoomsController {
         building: '43421',
         floor: 2,
         createdBy: '0e4a003e-8aa0-4480-beb3-19abe2ca096b',
-        isArchived: false,
-        archivedAt: null,
         createdAt: '2026-06-03T23:25:40.265Z',
         updatedAt: '2026-06-04T14:09:24.074Z'
       }
@@ -144,17 +134,7 @@ export class RoomsController {
     status: 200,
     description: 'Room archived successfully',
     schema: {
-      example: {
-        id: '5969c6ec-b783-42a2-8714-7fad314221bc',
-        number: '216',
-        building: '43421',
-        floor: 2,
-        createdBy: '0e4a003e-8aa0-4480-beb3-19abe2ca096b',
-        isArchived: true,
-        archivedAt: '2026-06-04T14:11:14.480Z',
-        createdAt: '2026-06-03T23:25:40.265Z',
-        updatedAt: '2026-06-04T14:11:14.486Z'
-      }
+      example: { success: true }
     }
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

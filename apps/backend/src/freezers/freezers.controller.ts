@@ -29,7 +29,28 @@ export class FreezersController {
   @Auth()
   @ApiOperation({ summary: 'Create new freezer' })
   @ApiBody({ type: CreateFreezerDTO })
-  @ApiResponse({ status: 201, description: 'Created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Created successfully',
+    schema: {
+      example: {
+        id: '661e8400-e29b-41d4-a716-446655440001',
+        name: 'Freezer A',
+        roomId: '65e6f727-c7ff-4c5c-9592-cbfcb39cc067',
+        createdBy: '123e4567-e89b-12d3-a456-426614174000',
+        createdAt: '2026-05-01T10:00:00.000Z',
+        room: {
+          id: '65e6f727-c7ff-4c5c-9592-cbfcb39cc067',
+          number: '210',
+          building: '43421',
+          floor: 2,
+          createdBy: '123e4567-e89b-12d3-a456-426614174000',
+          createdAt: '2026-05-01T10:00:00.000Z',
+          updatedAt: '2026-05-01T10:00:00.000Z'
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
@@ -41,7 +62,29 @@ export class FreezersController {
   @Get('freezers')
   @Auth()
   @ApiOperation({ summary: 'Find all active freezers (admin only)' })
-  @ApiResponse({ status: 200, description: 'Authorized access' })
+  @ApiResponse({
+    status: 200,
+    description: 'Authorized access',
+    schema: {
+      example: [
+        {
+          id: '661e8400-e29b-41d4-a716-446655440001',
+          name: 'Freezer A',
+          roomId: '65e6f727-c7ff-4c5c-9592-cbfcb39cc067',
+          createdBy: '123e4567-e89b-12d3-a456-426614174000',
+          room: {
+            id: '65e6f727-c7ff-4c5c-9592-cbfcb39cc067',
+            number: '210',
+            building: '43421',
+            floor: 2,
+            createdBy: '123e4567-e89b-12d3-a456-426614174000',
+            createdAt: '2026-05-01T10:00:00.000Z',
+            updatedAt: '2026-05-01T10:00:00.000Z'
+          }
+        }
+      ]
+    }
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal Server Error' })
   async getAllFreezers(@CurrentUser() user: User) {
@@ -101,15 +144,13 @@ export class FreezersController {
         {
           id: '550e8400-e29b-41d4-a716-446655440000',
           label: 'BOX-A1',
-          _count: { tubes: 3 }
+          amountOfTubes: 3
         }
       ]
     }
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getBoxesByFreezer(
-    @Param('freezerId', ParseUUIDPipe) freezerId: string
-  ) {
+  async getBoxesByFreezer(@Param('freezerId', ParseUUIDPipe) freezerId: string) {
     return this.boxesService.findByFreezer(freezerId)
   }
 
@@ -130,7 +171,28 @@ export class FreezersController {
   @Auth()
   @ApiOperation({ summary: 'Find freezer by id' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Freezer found' })
+  @ApiResponse({
+    status: 200,
+    description: 'Freezer found',
+    schema: {
+      example: {
+        id: '661e8400-e29b-41d4-a716-446655440001',
+        name: 'Freezer A',
+        roomId: '65e6f727-c7ff-4c5c-9592-cbfcb39cc067',
+        createdBy: '123e4567-e89b-12d3-a456-426614174000',
+        createdAt: '2026-05-01T10:00:00.000Z',
+        room: {
+          id: '65e6f727-c7ff-4c5c-9592-cbfcb39cc067',
+          number: '210',
+          building: '43421',
+          floor: 2,
+          createdBy: '123e4567-e89b-12d3-a456-426614174000',
+          createdAt: '2026-05-01T10:00:00.000Z',
+          updatedAt: '2026-05-01T10:00:00.000Z'
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Freezer not found' })
   async getFreezerById(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
@@ -151,7 +213,28 @@ export class FreezersController {
   @Patch('freezers/:id')
   @Auth()
   @ApiOperation({ summary: 'Update freezer' })
-  @ApiResponse({ status: 200, description: 'Freezer updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Freezer updated successfully',
+    schema: {
+      example: {
+        id: '661e8400-e29b-41d4-a716-446655440001',
+        name: 'Freezer A Updated',
+        roomId: '65e6f727-c7ff-4c5c-9592-cbfcb39cc067',
+        createdBy: '123e4567-e89b-12d3-a456-426614174000',
+        createdAt: '2026-05-01T10:00:00.000Z',
+        room: {
+          id: '65e6f727-c7ff-4c5c-9592-cbfcb39cc067',
+          number: '210',
+          building: '43421',
+          floor: 2,
+          createdBy: '123e4567-e89b-12d3-a456-426614174000',
+          createdAt: '2026-05-01T10:00:00.000Z',
+          updatedAt: '2026-05-01T10:00:00.000Z'
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 400, description: 'Invalid request body' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
@@ -167,7 +250,11 @@ export class FreezersController {
   @Delete('freezers/:id')
   @Auth()
   @ApiOperation({ summary: 'Archive freezer' })
-  @ApiResponse({ status: 200, description: 'Freezer archived successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Freezer archived successfully',
+    schema: { example: { success: true } }
+  })
   @ApiResponse({ status: 400, description: 'Cannot archive freezer containing active tubes' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })

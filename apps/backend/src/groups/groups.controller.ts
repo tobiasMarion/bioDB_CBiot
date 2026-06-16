@@ -24,9 +24,7 @@ export class GroupsController {
         id: '550e8400-e29b-41d4-a716-446655440000',
         name: 'My New Group',
         createdBy: '123e4567-e89b-12d3-a456-426614174000',
-        createdAt: '2026-05-01T10:00:00.000Z',
-        isArchived: false,
-        archivedAt: null
+        createdAt: '2026-05-01T10:00:00.000Z'
       }
     }
   })
@@ -47,8 +45,6 @@ export class GroupsController {
           name: 'My New Group',
           createdBy: '123e4567-e89b-12d3-a456-426614174000',
           createdAt: '2026-05-01T10:00:00.000Z',
-          isArchived: false,
-          archivedAt: null,
           role: 'LEADER',
           amountOfMembers: 5
         }
@@ -135,8 +131,6 @@ export class GroupsController {
           groupId: '550e8400-e29b-41d4-a716-446655440000',
           role: 'LEADER',
           joinedAt: '2026-05-01T10:00:00.000Z',
-          isArchived: false,
-          archivedAt: null,
           user: {
             id: '123e4567-e89b-12d3-a456-426614174000',
             name: 'Admin Name',
@@ -163,9 +157,7 @@ export class GroupsController {
         userId: '123e4567-e89b-12d3-a456-426614174000',
         groupId: '550e8400-e29b-41d4-a716-446655440000',
         role: 'MANAGER',
-        joinedAt: '2026-05-01T10:00:00.000Z',
-        isArchived: false,
-        archivedAt: null
+        joinedAt: '2026-05-01T10:00:00.000Z'
       }
     }
   })
@@ -205,15 +197,16 @@ export class GroupsController {
     description: 'Invite sent',
     schema: {
       example: {
-        id: '660e8400-e29b-41d4-a716-446655440000',
-        groupId: '550e8400-e29b-41d4-a716-446655440000',
-        invitedUserId: '987e6543-e21b-34d5-c654-426614174000',
-        invitedBy: '123e4567-e89b-12d3-a456-426614174000',
-        role: 'RESEARCHER',
-        status: 'PENDING',
-        createdAt: '2026-05-01T10:00:00.000Z',
-        isArchived: false,
-        archivedAt: null
+        type: 'invite',
+        data: {
+          id: '660e8400-e29b-41d4-a716-446655440000',
+          groupId: '550e8400-e29b-41d4-a716-446655440000',
+          invitedUserId: '987e6543-e21b-34d5-c654-426614174000',
+          invitedBy: '123e4567-e89b-12d3-a456-426614174000',
+          role: 'RESEARCHER',
+          status: 'PENDING',
+          createdAt: '2026-05-01T10:00:00.000Z'
+        }
       }
     }
   })

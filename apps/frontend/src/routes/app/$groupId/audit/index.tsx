@@ -15,7 +15,7 @@ export const Route = createFileRoute('/app/$groupId/audit/')({
     })
 
     const isLeader = members.some(
-      m => m.userId === user?.id && m.role === 'LEADER' && !m.isArchived
+      m => m.userId === user?.id && m.role === 'LEADER'
     )
 
     if (!isLeader) {

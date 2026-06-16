@@ -36,7 +36,7 @@ export function AppSidebar() {
   })
 
   const canViewGroupAudit =
-    isAdmin || members.some(m => m.userId === user?.id && m.role === 'LEADER' && !m.isArchived)
+    isAdmin || members.some(m => m.userId === user?.id && m.role === 'LEADER')
 
   return (
     <Sidebar collapsible='icon'>

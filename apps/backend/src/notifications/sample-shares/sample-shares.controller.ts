@@ -103,8 +103,6 @@ export class SampleSharesController {
         status: 'PENDING',
         respondedAt: null,
         createdAt: '2026-06-05T10:00:00.000Z',
-        isArchived: false,
-        archivedAt: null,
         sample: { name: 'RNA-seq Extract #42' },
         group: { name: 'Microbiology Lab' }
       }
@@ -165,8 +163,6 @@ export class SampleSharesController {
         status: 'ACCEPTED',
         respondedAt: '2026-06-05T14:30:00.000Z',
         createdAt: '2026-06-05T10:00:00.000Z',
-        isArchived: false,
-        archivedAt: null,
         sample: { name: 'RNA-seq Extract #42' },
         group: { name: 'Microbiology Lab' }
       }

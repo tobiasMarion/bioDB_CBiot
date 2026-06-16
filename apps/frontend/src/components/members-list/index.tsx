@@ -21,7 +21,7 @@ import {
   getAssignableRoles,
   getInvitableRoles,
   getViewerRank
-} from './permissionts'
+} from './permissions'
 import { RemoveMemberDialog } from './remove-member-dialog'
 
 export function MembersList() {

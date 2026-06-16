@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="500" viewBox="0 0 300 500">
+<defs>
+  <linearGradient id="sg" x1="0" y1="500" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#4ade80"/>
+    <stop offset="100%" stop-color="#22d3ee"/>
+  </linearGradient>
+  <filter id="glow">
+    <feGaussianBlur stdDeviation="2.5" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
+<line x1="-346.7" y1="1139.3" x2="-707.5" y2="703.2" stroke="rgb(72,221,133)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="-346.7" cy="1139.3" r="4" fill="rgb(72,221,133)" opacity="0.85"/>
+<circle cx="-707.5" cy="703.2" r="4" fill="rgb(72,221,133)" opacity="0.85"/>
+<line x1="-328.7" y1="1021.1" x2="-498.3" y2="647.1" stroke="rgb(69,221,141)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="-328.7" cy="1021.1" r="4" fill="rgb(69,221,141)" opacity="0.85"/>
+<circle cx="-498.3" cy="647.1" r="4" fill="rgb(69,221,141)" opacity="0.85"/>
+<line x1="-355.0" y1="783.8" x2="-297.0" y2="654.0" stroke="rgb(67,220,148)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="-355.0" cy="783.8" r="4" fill="rgb(67,220,148)" opacity="0.85"/>
+<circle cx="-297.0" cy="654.0" r="4" fill="rgb(67,220,148)" opacity="0.85"/>
+<line x1="-364.7" y1="515.0" x2="-113.4" y2="678.9" stroke="rgb(64,219,155)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="-364.7" cy="515.0" r="4" fill="rgb(64,219,155)" opacity="0.85"/>
+<circle cx="-113.4" cy="678.9" r="4" fill="rgb(64,219,155)" opacity="0.85"/>
+<line x1="-311.6" y1="327.9" x2="43.7" y2="679.6" stroke="rgb(62,219,162)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="-311.6" cy="327.9" r="4" fill="rgb(62,219,162)" opacity="0.85"/>
+<circle cx="43.7" cy="679.6" r="4" fill="rgb(62,219,162)" opacity="0.85"/>
+<line x1="-198.4" y1="252.4" x2="157.7" y2="611.8" stroke="rgb(59,218,169)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="-198.4" cy="252.4" r="4" fill="rgb(59,218,169)" opacity="0.85"/>
+<circle cx="157.7" cy="611.8" r="4" fill="rgb(59,218,169)" opacity="0.85"/>
+<line x1="-48.7" y1="252.0" x2="207.6" y2="444.7" stroke="rgb(57,217,176)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="-48.7" cy="252.0" r="4" fill="rgb(57,217,176)" opacity="0.85"/>
+<circle cx="207.6" cy="444.7" r="4" fill="rgb(57,217,176)" opacity="0.85"/>
+<line x1="119.0" y1="280.1" x2="193.4" y2="207.8" stroke="rgb(54,217,183)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="119.0" cy="280.1" r="4" fill="rgb(54,217,183)" opacity="0.85"/>
+<circle cx="193.4" cy="207.8" r="4" fill="rgb(54,217,183)" opacity="0.85"/>
+<line x1="292.8" y1="296.8" x2="159.9" y2="-1.0" stroke="rgb(51,216,190)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="292.8" cy="296.8" r="4" fill="rgb(51,216,190)" opacity="0.85"/>
+<circle cx="159.9" cy="-1.0" r="4" fill="rgb(51,216,190)" opacity="0.85"/>
+<line x1="458.9" y1="265.6" x2="162.9" y2="-107.3" stroke="rgb(49,215,197)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="458.9" cy="265.6" r="4" fill="rgb(49,215,197)" opacity="0.85"/>
+<circle cx="162.9" cy="-107.3" r="4" fill="rgb(49,215,197)" opacity="0.85"/>
+<line x1="592.2" y1="154.2" x2="223.4" y2="-118.7" stroke="rgb(46,214,204)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="592.2" cy="154.2" r="4" fill="rgb(46,214,204)" opacity="0.85"/>
+<circle cx="223.4" cy="-118.7" r="4" fill="rgb(46,214,204)" opacity="0.85"/>
+<line x1="658.4" y1="-42.1" x2="333.9" y2="-82.9" stroke="rgb(44,214,211)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="658.4" cy="-42.1" r="4" fill="rgb(44,214,211)" opacity="0.85"/>
+<circle cx="333.9" cy="-82.9" r="4" fill="rgb(44,214,211)" opacity="0.85"/>
+<line x1="643.4" y1="-264.9" x2="480.6" y2="-44.9" stroke="rgb(41,213,218)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="643.4" cy="-264.9" r="4" fill="rgb(41,213,218)" opacity="0.85"/>
+<circle cx="480.6" cy="-44.9" r="4" fill="rgb(41,213,218)" opacity="0.85"/>
+<line x1="587.2" y1="-419.1" x2="650.3" y2="-40.8" stroke="rgb(39,212,225)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="587.2" cy="-419.1" r="4" fill="rgb(39,212,225)" opacity="0.85"/>
+<circle cx="650.3" cy="-40.8" r="4" fill="rgb(39,212,225)" opacity="0.85"/>
+<line x1="554.0" y1="-463.3" x2="824.4" y2="-101.3" stroke="rgb(36,212,233)" stroke-width="2" stroke-opacity="0.65"/>
+<circle cx="554.0" cy="-463.3" r="4" fill="rgb(36,212,233)" opacity="0.85"/>
+<circle cx="824.4" cy="-101.3" r="4" fill="rgb(36,212,233)" opacity="0.85"/>
+<path d="M-394.8,1155.6 L-370.3,1153.1 L-351.3,1143.6 L-337.9,1125.7 L-330.0,1098.2 L-327.4,1060.3 L-329.4,1011.7 L-335.1,953.0 L-343.1,885.4 L-352.0,811.1 L-360.0,733.0 L-365.5,654.2 L-367.2,578.0 L-364.1,507.0 L-355.4,443.5 L-341.1,388.8 L-321.3,343.7 L-296.3,308.1 L-266.7,281.5 L-233.1,263.2 L-196.1,251.9 L-156.3,246.6 L-114.1,246.2 L-70.0,249.5 L-24.4,255.5 L22.5,263.2 L70.4,271.7 L119.0,280.1 L168.1,287.6 L217.5,293.3 L266.8,296.5 L315.8,296.2 L364.1,291.7 L411.1,282.1 L456.3,266.7 L499.0,244.7 L538.4,215.7 L573.7,179.1 L604.0,135.2 L628.5,84.2 L646.4,27.1 L657.5,-34.6 L661.7,-99.1 L659.3,-163.9 L651.1,-226.6 L638.6,-284.7 L623.1,-336.3 L606.3,-379.7 L589.9,-414.0 L575.4,-438.9 L564.0,-454.8 L556.5,-462.3 L553.7,-462.7 L555.9,-457.1 L563.1,-446.8" fill="none" stroke="url(#sg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9" filter="url(#glow)"/>
+<path d="M-836.7,796.7 L-782.0,749.4 L-724.7,712.3 L-665.9,684.6 L-606.5,665.1 L-547.0,652.8 L-488.0,646.4 L-429.7,644.8 L-372.4,646.9 L-316.4,651.8 L-261.8,658.4 L-208.6,665.9 L-157.2,673.2 L-107.6,679.5 L-60.2,683.8 L-15.1,685.0 L27.2,682.2 L66.2,674.2 L101.6,660.1 L132.8,638.9 L159.1,609.8 L180.1,572.4 L195.5,526.4 L205.1,472.6 L209.0,411.8 L207.7,345.8 L202.1,277.0 L193.4,207.8 L183.1,141.2 L172.7,79.4 L163.7,24.7 L157.3,-21.7 L154.5,-58.9 L156.1,-87.0 L162.4,-106.4 L173.4,-117.8 L189.2,-122.4 L209.4,-121.4 L233.9,-116.0 L262.3,-107.2 L294.3,-96.4 L329.5,-84.3 L367.7,-72.1 L408.4,-60.5 L451.6,-50.3 L496.8,-42.5 L543.8,-37.6 L592.2,-36.4 L641.6,-39.7 L691.5,-48.1 L741.4,-62.2 L790.6,-82.7 L838.2,-110.0 L883.3,-144.4 L924.8,-185.8" fill="none" stroke="url(#sg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9" filter="url(#glow)"/>
+</svg>

@@ -68,6 +68,19 @@ export class SampleSharesService {
     const responderIds = respondersOfTargetGroup.map(m => m.userId)
 
     return this.prisma.$transaction(async tx => {
+      const shareRequestSelect = {
+        id: true,
+        sampleId: true,
+        targetGroupId: true,
+        permission: true,
+        requestedBy: true,
+        status: true,
+        respondedAt: true,
+        createdAt: true,
+        sample: { select: { name: true } },
+        group: { select: { name: true } }
+      }
+
       const shareRequest = await tx.sampleShareRequest.upsert({
         where: { sampleId_targetGroupId: { sampleId, targetGroupId: dto.targetGroupId } },
         update: {
@@ -84,10 +97,7 @@ export class SampleSharesService {
           permission: dto.permission,
           requestedBy: user.id
         },
-        include: {
-          sample: { select: { name: true } },
-          group: { select: { name: true } }
-        }
+        select: shareRequestSelect
       })
 
       await tx.auditLog.create({
@@ -183,7 +193,15 @@ export class SampleSharesService {
       const updated = await tx.sampleShareRequest.update({
         where: { id: requestId },
         data: { status: newStatus, respondedAt: new Date() },
-        include: {
+        select: {
+          id: true,
+          sampleId: true,
+          targetGroupId: true,
+          permission: true,
+          requestedBy: true,
+          status: true,
+          respondedAt: true,
+          createdAt: true,
           sample: { select: { name: true } },
           group: { select: { name: true } }
         }

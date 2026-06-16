@@ -14,6 +14,6 @@ export function useGroupRole(groupId: string): Role {
 
   if (user?.isAdmin) return 'LEADER'
 
-  const currentMember = members.find(m => m.user.id === user?.id && !m.isArchived)
+  const currentMember = members.find(m => m.user.id === user?.id)
   return currentMember?.role ?? 'RESEARCHER'
 }

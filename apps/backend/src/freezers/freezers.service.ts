@@ -13,6 +13,25 @@ import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
 import { UpdateFreezerDTO } from './dto/UpdateFreezer'
 
+const roomSelect = {
+  id: true,
+  number: true,
+  building: true,
+  floor: true,
+  createdBy: true,
+  createdAt: true,
+  updatedAt: true
+}
+
+const freezerSelect = {
+  id: true,
+  name: true,
+  roomId: true,
+  createdBy: true,
+  createdAt: true,
+  room: { select: roomSelect }
+}
+
 @Injectable()
 export class FreezersService {
   constructor(
@@ -26,7 +45,7 @@ export class FreezersService {
     try {
       const newFreezer = await this.prisma.freezer.create({
         data: { ...data, createdBy: user.id },
-        include: { room: true }
+        select: freezerSelect
       })
 
       await this.prisma.auditLog.create({
@@ -72,7 +91,7 @@ export class FreezersService {
   async findFreezerById(id: string, user: User) {
     const freezerById = await this.prisma.freezer.findUnique({
       where: { id },
-      include: { room: true }
+      select: freezerSelect
     })
 
     if (!freezerById) {
@@ -151,7 +170,7 @@ export class FreezersService {
       const updatedFreezer = await this.prisma.freezer.update({
         where: { id },
         data: data,
-        include: { room: true }
+        select: freezerSelect
       })
 
       await this.prisma.auditLog.create({
@@ -160,7 +179,7 @@ export class FreezersService {
           entityId: id,
           performedBy: user.id,
           previous,
-          current: updatedFreezer
+          current: { ...previous, ...data }
         })
       })
 
@@ -192,7 +211,7 @@ export class FreezersService {
         throw new BadRequestException('Cannot archive freezer because it contains active tubes')
       }
 
-      const archivedFreezer = await this.prisma.freezer.update({
+      await this.prisma.freezer.update({
         where: { id },
         data: {
           isArchived: true,
@@ -211,7 +230,7 @@ export class FreezersService {
         })
       }
 
-      return archivedFreezer
+      return { success: true }
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error
