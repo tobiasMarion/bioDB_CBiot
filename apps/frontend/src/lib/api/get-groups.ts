@@ -5,8 +5,6 @@ export type Group = {
   name: string
   createdBy: string
   createdAt: string
-  isArchived: boolean
-  archivedAt: string | null
   role: string
   amountOfMembers: number
 }

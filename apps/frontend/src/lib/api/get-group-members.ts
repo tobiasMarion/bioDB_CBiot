@@ -7,8 +7,6 @@ export interface GroupMember {
   groupId: string
   role: Role
   joinedAt: string
-  isArchived: boolean
-  archivedAt: string | null
   user: {
     id: string
     name: string

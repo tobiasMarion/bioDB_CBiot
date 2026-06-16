@@ -146,7 +146,7 @@ export function FreezerRow({ freezer, onEdit, onArchive }: FreezerRowProps) {
                       <div className='flex items-center gap-3'>
                         <span className='text-sm font-medium'>{box.label}</span>
                         <span className='text-xs text-muted-foreground'>
-                          {box._count.tubes} {box._count.tubes === 1 ? 'tube' : 'tubes'}
+                          {box.amountOfTubes} {box.amountOfTubes === 1 ? 'tube' : 'tubes'}
                         </span>
                       </div>
                       <div className='flex items-center gap-1'>
@@ -206,10 +206,10 @@ export function FreezerRow({ freezer, onEdit, onArchive }: FreezerRowProps) {
             <DialogTitle>Archive box?</DialogTitle>
             <DialogDescription>
               Box <strong>{archivingBox?.label}</strong> will be archived.
-              {archivingBox && archivingBox._count.tubes > 0 && (
+              {archivingBox && archivingBox.amountOfTubes > 0 && (
                 <span className='block mt-1 text-destructive'>
-                  This box contains {archivingBox._count.tubes} active{' '}
-                  {archivingBox._count.tubes === 1 ? 'tube' : 'tubes'}.
+                  This box contains {archivingBox.amountOfTubes} active{' '}
+                  {archivingBox.amountOfTubes === 1 ? 'tube' : 'tubes'}.
                 </span>
               )}
             </DialogDescription>
@@ -220,7 +220,7 @@ export function FreezerRow({ freezer, onEdit, onArchive }: FreezerRowProps) {
             </Button>
             <Button
               variant='destructive'
-              disabled={archiveBoxMutation.isPending || (archivingBox?._count.tubes ?? 0) > 0}
+              disabled={archiveBoxMutation.isPending || (archivingBox?.amountOfTubes ?? 0) > 0}
               onClick={() => {
                 if (archivingBox) archiveBoxMutation.mutate(archivingBox.id)
               }}

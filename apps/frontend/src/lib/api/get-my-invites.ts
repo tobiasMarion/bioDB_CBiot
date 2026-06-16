@@ -11,8 +11,6 @@ export interface GroupInvite {
   role: Role
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED'
   createdAt: string
-  isArchived: boolean
-  archivedAt: string | null
   group: {
     name: string
   }

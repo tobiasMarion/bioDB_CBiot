@@ -3,7 +3,7 @@ import { apiClient } from './api-client'
 export type Box = {
   id: string
   label: string
-  _count: { tubes: number }
+  amountOfTubes: number
 }
 
 export type CreateBoxPayload = {
