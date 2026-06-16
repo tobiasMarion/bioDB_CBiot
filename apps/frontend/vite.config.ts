@@ -20,14 +20,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
-  // Mirrors the deploy Nginx in local dev: `/api/*` is proxied to the backend
-  // with the `/api` prefix stripped (the backend serves routes at the root).
+  // Mirrors the deploy reverse proxy in local dev: `/api/*` is forwarded to the
+  // backend unchanged. The backend serves every route under the `/api` global
+  // prefix, so no path rewrite is needed.
   server: {
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, '')
+        changeOrigin: true
       }
     }
   }
