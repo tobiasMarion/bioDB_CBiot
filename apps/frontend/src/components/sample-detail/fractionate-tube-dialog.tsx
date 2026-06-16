@@ -20,7 +20,11 @@ interface FractionateTubeDialogProps {
   onFractionate: (quantity: number) => void
 }
 
-export function FractionateTubeDialog({ tube, isPending = false, onFractionate }: FractionateTubeDialogProps) {
+export function FractionateTubeDialog({
+  tube,
+  isPending = false,
+  onFractionate
+}: FractionateTubeDialogProps) {
   const [open, setOpen] = useState(false)
   const [quantity, setQuantity] = useState('1')
 
@@ -44,8 +48,8 @@ export function FractionateTubeDialog({ tube, isPending = false, onFractionate }
         <DialogHeader>
           <DialogTitle>Fractionate tube</DialogTitle>
           <DialogDescription>
-            Create copies of this tube with the same attributes. The new tubes will be
-            unplaced — ready to distribute or store individually.
+            Create copies of this tube with the same attributes. The new tubes will be unplaced —
+            ready to distribute or store individually.
           </DialogDescription>
         </DialogHeader>
         <div className='space-y-4'>

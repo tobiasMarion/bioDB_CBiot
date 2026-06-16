@@ -14,9 +14,7 @@ export const Route = createFileRoute('/app/$groupId/audit/')({
       queryFn: () => getGroupMembers(params.groupId)
     })
 
-    const isLeader = members.some(
-      m => m.userId === user?.id && m.role === 'LEADER'
-    )
+    const isLeader = members.some(m => m.userId === user?.id && m.role === 'LEADER')
 
     if (!isLeader) {
       throw redirect({ to: '/app/$groupId/samples', params: { groupId: params.groupId } })

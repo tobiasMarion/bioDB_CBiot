@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Param,
-  ParseUUIDPipe,
-  Patch
-} from '@nestjs/common'
+import { Body, Controller, Delete, Param, ParseUUIDPipe, Patch } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger'
 import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
@@ -56,10 +49,7 @@ export class BoxesController {
   @ApiResponse({ status: 403, description: 'Forbidden - Admins only' })
   @ApiResponse({ status: 404, description: 'Box not found' })
   @ApiResponse({ status: 409, description: 'Box is already archived' })
-  async archive(
-    @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: User
-  ) {
+  async archive(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
     return this.boxesService.archive(id, user)
   }
 }

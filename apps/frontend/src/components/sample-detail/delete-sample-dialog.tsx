@@ -19,7 +19,11 @@ interface DeleteSampleDialogProps {
   onDelete: (reason: string) => void
 }
 
-export function DeleteSampleDialog({ sampleName, activeTubeCount, onDelete }: DeleteSampleDialogProps) {
+export function DeleteSampleDialog({
+  sampleName,
+  activeTubeCount,
+  onDelete
+}: DeleteSampleDialogProps) {
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState('')
 
@@ -77,11 +81,7 @@ export function DeleteSampleDialog({ sampleName, activeTubeCount, onDelete }: De
           <Button variant='outline' onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button
-            variant='destructive'
-            disabled={!reason.trim()}
-            onClick={handleDelete}
-          >
+          <Button variant='destructive' disabled={!reason.trim()} onClick={handleDelete}>
             Archive sample
           </Button>
         </DialogFooter>

@@ -1,3 +1,4 @@
+import { CreateGroupDialog } from '@/components/sidebar/create-group-dialog'
 import { Button } from '@/components/ui/button'
 import { usePageTitle } from '@/hooks/use-page-title'
 import { getGroups } from '@/lib/api/get-groups'
@@ -5,6 +6,7 @@ import { authStore } from '@/lib/auth/store'
 import { useQuery } from '@tanstack/react-query'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { Plus, ShieldAlert, Users } from 'lucide-react'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/app/')({
   component: AppIndex
@@ -14,6 +16,8 @@ function AppIndex() {
   usePageTitle('Home')
   const user = authStore.getUser()
   const isAdmin = user?.isAdmin ?? false
+
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 
   const { data: groups, isLoading } = useQuery({
     queryKey: ['groups'],
@@ -46,11 +50,13 @@ function AppIndex() {
       </div>
 
       {isAdmin && (
-        <Button className='mt-2 gap-2'>
+        <Button className='mt-2 gap-2' onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className='h-4 w-4' />
           Create your first group
         </Button>
       )}
+
+      <CreateGroupDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
     </div>
   )
 }

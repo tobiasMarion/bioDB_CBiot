@@ -61,9 +61,7 @@ export function LoginForm({ className, redirect, ...props }: LoginFormProps) {
         <Field>
           <div className='flex items-center'>
             <FieldLabel htmlFor='password'>Password</FieldLabel>
-            <span className='ml-auto text-sm text-muted-foreground'>
-              Forgot your password?
-            </span>
+            <span className='ml-auto text-sm text-muted-foreground'>Forgot your password?</span>
           </div>
           <Input id='password' name='password' type='password' required />
         </Field>
