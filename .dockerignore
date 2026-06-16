@@ -2,6 +2,7 @@
 # Keep the context small and never ship secrets or build artifacts.
 **/node_modules
 **/dist
+**/*.tsbuildinfo
 **/.env
 **/.env.*
 !**/.env.example

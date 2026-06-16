@@ -7,6 +7,12 @@ import { AppModule } from './app.module'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
+  // The frontend always calls `${BASE_URL}api/<route>`, and the deploy reverse
+  // proxy forwards the `/api` segment through to the backend. Serving every
+  // route under `/api` keeps the path identical end-to-end — no prefix
+  // stripping required anywhere.
+  app.setGlobalPrefix('api')
+
   app.enableCors()
 
   // Auto-validation for routes using DTOs
@@ -25,7 +31,7 @@ async function bootstrap() {
     .build()
 
   const doc = SwaggerModule.createDocument(app, config)
-  app.use('/reference', apiReference({ content: doc, theme: 'fastify' }))
+  app.use('/api/reference', apiReference({ content: doc, theme: 'fastify' }))
 
   await app.listen(process.env.PORT ?? 3000)
 }
