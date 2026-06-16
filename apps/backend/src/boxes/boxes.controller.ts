@@ -5,9 +5,8 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
-  Query,
 } from '@nestjs/common'
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger'
 import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
 import { BoxesService } from './boxes.service'
@@ -33,13 +32,11 @@ export class BoxesController {
   @Delete(':id')
   @ApiOperation({ summary: 'Archive a box' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiQuery({ name: 'groupId', type: 'string', format: 'uuid', required: false })
   @ApiResponse({ status: 200, description: 'Box archived' })
   async archive(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('groupId') groupId: string | undefined,
     @CurrentUser() user: User
   ) {
-    return this.boxesService.archive(id, groupId, user)
+    return this.boxesService.archive(id, user)
   }
 }
