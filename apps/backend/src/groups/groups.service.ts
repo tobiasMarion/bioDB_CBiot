@@ -26,7 +26,8 @@ export class GroupsService {
     try {
       return await this.prisma.$transaction(async tx => {
         const newGroup = await tx.group.create({
-          data: { ...data, createdBy: user.id }
+          data: { ...data, createdBy: user.id },
+          select: { id: true, name: true, createdBy: true, createdAt: true }
         })
 
         await tx.auditLog.create({
@@ -65,7 +66,7 @@ export class GroupsService {
       }
     })
 
-    return groups.map(({ memberships, _count, ...group }) => ({
+    return groups.map(({ memberships, _count, isArchived: _ia, archivedAt: _aat, ...group }) => ({
       ...group,
       amountOfMembers: _count?.memberships || 0,
       role: memberships[0]?.role ?? null
@@ -155,7 +156,14 @@ export class GroupsService {
 
     return this.prisma.groupMembership.findMany({
       where: { groupId, isArchived: false },
-      include: { user: { select: { id: true, name: true, email: true } } }
+      select: {
+        id: true,
+        userId: true,
+        groupId: true,
+        role: true,
+        joinedAt: true,
+        user: { select: { id: true, name: true, email: true } }
+      }
     })
   }
 
@@ -173,8 +181,17 @@ export class GroupsService {
       throw new NotFoundException('Member not found in group')
     }
 
+    const membershipSelect = {
+      id: true,
+      userId: true,
+      groupId: true,
+      role: true,
+      joinedAt: true
+    }
+
     if (membership.role === data.role) {
-      return membership
+      const { id, userId, groupId: gid, role, joinedAt } = membership
+      return { id, userId, groupId: gid, role, joinedAt }
     }
 
     await this.auth.assert({
@@ -188,7 +205,8 @@ export class GroupsService {
     const previous = membership
     const updated = await this.prisma.groupMembership.update({
       where: { id: membership.id },
-      data: { role: data.role as GroupRole }
+      data: { role: data.role as GroupRole },
+      select: membershipSelect
     })
 
     await this.prisma.auditLog.create({
@@ -283,6 +301,16 @@ export class GroupsService {
       throw new ConflictException('A pending invite already exists for this user')
     }
 
+    const inviteSelect = {
+      id: true,
+      groupId: true,
+      invitedUserId: true,
+      invitedBy: true,
+      role: true,
+      status: true,
+      createdAt: true
+    }
+
     return this.prisma.$transaction(async tx => {
       const invite = await tx.groupInvite.create({
         data: {
@@ -290,7 +318,8 @@ export class GroupsService {
           invitedUserId: data.invitedUserId,
           invitedBy: currentUser.id,
           role
-        }
+        },
+        select: inviteSelect
       })
 
       await tx.auditLog.create({
@@ -312,6 +341,14 @@ export class GroupsService {
     currentUser: User,
     existingMembership: GroupMembership | null
   ) {
+    const membershipSelect = {
+      id: true,
+      userId: true,
+      groupId: true,
+      role: true,
+      joinedAt: true
+    }
+
     return this.prisma.$transaction(async tx => {
       const membership = existingMembership?.isArchived
         ? await tx.groupMembership.update({
@@ -320,14 +357,16 @@ export class GroupsService {
               isArchived: false,
               archivedAt: null,
               role
-            }
+            },
+            select: membershipSelect
           })
         : await tx.groupMembership.create({
             data: {
               groupId,
               userId: currentUser.id,
               role
-            }
+            },
+            select: membershipSelect
           })
 
       await tx.auditLog.create({

@@ -6,6 +6,16 @@ import { PrismaService } from '../common/prisma/prisma.service'
 import { CreateRoomDTO } from './dto/CreateRoom'
 import { UpdateRoomDTO } from './dto/UpdateRoom'
 
+const roomSelect = {
+  id: true,
+  number: true,
+  building: true,
+  floor: true,
+  createdBy: true,
+  createdAt: true,
+  updatedAt: true
+}
+
 @Injectable()
 export class RoomsService {
   constructor(
@@ -26,7 +36,8 @@ export class RoomsService {
           building: data.building,
           floor: data.floor,
           createdBy: user.id
-        }
+        },
+        select: roomSelect
       })
 
       await this.prisma.auditLog.create({
@@ -48,6 +59,7 @@ export class RoomsService {
     try {
       return await this.prisma.room.findMany({
         where: { isArchived: false },
+        select: roomSelect,
         orderBy: { createdAt: 'desc' }
       })
     } catch (error) {
@@ -56,7 +68,7 @@ export class RoomsService {
   }
 
   async findRoomById(id: string, user: User) {
-    const room = await this.prisma.room.findUnique({ where: { id } })
+    const room = await this.prisma.room.findUnique({ where: { id }, select: roomSelect })
     if (!room) throw new NotFoundException('Room not found')
     return room
   }
@@ -70,7 +82,8 @@ export class RoomsService {
     try {
       const updatedRoom = await this.prisma.room.update({
         where: { id },
-        data
+        data,
+        select: roomSelect
       })
 
       await this.prisma.auditLog.create({
@@ -96,7 +109,7 @@ export class RoomsService {
     if (!previous) throw new NotFoundException('Room not found')
 
     try {
-      const archivedRoom = await this.prisma.room.update({
+      await this.prisma.room.update({
         where: { id },
         data: {
           isArchived: true,
@@ -115,7 +128,7 @@ export class RoomsService {
         })
       }
 
-      return archivedRoom
+      return { success: true }
     } catch (error) {
       throw new InternalServerErrorException('Failed to archive room')
     }

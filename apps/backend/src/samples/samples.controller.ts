@@ -53,7 +53,10 @@ export class SamplesController {
         type: 'DNA',
         originOrganism: 'Homo sapiens',
         sourceLab: 'Lab A',
+        observations: null,
         groupId: 'g12345678-1234-1234-1234-123456789012',
+        reasonForArchiving: null,
+        group: { id: 'g12345678-1234-1234-1234-123456789012', name: 'Genetics Lab' },
         createdBy: 'u12345678-1234-1234-1234-123456789012',
         createdAt: '2026-05-07T12:00:00.000Z',
         updatedAt: '2026-05-07T12:00:00.000Z',
@@ -79,6 +82,33 @@ export class SamplesController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid authentication token' })
   @ApiForbiddenResponse({ description: 'Insufficient permissions' })
   @ApiNotFoundResponse({ description: 'Sample not found' })
+  @ApiResponse({
+    status: 200,
+    description: 'Sample found',
+    schema: {
+      example: {
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        name: 'Sample 001',
+        type: 'DNA',
+        originOrganism: 'Homo sapiens',
+        sourceLab: 'Lab A',
+        observations: 'Collected under sterile conditions',
+        groupId: 'g12345678-1234-1234-1234-123456789012',
+        reasonForArchiving: null,
+        group: { id: 'g12345678-1234-1234-1234-123456789012', name: 'Genetics Lab' },
+        createdBy: 'u12345678-1234-1234-1234-123456789012',
+        createdAt: '2026-05-07T12:00:00.000Z',
+        updatedAt: '2026-05-07T12:00:00.000Z',
+        creator: {
+          id: 'u12345678-1234-1234-1234-123456789012',
+          name: 'John Doe',
+          email: 'john@example.com'
+        },
+        amountOfTubes: 3,
+        canEdit: true
+      }
+    }
+  })
   async findById(@Param('id') id: string, @CurrentUser() user: User) {
     return this.samplesService.findById(id, user)
   }
@@ -97,28 +127,33 @@ export class SamplesController {
     status: 200,
     description: 'Samples retrieved successfully',
     schema: {
-      example: [
-        {
-          id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-          name: 'Sample 001',
-          type: 'DNA',
-          originOrganism: 'Homo sapiens',
-          sourceLab: 'Lab A',
-          group: {
-            id: 'uuid-group-owner',
-            name: 'Genetics Lab'
-          },
-          createdBy: 'u12345678-1234-1234-1234-123456789012',
-          createdAt: '2026-05-07T12:00:00.000Z',
-          updatedAt: '2026-05-07T12:00:00.000Z',
-          creator: {
-            id: 'u12345678-1234-1234-1234-123456789012',
-            name: 'John Doe',
-            email: 'john@example.com'
-          },
-          amountOfTubes: 4
-        }
-      ]
+      example: {
+        samples: [
+          {
+            id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            name: 'Sample 001',
+            type: 'DNA',
+            originOrganism: 'Homo sapiens',
+            sourceLab: 'Lab A',
+            observations: 'Collected under sterile conditions',
+            reasonForArchiving: null,
+            group: {
+              id: 'uuid-group-owner',
+              name: 'Genetics Lab'
+            },
+            createdBy: 'u12345678-1234-1234-1234-123456789012',
+            createdAt: '2026-05-07T12:00:00.000Z',
+            updatedAt: '2026-05-07T12:00:00.000Z',
+            creator: {
+              id: 'u12345678-1234-1234-1234-123456789012',
+              name: 'John Doe',
+              email: 'john@example.com'
+            },
+            amountOfTubes: 4
+          }
+        ],
+        total: 1
+      }
     }
   })
   async findAll(
@@ -192,7 +227,10 @@ export class SamplesController {
         type: 'DNA',
         originOrganism: 'Homo sapiens',
         sourceLab: 'Lab A',
+        observations: null,
         groupId: 'g12345678-1234-1234-1234-123456789012',
+        reasonForArchiving: 'No longer needed for the study',
+        group: { id: 'g12345678-1234-1234-1234-123456789012', name: 'Genetics Lab' },
         createdBy: 'u12345678-1234-1234-1234-123456789012',
         createdAt: '2026-05-01T12:00:00.000Z',
         updatedAt: '2026-05-07T12:00:00.000Z',
@@ -204,11 +242,7 @@ export class SamplesController {
       }
     }
   })
-  async remove(
-    @Param('id') id: string,
-    @Body() body: ArchiveSampleDTO,
-    @CurrentUser() user: User
-  ) {
+  async remove(@Param('id') id: string, @Body() body: ArchiveSampleDTO, @CurrentUser() user: User) {
     return this.samplesService.archive(id, user, body.reasonForArchiving)
   }
 
@@ -255,7 +289,10 @@ export class SamplesController {
         type: 'RNA',
         originOrganism: 'Mus musculus',
         sourceLab: 'Lab B',
+        observations: 'Updated protocol applied',
         groupId: 'g12345678-1234-1234-1234-123456789012',
+        reasonForArchiving: null,
+        group: { id: 'g12345678-1234-1234-1234-123456789012', name: 'Genetics Lab' },
         createdBy: 'u12345678-1234-1234-1234-123456789012',
         createdAt: '2026-05-01T12:00:00.000Z',
         updatedAt: '2026-05-07T14:30:00.000Z',

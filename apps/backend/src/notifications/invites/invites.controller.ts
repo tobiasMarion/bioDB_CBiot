@@ -40,8 +40,6 @@ export class InvitesController {
           role: 'RESEARCHER',
           status: 'PENDING',
           createdAt: '2026-05-01T10:00:00.000Z',
-          isArchived: false,
-          archivedAt: null,
           group: { name: 'Genomics Lab' },
           sender: { name: 'Tobias Marion', email: 'tobias@example.com' }
         }
@@ -86,9 +84,7 @@ export class InvitesController {
         invitedBy: '123e4567-e89b-12d3-a456-426614174000',
         role: 'RESEARCHER',
         status: 'ACCEPTED',
-        createdAt: '2026-05-01T10:00:00.000Z',
-        isArchived: false,
-        archivedAt: null
+        createdAt: '2026-05-01T10:00:00.000Z'
       }
     }
   })
@@ -130,9 +126,7 @@ export class InvitesController {
         invitedBy: '123e4567-e89b-12d3-a456-426614174000',
         role: 'RESEARCHER',
         status: 'REJECTED',
-        createdAt: '2026-05-01T10:00:00.000Z',
-        isArchived: false,
-        archivedAt: null
+        createdAt: '2026-05-01T10:00:00.000Z'
       }
     }
   })

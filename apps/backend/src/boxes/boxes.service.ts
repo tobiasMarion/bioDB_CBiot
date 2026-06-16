@@ -94,7 +94,7 @@ export class BoxesService {
   }
 
   async findByFreezer(freezerId: string) {
-    return this.prisma.box.findMany({
+    const boxes = await this.prisma.box.findMany({
       where: { freezerId, isArchived: false },
       select: {
         id: true,
@@ -103,6 +103,7 @@ export class BoxesService {
       },
       orderBy: { label: 'asc' }
     })
+    return boxes.map(({ _count, ...rest }) => ({ ...rest, amountOfTubes: _count.tubes }))
   }
 
   async update(id: string, dto: UpdateBoxDTO, user: User) {
@@ -111,7 +112,8 @@ export class BoxesService {
     const previous = await this.prisma.box.findUnique({ where: { id, isArchived: false } })
     if (!previous) throw new NotFoundException('Box not found')
 
-    if (dto.label === undefined) return this.prisma.box.findUniqueOrThrow({ where: { id }, select: boxSelect })
+    if (dto.label === undefined)
+      return this.prisma.box.findUniqueOrThrow({ where: { id }, select: boxSelect })
 
     try {
       return await this.prisma.$transaction(async tx => {
