@@ -17,7 +17,6 @@ export interface SampleDetail {
   canEdit: boolean
 }
 
-// TODO: call when GET /samples/:id endpoint exists in the backend
 export function getSample(id: string) {
   return apiClient.get(`samples/${id}`).json<SampleDetail>()
 }
