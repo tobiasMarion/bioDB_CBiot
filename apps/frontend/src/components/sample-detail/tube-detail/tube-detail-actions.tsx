@@ -2,7 +2,7 @@ import type { ReturnPosition } from '@/components/sample-detail/return-to-freeze
 import { ReturnToFreezerDialog } from '@/components/sample-detail/return-to-freezer/return-to-freezer-dialog'
 import type { Tube } from '@/components/tube/tube-data'
 import { Button } from '@/components/ui/button'
-import { ArrowUpFromLine, Scissors } from 'lucide-react'
+import { ArrowUpFromLine } from 'lucide-react'
 import { DeleteTubeDialog } from '../delete-tube-dialog'
 import { FractionateTubeDialog } from '../fractionate-tube-dialog'
 

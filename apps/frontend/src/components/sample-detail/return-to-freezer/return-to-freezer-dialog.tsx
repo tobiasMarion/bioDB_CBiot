@@ -9,9 +9,12 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
+import { BoxDialog } from '@/components/create-box-dialog'
+import { createBox } from '@/lib/api/boxes'
 import { getBoxOccupancy } from '@/lib/api/get-box-occupancy'
 import { getGroupFreezers } from '@/lib/api/get-group-freezers'
-import { useQuery } from '@tanstack/react-query'
+import { queryClient } from '@/lib/api/query-client'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { ArrowDownToLine, Package } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ReturnPositionGrid } from './return-position-grid'
@@ -41,6 +44,15 @@ export function ReturnToFreezerDialog({
   onConfirm
 }: ReturnToFreezerDialogProps) {
   const [open, setOpen] = useState(false)
+  const [showCreateBox, setShowCreateBox] = useState(false)
+
+  const createBoxMutation = useMutation({
+    mutationFn: (label: string) => createBox(selectedFreezerId ?? '', { label }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['group-freezers', groupId] })
+      setShowCreateBox(false)
+    }
+  })
 
   const originalFreezerId = tube.box?.freezer.id ?? null
   const originalBoxId = tube.boxId ?? null
@@ -130,6 +142,14 @@ export function ReturnToFreezerDialog({
 
         <Separator />
 
+        <BoxDialog
+          mode='create'
+          open={showCreateBox}
+          onOpenChange={setShowCreateBox}
+          onSubmit={label => createBoxMutation.mutate(label)}
+          isPending={createBoxMutation.isPending}
+        />
+
         <div className='flex min-h-0 flex-1'>
           <ReturnToFreezerControls
             freezers={freezers}
@@ -140,6 +160,7 @@ export function ReturnToFreezerDialog({
             onFreezerChange={handleFreezerChange}
             onBoxChange={handleBoxChange}
             onNotesChange={setExperimentNotes}
+            onNewBox={() => setShowCreateBox(true)}
           />
 
           <div className='basis-3/5 min-w-0 overflow-x-auto px-6 py-5'>

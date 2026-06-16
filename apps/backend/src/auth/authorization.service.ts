@@ -10,11 +10,15 @@ export type AdminOnlyPermission =
   | 'ASSIGN_LEADER'
   | 'CREATE_FREEZER'
   | 'UPDATE_FREEZER'
+  | 'UPDATE_BOX'
+  | 'DELETE_BOX'
   | 'VIEW_ALL_SAMPLES'
   | 'VIEW_REPORTS'
   | 'CREATE_ROOM'
   | 'UPDATE_ROOM'
   | 'VIEW_ADMIN_AUDIT'
+
+export type AnyGroupPermission = 'CREATE_BOX'
 
 export type StandardGroupPermission =
   | 'VIEW_GROUP'
@@ -25,14 +29,13 @@ export type StandardGroupPermission =
   | 'UPDATE_SAMPLE'
   | 'DELETE_SAMPLE'
   | 'CREATE_TUBE'
-  | 'CREATE_BOX'
   | 'MANAGE_STORAGE'
   | 'VIEW_PENDING_INVITES'
   | 'VIEW_GROUP_AUDIT'
 
 export type ManageMembershipPermission = 'MANAGE_MEMBERSHIP_ROLE'
 
-export type Permission = AdminOnlyPermission | StandardGroupPermission | ManageMembershipPermission
+export type Permission = AdminOnlyPermission | AnyGroupPermission | StandardGroupPermission | ManageMembershipPermission
 
 type BaseParams = {
   user: User
@@ -41,6 +44,10 @@ type BaseParams = {
 
 export type AdminParams = BaseParams & {
   permission: AdminOnlyPermission
+}
+
+export type AnyGroupParams = BaseParams & {
+  permission: AnyGroupPermission
 }
 
 export type GroupParams = BaseParams & {
@@ -54,8 +61,8 @@ export type MembershipParams = BaseParams & {
   targetRoles: GroupRole[]
 }
 
-export type AssertParams = AdminParams | GroupParams | MembershipParams
-export type CanParams = AdminParams | GroupParams | MembershipParams
+export type AssertParams = AdminParams | AnyGroupParams | GroupParams | MembershipParams
+export type CanParams = AdminParams | AnyGroupParams | GroupParams | MembershipParams
 
 export const ROLE_LEVEL: Record<GroupRole, number> = {
   [GroupRole.RESEARCHER]: 1,
@@ -72,7 +79,6 @@ const REQUIRED_ROLE: Record<StandardGroupPermission, GroupRole> = {
   UPDATE_SAMPLE: GroupRole.RESEARCHER,
   DELETE_SAMPLE: GroupRole.MANAGER,
   CREATE_TUBE: GroupRole.RESEARCHER,
-  CREATE_BOX: GroupRole.RESEARCHER,
   MANAGE_STORAGE: GroupRole.MANAGER,
   VIEW_PENDING_INVITES: GroupRole.RESEARCHER,
   VIEW_GROUP_AUDIT: GroupRole.LEADER
@@ -85,12 +91,20 @@ const ADMIN_PERMISSIONS = new Set<AdminOnlyPermission>([
   'ASSIGN_LEADER',
   'CREATE_FREEZER',
   'UPDATE_FREEZER',
+  'UPDATE_BOX',
+  'DELETE_BOX',
   'VIEW_ALL_SAMPLES',
   'VIEW_REPORTS',
   'CREATE_ROOM',
   'UPDATE_ROOM',
   'VIEW_ADMIN_AUDIT'
 ])
+
+const ANY_GROUP_PERMISSIONS = new Set<AnyGroupPermission>(['CREATE_BOX'])
+
+function isAnyGroupPermission(permission: Permission): permission is AnyGroupPermission {
+  return ANY_GROUP_PERMISSIONS.has(permission as AnyGroupPermission)
+}
 
 function isAdminPermission(permission: Permission): permission is AdminOnlyPermission {
   return ADMIN_PERMISSIONS.has(permission as AdminOnlyPermission)
@@ -125,6 +139,18 @@ export class AuthorizationService {
 
     if (user.isAdmin) {
       return true
+    }
+
+    if (isAnyGroupPermission(permission)) {
+      const membership = await this.prisma.groupMembership.findFirst({
+        where: {
+          userId: user.id,
+          isArchived: false,
+          group: { isArchived: false }
+        },
+        select: { id: true }
+      })
+      return !!membership
     }
 
     if (!hasGroupContext(params)) {

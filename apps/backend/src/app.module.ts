@@ -8,6 +8,7 @@ import { NotificationsModule } from './notifications/notifications.module'
 import { RoomsModule } from './rooms/rooms.module'
 import { SamplesModule } from './samples/samples.module'
 import { TubesModule } from './tubes/tubes.module'
+import { BoxesModule } from './boxes/boxes.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { TubesModule } from './tubes/tubes.module'
     SamplesModule,
     TubesModule,
     RoomsModule,
-    AuditModule
+    AuditModule,
+    BoxesModule
   ],
   controllers: [],
   providers: []

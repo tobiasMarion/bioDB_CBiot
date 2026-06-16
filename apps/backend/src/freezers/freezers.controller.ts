@@ -12,13 +12,18 @@ import {
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger'
 import { Auth, CurrentUser } from '../auth/authentication.guard'
 import type { User } from '../auth/types/user.type'
+import { BoxesService } from '../boxes/boxes.service'
+import { CreateBoxDTO } from '../boxes/dto/CreateBox'
 import { CreateFreezerDTO } from './dto/CreateFreezer'
 import { UpdateFreezerDTO } from './dto/UpdateFreezer'
 import { FreezersService } from './freezers.service'
 
 @Controller()
 export class FreezersController {
-  constructor(private readonly freezersService: FreezersService) {}
+  constructor(
+    private readonly freezersService: FreezersService,
+    private readonly boxesService: BoxesService
+  ) {}
 
   @Post('freezers/new')
   @Auth()
@@ -52,6 +57,60 @@ export class FreezersController {
   @ApiResponse({ status: 403, description: 'Not a member of this group' })
   async getFreezersForGroup(@Param('groupId') groupId: string, @CurrentUser() user: User) {
     return this.freezersService.findAllWithBoxes(groupId, user)
+  }
+
+  @Post('freezers/:freezerId/boxes')
+  @Auth()
+  @ApiOperation({ summary: 'Create a box in a freezer' })
+  @ApiParam({ name: 'freezerId', type: 'string', format: 'uuid' })
+  @ApiBody({ type: CreateBoxDTO })
+  @ApiResponse({
+    status: 201,
+    description: 'Box created',
+    schema: {
+      example: {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        freezerId: '661e8400-e29b-41d4-a716-446655440001',
+        label: 'BOX-A1',
+        createdBy: '123e4567-e89b-12d3-a456-426614174000',
+        createdAt: '2026-05-01T10:00:00.000Z'
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - must be a member of at least one group' })
+  @ApiResponse({ status: 404, description: 'Freezer not found' })
+  @ApiResponse({ status: 409, description: 'A box with this label already exists in this freezer' })
+  async createBox(
+    @Param('freezerId', ParseUUIDPipe) freezerId: string,
+    @Body() dto: CreateBoxDTO,
+    @CurrentUser() user: User
+  ) {
+    return this.boxesService.create(freezerId, dto, user)
+  }
+
+  @Get('freezers/:freezerId/boxes')
+  @Auth()
+  @ApiOperation({ summary: 'List active boxes from a freezer' })
+  @ApiParam({ name: 'freezerId', type: 'string', format: 'uuid' })
+  @ApiResponse({
+    status: 200,
+    description: 'Boxes returned',
+    schema: {
+      example: [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          label: 'BOX-A1',
+          _count: { tubes: 3 }
+        }
+      ]
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getBoxesByFreezer(
+    @Param('freezerId', ParseUUIDPipe) freezerId: string
+  ) {
+    return this.boxesService.findByFreezer(freezerId)
   }
 
   @Get('boxes/:boxId/occupancy')

@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -8,6 +9,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import type { FreezerWithBoxes } from '@/lib/api/get-group-freezers'
+import { Plus } from 'lucide-react'
 
 interface ReturnToFreezerControlsProps {
   freezers: FreezerWithBoxes[]
@@ -18,6 +20,7 @@ interface ReturnToFreezerControlsProps {
   onFreezerChange: (id: string) => void
   onBoxChange: (id: string) => void
   onNotesChange: (notes: string) => void
+  onNewBox: () => void
 }
 
 export function ReturnToFreezerControls({
@@ -28,7 +31,8 @@ export function ReturnToFreezerControls({
   experimentNotes,
   onFreezerChange,
   onBoxChange,
-  onNotesChange
+  onNotesChange,
+  onNewBox
 }: ReturnToFreezerControlsProps) {
   return (
     <div className='flex min-w-0 basis-2/5 flex-col gap-5 border-r px-6 py-5'>
@@ -65,6 +69,17 @@ export function ReturnToFreezerControls({
             ))}
           </SelectContent>
         </Select>
+
+        <Button
+          variant='outline'
+          size='sm'
+          className='mt-1.5 w-full gap-2 text-xs'
+          onClick={onNewBox}
+          disabled={!currentFreezer}
+        >
+          <Plus className='size-3.5' />
+          New Box
+        </Button>
       </div>
 
       <Separator />
